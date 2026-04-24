@@ -2,437 +2,233 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Fahrzeughistorie</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fahrzeug</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f6f9;
-  margin: 0;
-  padding: 30px;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f1f5f9;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+header{
+  display:flex;
+  justify-content:space-between;
+  padding:20px;
+  background:white;
+  border-bottom:1px solid #ddd;
 }
 
-a {
-  text-decoration: none;
-  color: #111827;
-  font-weight: bold;
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
 }
 
-h1 {
-  margin: 0;
+.card{
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:15px;
 }
 
-.filters {
-  display: grid;
-  grid-template-columns: 1fr 220px 220px;
-  gap: 12px;
-  margin-bottom: 20px;
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
-input, select {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+button{
+  padding:10px 15px;
+  border:none;
+  background:black;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
 }
 
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-  cursor: pointer;
+.row{
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
 }
 
-.tag {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 8px;
+.zone{
+  padding:8px;
+  background:#3b82f6;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
+  display:inline-block;
+  margin:5px;
 }
 
-.damage {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.vehicle {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.success {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.warning {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.small {
-  color: #64748b;
-  font-size: 13px;
-  margin-top: 5px;
-}
-
-.employee {
-  display: inline-block;
-  margin-top: 8px;
-  background: #eef2ff;
-  color: #3730a3;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.error {
-  background: #fef2f2;
-  color: #991b1b;
-  padding: 15px;
-  border-radius: 12px;
-}
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-box {
-  background: white;
-  padding: 25px;
-  border-radius: 18px;
-  width: 90%;
-  max-width: 500px;
-}
-
-button {
-  margin-top: 15px;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background: #111827;
-  color: white;
-  cursor: pointer;
-}
-
-@media(max-width: 800px) {
-  .filters {
-    grid-template-columns: 1fr;
-  }
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <a id="backLink" href="index.html">← Zurück</a>
-  <h1>Fahrzeughistorie</h1>
+<header>
+  <button onclick="location.href='index.html'">← Zurück</button>
+  <div id="userInfo"></div>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<h2 id="vehicleTitle">Lädt...</h2>
+
+<div class="card">
+  <b>Zonen auswählen:</b><br>
+  <div class="zone" onclick="setArea('vorne')">vorne</div>
+  <div class="zone" onclick="setArea('hinten')">hinten</div>
+  <div class="zone" onclick="setArea('Seite')">Seite</div>
+  <div class="zone" onclick="setArea('Dach')">Dach</div>
 </div>
 
-<div class="filters">
-  <input id="search" placeholder="Suche nach Details, Aktion, Mitarbeiter ...">
+<div class="card">
+  <h3>Schaden hinzufügen</h3>
 
-  <select id="typeFilter">
-    <option value="all">Alle Einträge</option>
-    <option value="damage">Nur Schäden</option>
-    <option value="vehicle">Nur Fahrzeugstatus</option>
+  <input id="type" placeholder="z.B Kratzer">
+  <input id="area" placeholder="z.B vorne">
+
+  <select id="severity">
+    <option value="leicht">leicht</option>
+    <option value="mittel">mittel</option>
+    <option value="schwer">schwer</option>
   </select>
 
-  <select id="employeeFilter">
-    <option value="all">Alle Mitarbeiter</option>
-  </select>
+  <textarea id="desc" placeholder="Beschreibung"></textarea>
+
+  <button onclick="addDamage()">Speichern</button>
+  <div id="msg"></div>
 </div>
 
-<div id="historyApp">Historie wird geladen ...</div>
-
-<div id="modal" class="modal">
-  <div class="modal-box">
-    <div id="modalContent"></div>
-    <button onclick="closeModal()">Schließen</button>
-  </div>
+<div class="card">
+  <h3>Aktive Schäden</h3>
+  <div id="damageList"></div>
 </div>
+
+</main>
 
 <script>
+
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const params = new URLSearchParams(window.location.search);
-const vehicleId = params.get("id");
+const vehicleId = new URLSearchParams(location.search).get("id");
 
-const historyApp = document.getElementById("historyApp");
-const searchInput = document.getElementById("search");
-const typeFilter = document.getElementById("typeFilter");
-const employeeFilter = document.getElementById("employeeFilter");
+let currentUser;
+let employee;
 
-let allData = [];
-let employees = [];
-let employeesMap = {};
-let damagesMap = {};
-let vehicleName = "";
-
-if (vehicleId) {
-  document.getElementById("backLink").href = "vehicle.html?id=" + vehicleId;
+function setArea(a){
+  document.getElementById("area").value = a;
 }
 
-function formatDate(value) {
-  return value ? new Date(value).toLocaleString("de-DE") : "-";
-}
+async function init(){
+  const { data } = await db.auth.getSession();
+  currentUser = data.session?.user;
 
-function actionLabel(action) {
-  switch (action) {
-    case "angelegt": return "Schaden angelegt";
-    case "bilder_hochgeladen": return "Bilder hochgeladen";
-    case "repariert": return "Schaden repariert";
-    case "irrtuemlich": return "Schaden irrtümlich";
-    case "bearbeitet": return "Schaden bearbeitet";
-    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
-    case "status_geaendert": return "Fahrzeugstatus geändert";
-    default: return action || "-";
+  if(!currentUser){
+    location.href="index.html";
+    return;
   }
-}
 
-function employeeName(id) {
-  return employeesMap[id] || "Unbekannt";
-}
-
-function getTagClass(item) {
-  if (item.type === "vehicle") return "vehicle";
-  if (item.action === "repariert") return "success";
-  if (item.action === "irrtuemlich") return "warning";
-  return "damage";
-}
-
-async function loadEmployees() {
-  const { data, error } = await db
-    .from("employees")
-    .select("id, name, email")
-    .order("name");
-
-  if (error) return;
-
-  employees = data || [];
-  employeesMap = {};
-
-  employees.forEach(emp => {
-    employeesMap[emp.id] = emp.name || emp.email || "Mitarbeiter " + emp.id;
-  });
-
-  employeeFilter.innerHTML =
-    `<option value="all">Alle Mitarbeiter</option>` +
-    employees.map(emp => `
-      <option value="${emp.id}">
-        ${emp.name || emp.email || "Mitarbeiter " + emp.id}
-      </option>
-    `).join("");
-}
-
-async function loadVehicle() {
-  const { data } = await db
-    .from("vehicles")
+  const empRes = await db.from("employees")
     .select("*")
-    .eq("id", Number(vehicleId))
-    .maybeSingle();
+    .eq("email", currentUser.email)
+    .single();
 
-  if (data) {
-    vehicleName = (data.name || "Fahrzeug") + (data.kennzeichen ? " — " + data.kennzeichen : "");
-  }
+  employee = empRes.data;
+
+  document.getElementById("userInfo").innerText =
+    "👤 " + (employee?.name || currentUser.email);
+
+  loadVehicle();
+  loadDamages();
 }
 
-async function loadHistory() {
-  if (!vehicleId) {
-    historyApp.innerHTML = `<div class="error">Keine Fahrzeug-ID gefunden.</div>`;
-    return;
-  }
-
-  await loadEmployees();
-  await loadVehicle();
-
-  const { data: vehicleHistory, error: vehicleError } = await db
-    .from("vehicle_history")
+async function loadVehicle(){
+  const { data } = await db.from("vehicles")
     .select("*")
-    .eq("vehicle_id", Number(vehicleId));
+    .eq("id", vehicleId)
+    .single();
 
-  if (vehicleError) {
-    historyApp.innerHTML = `<div class="error">${vehicleError.message}</div>`;
-    return;
-  }
-
-  const { data: damages, error: damagesError } = await db
-    .from("damages")
-    .select("*")
-    .eq("vehicle_id", Number(vehicleId));
-
-  if (damagesError) {
-    historyApp.innerHTML = `<div class="error">${damagesError.message}</div>`;
-    return;
-  }
-
-  damagesMap = {};
-  const damageIds = (damages || []).map(d => d.id);
-
-  (damages || []).forEach(d => {
-    damagesMap[d.id] = d;
-  });
-
-  let damageHistory = [];
-
-  if (damageIds.length > 0) {
-    const { data, error } = await db
-      .from("damage_history")
-      .select("*")
-      .in("damage_id", damageIds);
-
-    if (error) {
-      historyApp.innerHTML = `<div class="error">${error.message}</div>`;
-      return;
-    }
-
-    damageHistory = data || [];
-  }
-
-  allData = [
-    ...(vehicleHistory || []).map(item => ({
-      ...item,
-      type: "vehicle",
-      title: "Fahrzeugstatus",
-      employee_id: item.user_id,
-      employee_name: employeeName(item.user_id),
-      reported_employee_id: null,
-      reported_employee_name: null
-    })),
-
-    ...(damageHistory || []).map(item => {
-      const damage = damagesMap[item.damage_id] || {};
-      const reportedEmployeeId = damage.employee_id;
-      const actionEmployeeId = item.user_id || reportedEmployeeId;
-
-      return {
-        ...item,
-        type: "damage",
-        title: [
-          damage.damage_type || "Schaden",
-          damage.area || "",
-          damage.severity || ""
-        ].filter(Boolean).join(" / "),
-        employee_id: actionEmployeeId,
-        employee_name: employeeName(actionEmployeeId),
-        reported_employee_id: reportedEmployeeId,
-        reported_employee_name: employeeName(reportedEmployeeId)
-      };
-    })
-  ];
-
-  allData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  renderHistory();
+  document.getElementById("vehicleTitle").innerText =
+    data.name + " (" + data.kennzeichen + ")";
 }
 
-function renderHistory() {
-  const search = searchInput.value.toLowerCase();
-  const type = typeFilter.value;
-  const emp = employeeFilter.value;
+async function loadDamages(){
+  const { data } = await db.from("damages")
+    .select("*")
+    .eq("vehicle_id", vehicleId)
+    .eq("status","offen");
 
-  const filtered = allData.filter(item => {
-    const text = [
-      item.type,
-      item.action,
-      item.details,
-      item.title,
-      item.employee_name,
-      item.reported_employee_name
-    ].join(" ").toLowerCase();
-
-    const matchesSearch = text.includes(search);
-    const matchesType = type === "all" || item.type === type;
-    const matchesEmployee =
-      emp === "all" ||
-      String(item.employee_id) === emp ||
-      String(item.reported_employee_id) === emp;
-
-    return matchesSearch && matchesType && matchesEmployee;
-  });
-
-  if (filtered.length === 0) {
-    historyApp.innerHTML = `<div class="card">Keine passenden Einträge gefunden.</div>`;
-    return;
-  }
-
-  historyApp.innerHTML = filtered.map(item => {
-    const index = allData.indexOf(item);
-
-    return `
-      <div class="card" onclick="openModal(${index})">
-        <div class="tag ${getTagClass(item)}">
-          ${item.type === "vehicle" ? "🚗 Fahrzeug" : "⚠️ Schaden"} • ${actionLabel(item.action)}
-        </div>
-
-        <div><strong>${item.title || "-"}</strong></div>
-
-        <div class="employee">
-          👤 Aktion von: ${item.employee_name || "Unbekannt"}
-        </div>
-
-        ${item.type === "damage" ? `
-          <div class="employee">
-            📝 Schaden gemeldet von: ${item.reported_employee_name || "Unbekannt"}
-          </div>
-        ` : ""}
-
-        <div class="small">${formatDate(item.created_at)}</div>
-        <div>${item.details || "-"}</div>
+  document.getElementById("damageList").innerHTML =
+    data.map(d=>`
+      <div class="row">
+        <b>${d.damage_type}</b><br>
+        ${d.area} | ${d.severity}
       </div>
-    `;
-  }).join("");
+    `).join("") || "Keine Schäden";
 }
 
-function openModal(index) {
-  const item = allData[index];
+async function addDamage(){
 
-  document.getElementById("modalContent").innerHTML = `
-    <h2>Detailansicht</h2>
-    <p><strong>Typ:</strong> ${item.type === "vehicle" ? "Fahrzeug" : "Schaden"}</p>
-    <p><strong>Aktion:</strong> ${actionLabel(item.action)}</p>
-    <p><strong>Aktion von:</strong> ${item.employee_name || "Unbekannt"}</p>
-    ${item.type === "damage" ? `
-      <p><strong>Schaden gemeldet von:</strong> ${item.reported_employee_name || "Unbekannt"}</p>
-    ` : ""}
-    <p><strong>Fahrzeug:</strong> ${vehicleName || "Fahrzeug-ID " + vehicleId}</p>
-    <p><strong>Zeitpunkt:</strong> ${formatDate(item.created_at)}</p>
-    <p><strong>Details:</strong><br>${item.details || "-"}</p>
-  `;
+  const type = document.getElementById("type").value;
+  const area = document.getElementById("area").value;
+  const severity = document.getElementById("severity").value;
+  const desc = document.getElementById("desc").value;
 
-  document.getElementById("modal").style.display = "flex";
+  if(!employee){
+    alert("Kein Mitarbeiter gefunden!");
+    return;
+  }
+
+  const { data, error } = await db.from("damages").insert([{
+    vehicle_id: Number(vehicleId),
+    damage_type:type,
+    area,
+    severity,
+    description:desc,
+    status:"offen",
+    employee_id: employee.id,
+    user_id: currentUser.id
+  }]).select().single();
+
+  if(error){
+    document.getElementById("msg").innerText = error.message;
+    return;
+  }
+
+  await db.from("damage_history").insert([{
+    damage_id:data.id,
+    action:"angelegt",
+    details:type+" "+area,
+    user_id:employee.id,
+    auth_user_id:currentUser.id
+  }]);
+
+  document.getElementById("msg").innerText="✔ gespeichert";
+
+  loadDamages();
 }
 
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
+async function logout(){
+  await db.auth.signOut();
+  location.href="index.html";
 }
 
-searchInput.addEventListener("input", renderHistory);
-typeFilter.addEventListener("change", renderHistory);
-employeeFilter.addEventListener("change", renderHistory);
+init();
 
-loadHistory();
 </script>
 
 </body>
