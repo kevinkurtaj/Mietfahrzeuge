@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeughistorie</title>
+<title>System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -12,63 +12,37 @@ body { font-family: Arial; margin:0; background:#f4f6f8; }
 
 header {
   background:white;
-  padding:20px;
-  border-bottom:1px solid #e5e7eb;
-}
-
-main {
-  padding:24px;
-  max-width:1000px;
-  margin:auto;
-}
-
-/* FILTER BAR */
-.filter-bar {
+  padding:15px;
+  border-bottom:1px solid #ddd;
   display:flex;
-  gap:10px;
-  margin-bottom:20px;
-  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
 }
 
-input, select {
+main { padding:20px; max-width:1000px; margin:auto; }
+
+input, select, button {
   padding:10px;
   border-radius:10px;
-  border:1px solid #d1d5db;
+  border:1px solid #ccc;
+  margin:5px;
 }
 
-/* CARDS */
+button { cursor:pointer; }
+
 .card {
   background:white;
-  padding:14px;
-  border-radius:14px;
+  padding:12px;
+  border-radius:12px;
   margin-bottom:10px;
-  border:1px solid #e5e7eb;
   cursor:pointer;
-  transition:0.15s;
 }
 
-.card:hover {
-  transform:translateY(-2px);
-  background:#f9fafb;
-}
-
-.tag {
-  padding:4px 8px;
-  border-radius:8px;
-  font-size:12px;
-  font-weight:700;
-  display:inline-block;
-  margin-bottom:6px;
-}
-
+.tag { padding:4px 8px; border-radius:8px; font-size:12px; font-weight:bold; }
 .vehicle { background:#dbeafe; color:#1d4ed8; }
 .damage { background:#fee2e2; color:#991b1b; }
 .success { background:#dcfce7; color:#166534; }
 
-.time { font-size:12px; color:#6b7280; }
-.details { margin-top:4px; }
-
-/* MODAL */
 .modal {
   position:fixed;
   top:0; left:0;
@@ -86,84 +60,122 @@ input, select {
   width:90%;
   max-width:400px;
 }
-
-.close-btn {
-  margin-top:15px;
-  width:100%;
-  padding:10px;
-  border:none;
-  background:#111827;
-  color:white;
-  border-radius:10px;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-<a href="index.html">← Zurück</a>
-<h2>Fahrzeug Historie</h2>
+<div>🚗 Fahrzeug System</div>
+<button onclick="logout()">Logout</button>
 </header>
 
 <main>
 
-<div class="filter-bar">
-<input id="searchInput" placeholder="Suche...">
-<select id="typeFilter">
-  <option value="all">Alle</option>
-  <option value="vehicle">Fahrzeug</option>
-  <option value="damage">Schaden</option>
+<!-- LOGIN -->
+<div id="loginBox">
+<h2>Login</h2>
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Passwort"><br>
+<button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+<div>
+<input id="searchInput" placeholder="Suche">
+<select id="filter">
+<option value="all">Alle</option>
+<option value="vehicle">Fahrzeug</option>
+<option value="damage">Schaden</option>
 </select>
 </div>
 
-<div id="historyApp">Lade...</div>
+<div id="historyApp"></div>
+
+</div>
 
 </main>
 
 <div id="modal" class="modal">
 <div class="modal-box">
 <div id="modalContent"></div>
-<button class="close-btn" onclick="closeModal()">Schließen</button>
+<button onclick="closeModal()">Schließen</button>
 </div>
 </div>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const params = new URLSearchParams(window.location.search);
-const vehicleId = params.get("id");
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allData = [];
+let user = null;
 
-async function loadHistory() {
+// LOGIN
+async function login(){
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value
+  });
 
-const { data: vh } = await supabaseClient
+  if(error) return alert("Login Fehler");
+
+  user = data.user;
+  startApp();
+}
+
+// LOGOUT
+async function logout(){
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+// CHECK SESSION
+async function checkUser(){
+  const { data } = await supabase.auth.getSession();
+  if(data.session){
+    user = data.session.user;
+    startApp();
+  }
+}
+
+function startApp(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("app").style.display="block";
+  loadHistory();
+}
+
+// LOAD HISTORY
+async function loadHistory(){
+
+const vehicleId = new URLSearchParams(window.location.search).get("id");
+
+const { data: vh } = await supabase
 .from("vehicle_history")
 .select("*")
 .eq("vehicle_id", vehicleId);
 
-const { data: dmg } = await supabaseClient
+const { data: dmg } = await supabase
 .from("damages")
 .select("id")
 .eq("vehicle_id", vehicleId);
 
 const ids = (dmg||[]).map(d=>d.id);
 
-let dh = [];
+let dh=[];
 if(ids.length){
-const res = await supabaseClient
+const res = await supabase
 .from("damage_history")
 .select("*")
 .in("damage_id", ids);
 
-dh = res.data || [];
+dh = res.data||[];
 }
 
-allData = [
+allData=[
 ...(vh||[]).map(i=>({...i,type:"vehicle"})),
 ...(dh||[]).map(i=>({...i,type:"damage"}))
 ];
@@ -171,19 +183,20 @@ allData = [
 render();
 }
 
+// RENDER
 function render(){
 
-const search = document.getElementById("searchInput").value.toLowerCase();
-const filter = document.getElementById("typeFilter").value;
+const search=document.getElementById("searchInput").value.toLowerCase();
+const filter=document.getElementById("filter").value;
 
-let data = allData.filter(item => {
-return (!search || (item.details||"").toLowerCase().includes(search)) &&
-(filter==="all" || item.type===filter);
+let data = allData.filter(i=>{
+return (!search || (i.details||"").toLowerCase().includes(search)) &&
+(filter==="all" || i.type===filter);
 });
 
 data.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 
-document.getElementById("historyApp").innerHTML = data.map(item => {
+document.getElementById("historyApp").innerHTML = data.map(item=>{
 
 let tag="vehicle", label="🚗 Fahrzeug";
 
@@ -194,23 +207,41 @@ if(item.action==="repariert") tag="success";
 }
 
 return `
-<div class="card" onclick='openModal(${JSON.stringify(item)})'>
-<div class="tag ${tag}">${label} • ${item.action}</div>
-<div class="time">${new Date(item.created_at).toLocaleString()}</div>
-<div class="details">${item.details||""}</div>
+<div class="card"
+data-item='${encodeURIComponent(JSON.stringify(item))}'
+onclick="handleClick(this)">
+
+<div class="tag ${tag}">
+${label} • ${item.action}
+</div>
+
+<div>
+${new Date(item.created_at).toLocaleString()}
+</div>
+
+<div>
+${item.details||""}
+</div>
+
 </div>
 `;
 
 }).join("");
-
 }
 
+// CLICK FIX
+function handleClick(el){
+const item = JSON.parse(decodeURIComponent(el.dataset.item));
+openModal(item);
+}
+
+// MODAL
 async function openModal(item){
 
 let name="Unbekannt";
 
 if(item.user_id){
-const { data } = await supabaseClient
+const { data } = await supabase
 .from("employees")
 .select("name")
 .eq("id", item.user_id)
@@ -235,10 +266,12 @@ function closeModal(){
 document.getElementById("modal").style.display="none";
 }
 
+// EVENTS
 document.getElementById("searchInput").addEventListener("input",render);
-document.getElementById("typeFilter").addEventListener("change",render);
+document.getElementById("filter").addEventListener("change",render);
 
-loadHistory();
+// START
+checkUser();
 </script>
 
 </body>
