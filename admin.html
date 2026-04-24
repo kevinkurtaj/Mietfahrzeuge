@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Panel</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+:root{
+  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;
+  --card:rgba(255,255,255,.94);--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;
+}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+main{max-width:1220px;margin:auto;padding:30px}
+.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
+.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
+.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
+.card,.stat,.auth-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.07)}
+.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
+textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
+.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
+.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
+.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
+@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
+</style></head>
+<body><header><div class="header-title">⚙️ Admin Panel PRO</div><div class="header-actions"><a class="btn secondary" href="index.html">Zur Übersicht</a><button class="btn" onclick="logout()">Logout</button></div></header><main><div class="hero"><h1>Administration</h1><p>Dashboard, Mitarbeiter, Reset, Schäden-Log und Aktivitäten.</p></div><div id="authBox" class="card">Prüfe Anmeldung ...</div><div id="adminApp" style="display:none">
+<div class="stats"><div class="stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="stat"><div class="label">Offene Schäden</div><strong id="openDamageCount">-</strong></div><div class="stat"><div class="label">Repariert</div><strong id="repairedDamageCount">-</strong></div><div class="stat"><div class="label">Aktive Mitarbeiter</div><strong id="employeeCount">-</strong></div><div class="stat"><div class="label">Deaktiviert</div><strong id="inactiveEmployeeCount">-</strong></div><div class="stat"><div class="label">Logs</div><strong id="logCount">-</strong></div></div>
+<section class="card"><h2>Passwort-Reset senden</h2><input id="resetEmail" type="email" placeholder="E-Mail-Adresse"><button class="btn" onclick="sendReset()">Reset-Link senden</button><div id="resetMsg" class="success-box"></div></section>
+<section class="card"><h2>Mitarbeiter anlegen</h2><input id="newEmployeeName" placeholder="Name"><input id="newEmployeeEmail" type="email" placeholder="E-Mail"><select id="newEmployeeRole"><option value="user">Mitarbeiter</option><option value="admin">Admin</option></select><button class="btn" onclick="createEmployee()">Speichern</button><div id="employeeMsg" class="success-box"></div></section>
+<div class="grid"><section class="card"><h2>Mitarbeiter</h2><input id="employeeSearch" placeholder="Suchen ..."><select id="employeeFilter"><option value="all">Alle</option><option value="active">Aktive</option><option value="inactive">Deaktivierte</option><option value="admin">Admins</option></select><div id="employeesBox" class="table"></div></section><section class="card"><h2>Letzte Aktivitäten</h2><input id="activitySearch" placeholder="Suchen ..."><select id="activityFilter"><option value="all">Alle</option><option value="damage">Schäden</option><option value="vehicle">Fahrzeugstatus</option><option value="reset">Admin/Reset</option></select><div id="activitiesBox" class="table"></div></section></div>
+<div class="grid"><section class="card"><h2>Schäden-Log</h2><input id="damageLogSearch" placeholder="Suchen ..."><div id="damageLogsBox" class="table"></div></section><section class="card"><h2>Admin Log</h2><input id="logSearch" placeholder="Suchen ..."><div id="logsBox" class="table"></div></section></div></div></main>
+<div id="editModal" class="modal"><div class="modal-box"><h2>Mitarbeiter bearbeiten</h2><input id="editId" type="hidden"><label>Name</label><input id="editName"><label>E-Mail</label><input id="editEmail" type="email"><label>Rolle</label><select id="editRole"><option value="user">Mitarbeiter</option><option value="admin">Admin</option></select><label>Status</label><select id="editActive"><option value="true">aktiv</option><option value="false">deaktiviert</option></select><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="saveEmployeeEdit()">Speichern</button><button class="btn secondary" onclick="closeEditModal()">Abbrechen</button></div></div></div>
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function statusLabel(s){
+  switch(s){
+    case "einsatzbereit": return "einsatzbereit";
+    case "schaeden_vorhanden": return "Schäden vorhanden";
+    case "werkstatt": return "Werkstatt";
+    case "nicht_einsatzbereit": return "nicht einsatzbereit";
+    case "nicht_im_einsatz": return "nicht im Einsatz";
+    case "abruf": return "Abruf / Reserve";
+    default: return s || "unbekannt";
+  }
+}
+function actionLabel(a){
+  switch(a){
+    case "angelegt": return "Schaden angelegt";
+    case "bilder_hochgeladen": return "Bilder hochgeladen";
+    case "repariert": return "Schaden repariert";
+    case "irrtuemlich": return "Schaden irrtümlich";
+    case "bearbeitet": return "Schaden bearbeitet";
+    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
+    case "status_geaendert": return "Fahrzeugstatus geändert";
+    default: return a || "-";
+  }
+}
+async function getSessionUser(){
+  const { data } = await db.auth.getSession();
+  return data.session?.user || null;
+}
+async function getEmployeeByEmail(email){
+  if(!email) return null;
+  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
+  return data || null;
+}
+async function requireLogin(){
+  const user = await getSessionUser();
+  if(!user) window.location.href = "index.html";
+  return user;
+}
+async function logout(){
+  await db.auth.signOut();
+  window.location.href = "index.html";
+}
+
+let currentAdminEmail="",employees=[],logs=[],damageLogs=[],vehicleLogs=[],activities=[],vehiclesMap={},employeesMap={},damagesMap={};
+async function init(){const user=await requireLogin(); currentAdminEmail=user.email; const emp=await getEmployeeByEmail(user.email); if(emp?.role!=="admin"){authBox.innerHTML=`<div class="error">Kein Admin-Zugriff für <b>${esc(user.email)}</b><br>Setze in employees role = admin.</div>`;return;} authBox.innerHTML=`👤 Admin: <b>${esc(user.email)}</b>`; adminApp.style.display="block"; await loadAll();}
+async function loadAll(){await loadMaps();await loadDashboard();await loadEmployees();await loadLogs();await loadDamageLogs();await loadVehicleLogs();buildActivities();}
+async function loadMaps(){const {data:v}=await db.from("vehicles").select("*"); vehiclesMap={};(v||[]).forEach(x=>vehiclesMap[x.id]=`${x.name||"Fahrzeug"} ${x.kennzeichen?"— "+x.kennzeichen:""}`); const {data:e}=await db.from("employees").select("*"); employeesMap={};(e||[]).forEach(x=>employeesMap[x.id]=x.name||x.email||("Mitarbeiter "+x.id)); const {data:d}=await db.from("damages").select("*"); damagesMap={};(d||[]).forEach(x=>damagesMap[x.id]={text:`${x.damage_type||"Schaden"} / ${x.area||"-"} / ${x.severity||"-"}`,vehicle_id:x.vehicle_id,status:x.status});}
+async function loadDashboard(){const a=await db.from("vehicles").select("id",{count:"exact",head:true}); const b=await db.from("damages").select("id",{count:"exact",head:true}).in("status",["offen","in_pruefung"]); const c=await db.from("damages").select("id",{count:"exact",head:true}).eq("status","repariert"); const d=await db.from("employees").select("id",{count:"exact",head:true}).eq("active",true); const e=await db.from("employees").select("id",{count:"exact",head:true}).eq("active",false); const f=await db.from("password_reset_activity").select("id",{count:"exact",head:true}); vehicleCount.textContent=a.count??"-";openDamageCount.textContent=b.count??"-";repairedDamageCount.textContent=c.count??"-";employeeCount.textContent=d.count??"-";inactiveEmployeeCount.textContent=e.count??"-";logCount.textContent=f.count??"-";}
+async function log(status,details,email=null){try{await db.from("password_reset_activity").insert([{status,details,email}]);}catch(e){console.warn(e)}}
+function show(el,text,ok=true){el.className=ok?"success-box":"error";el.style.display="block";el.textContent=text;}
+async function sendReset(emailFromButton=null){const email=(emailFromButton||resetEmail.value).trim(); if(!email){alert("E-Mail fehlt");return;} const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:"https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html"}); if(error){show(resetMsg,error.message,false);return;} show(resetMsg,"Reset-Link gesendet an "+email); await log("reset_mail_sent","Admin hat Reset-Mail gesendet",email); await loadAll();}
+async function createEmployee(){const name=newEmployeeName.value.trim(), email=newEmployeeEmail.value.trim(), role=newEmployeeRole.value; if(!name){show(employeeMsg,"Name fehlt",false);return;} const {error}=await db.from("employees").insert([{name,email:email||null,role,active:true}]); if(error){show(employeeMsg,error.message,false);return;} show(employeeMsg,"Mitarbeiter gespeichert"); await log("employee_created","Mitarbeiter angelegt: "+name,email||null); newEmployeeName.value="";newEmployeeEmail.value="";newEmployeeRole.value="user"; await loadAll();}
+async function loadEmployees(){const {data,error}=await db.from("employees").select("*").order("id",{ascending:true}); if(error){employeesBox.innerHTML=`<div class="error">${error.message}</div>`;return;} employees=data||[]; renderEmployees();}
+function active(e){return e.active!==false} function role(e){return e.role||"user"}
+function renderEmployees(){const s=employeeSearch.value.toLowerCase(), f=employeeFilter.value; const data=employees.filter(e=>(!s||JSON.stringify(e).toLowerCase().includes(s))&&(f==="all"||(f==="active"&&active(e))||(f==="inactive"&&!active(e))||(f==="admin"&&role(e)==="admin"))); employeesBox.innerHTML=data.map(e=>`<div class="row ${active(e)?"":"inactive"}"><div class="tag ${role(e)==="admin"?"green":""} ${active(e)?"":"gray"}">${active(e)?(role(e)==="admin"?"Admin":"Mitarbeiter"):"Deaktiviert"}</div><div><b>${esc(e.name||"-")}</b></div><div class="small-text">ID: ${e.id}</div><div class="small-text">E-Mail: ${esc(e.email||"-")}</div><div class="row-actions"><button class="btn small secondary" onclick="openEdit(${e.id})">Bearbeiten</button>${e.email?`<button class="btn small" onclick="sendReset('${e.email}')">Reset</button>`:""}<button class="btn small ${active(e)?"warning":"success"}" onclick="toggleActive(${e.id},${!active(e)})">${active(e)?"Deaktivieren":"Aktivieren"}</button></div></div>`).join("")||"Keine Mitarbeiter.";}
+function openEdit(id){const e=employees.find(x=>x.id==id); editId.value=e.id;editName.value=e.name||"";editEmail.value=e.email||"";editRole.value=e.role||"user";editActive.value=active(e)?"true":"false";editModal.style.display="flex";} function closeEditModal(){editModal.style.display="none";}
+async function saveEmployeeEdit(){const id=editId.value, name=editName.value.trim(), email=editEmail.value.trim(), r=editRole.value, a=editActive.value==="true"; const {error}=await db.from("employees").update({name,email:email||null,role:r,active:a}).eq("id",Number(id)); if(error){alert(error.message);return;} await log("employee_updated","Mitarbeiter bearbeitet: "+name,email||null); closeEditModal(); await loadAll();}
+async function toggleActive(id,a){const e=employees.find(x=>x.id==id); if(!confirm((a?"Aktivieren: ":"Deaktivieren: ")+(e?.name||id)+"?"))return; const {error}=await db.from("employees").update({active:a}).eq("id",Number(id)); if(error){alert(error.message);return;} await log(a?"employee_activated":"employee_deactivated",e?.name||String(id),e?.email||null); await loadAll();}
+async function loadLogs(){const {data,error}=await db.from("password_reset_activity").select("*").order("created_at",{ascending:false}).limit(150); if(error){logsBox.innerHTML=`<div class="error">${error.message}</div>`;return;} logs=data||[];renderLogs();}
+function renderLogs(){const s=logSearch.value.toLowerCase(); const data=logs.filter(l=>JSON.stringify(l).toLowerCase().includes(s)); logsBox.innerHTML=data.map(l=>`<div class="row"><div class="tag">${esc(l.status||"log")}</div><b>${esc(l.email||"Unbekannt")}</b><div>${esc(l.details||"-")}</div><div class="small-text">${fmtDate(l.created_at)}</div></div>`).join("")||"Keine Logs.";}
+async function loadDamageLogs(){const {data,error}=await db.from("damage_history").select("*").order("created_at",{ascending:false}).limit(200); if(error){damageLogsBox.innerHTML=`<div class="error">${error.message}</div>`;return;} damageLogs=data||[];renderDamageLogs();}
+function renderDamageLogs(){const s=damageLogSearch.value.toLowerCase(); const data=damageLogs.filter(i=>JSON.stringify(i).toLowerCase().includes(s)); damageLogsBox.innerHTML=data.map(i=>{const d=damagesMap[i.damage_id]||{};return `<div class="row"><div class="tag red">${actionLabel(i.action)}</div><b>${esc(d.text||"Schaden-ID "+i.damage_id)}</b><div class="small-text">Fahrzeug: ${esc(vehiclesMap[d.vehicle_id]||"-")}</div><div class="small-text">Mitarbeiter: ${esc(employeesMap[i.user_id]||"Unbekannt")}</div><div class="small-text">${fmtDate(i.created_at)}</div><div>${esc(i.details||"-")}</div></div>`}).join("")||"Keine Schäden-Logs.";}
+async function loadVehicleLogs(){const {data}=await db.from("vehicle_history").select("*").order("created_at",{ascending:false}).limit(200); vehicleLogs=data||[];}
+function buildActivities(){activities=[...damageLogs.map(i=>({type:"damage",time:i.created_at,title:actionLabel(i.action),detail:(damagesMap[i.damage_id]?.text||"Schaden-ID "+i.damage_id),person:employeesMap[i.user_id]||"Unbekannt"})),...vehicleLogs.map(i=>({type:"vehicle",time:i.created_at,title:"Fahrzeugstatus geändert",detail:(vehiclesMap[i.vehicle_id]||"Fahrzeug")+" | "+(i.details||"-"),person:employeesMap[i.user_id]||"Unbekannt"})),...logs.map(i=>({type:"reset",time:i.created_at,title:i.status||"Admin Log",detail:i.details||"-",person:i.email||"Unbekannt"}))];activities.sort((a,b)=>new Date(b.time)-new Date(a.time));renderActivities();}
+function renderActivities(){const s=activitySearch.value.toLowerCase(), f=activityFilter.value; const data=activities.filter(i=>(f==="all"||i.type===f)&&JSON.stringify(i).toLowerCase().includes(s)); activitiesBox.innerHTML=data.slice(0,100).map(i=>`<div class="row"><div class="tag ${i.type==="damage"?"red":i.type==="vehicle"?"vehicle":"gray"}">${i.type==="damage"?"Schaden":i.type==="vehicle"?"Fahrzeug":"Admin"}</div><b>${esc(i.title)}</b><div>${esc(i.detail)}</div><div class="small-text">Von: ${esc(i.person)} · ${fmtDate(i.time)}</div></div>`).join("")||"Keine Aktivitäten.";}
+employeeSearch.addEventListener("input",renderEmployees);employeeFilter.addEventListener("change",renderEmployees);logSearch.addEventListener("input",renderLogs);damageLogSearch.addEventListener("input",renderDamageLogs);activitySearch.addEventListener("input",renderActivities);activityFilter.addEventListener("change",renderActivities);init();
+</script></body></html>

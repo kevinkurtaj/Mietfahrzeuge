@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schadendokumentation Mietfahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,">
+<style>
+:root{
+  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;
+  --card:rgba(255,255,255,.94);--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;
+}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+main{max-width:1220px;margin:auto;padding:30px}
+.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
+.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
+.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
+.card,.stat,.auth-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.07)}
+.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
+textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
+.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
+.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
+.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
+@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
+
+#loginBox{width:100%;max-width:430px;margin:90px auto 0}.login-icon{width:58px;height:58px;border-radius:18px;background:#111827;color:white;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
+#loginBox h2{margin:0;font-size:31px}#loginMessage{margin-top:12px;color:#991b1b;font-size:14px}
+</style></head><body>
+<header><div class="brand">🚐 Schadendokumentation Mietfahrzeuge</div><div class="header-actions"><div id="userInfo" class="user-info"></div><a id="adminBtn" class="btn secondary" href="admin.html" style="display:none">Admin Panel</a><button id="logoutBtn" class="btn" onclick="logout()" style="display:none">Logout</button></div></header>
+<main>
+<section id="loginBox" class="card">
+<div class="login-icon">🔐</div><h2>Anmeldung</h2><p class="small-text" style="font-size:14px;margin:8px 0 24px">Bitte mit deinem Zugang anmelden. Enter funktioniert auch.</p>
+<input id="email" type="email" placeholder="E-Mail-Adresse" autocomplete="email">
+<input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
+<button class="btn" style="width:100%" onclick="login()">Einloggen</button><div id="loginMessage"></div>
+</section>
+<section id="app" style="display:none">
+<div class="hero"><h1>Fahrzeugübersicht</h1><p>Übersicht aller Mietfahrzeuge, Status und Schäden.</p></div>
+<div class="stats"><div class="stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div><div class="stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div></div>
+<div id="vehicleList" class="grid3">Fahrzeuge werden geladen ...</div>
+</section>
+</main>
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function statusLabel(s){
+  switch(s){
+    case "einsatzbereit": return "einsatzbereit";
+    case "schaeden_vorhanden": return "Schäden vorhanden";
+    case "werkstatt": return "Werkstatt";
+    case "nicht_einsatzbereit": return "nicht einsatzbereit";
+    case "nicht_im_einsatz": return "nicht im Einsatz";
+    case "abruf": return "Abruf / Reserve";
+    default: return s || "unbekannt";
+  }
+}
+function actionLabel(a){
+  switch(a){
+    case "angelegt": return "Schaden angelegt";
+    case "bilder_hochgeladen": return "Bilder hochgeladen";
+    case "repariert": return "Schaden repariert";
+    case "irrtuemlich": return "Schaden irrtümlich";
+    case "bearbeitet": return "Schaden bearbeitet";
+    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
+    case "status_geaendert": return "Fahrzeugstatus geändert";
+    default: return a || "-";
+  }
+}
+async function getSessionUser(){
+  const { data } = await db.auth.getSession();
+  return data.session?.user || null;
+}
+async function getEmployeeByEmail(email){
+  if(!email) return null;
+  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
+  return data || null;
+}
+async function requireLogin(){
+  const user = await getSessionUser();
+  if(!user) window.location.href = "index.html";
+  return user;
+}
+async function logout(){
+  await db.auth.signOut();
+  window.location.href = "index.html";
+}
+
+const loginBox=document.getElementById("loginBox"), app=document.getElementById("app"), loginMessage=document.getElementById("loginMessage");
+document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
+document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
+async function login(){
+  loginMessage.textContent="";
+  const email=document.getElementById("email").value.trim(); const password=document.getElementById("password").value;
+  if(!email||!password){loginMessage.textContent="Bitte E-Mail und Passwort eingeben.";return;}
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error){loginMessage.textContent="Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";return;}
+  startApp();
+}
+async function checkUser(){ const user=await getSessionUser(); if(user) startApp(); }
+async function startApp(){
+  const user=await getSessionUser(); if(!user) return;
+  loginBox.style.display="none"; app.style.display="block";
+  document.getElementById("logoutBtn").style.display="inline-block";
+  document.getElementById("userInfo").style.display="block"; document.getElementById("userInfo").textContent=user.email;
+  const emp=await getEmployeeByEmail(user.email);
+  document.getElementById("adminBtn").style.display = emp?.role==="admin" ? "inline-block" : "none";
+  loadVehicles();
+}
+async function loadVehicles(){
+  const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
+  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${error.message}</div>`;return;}
+  const list=data||[];
+  document.getElementById("vehicleCount").textContent=list.length;
+  document.getElementById("readyCount").textContent=list.filter(v=>v.status==="einsatzbereit").length;
+  document.getElementById("blockedCount").textContent=list.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length;
+  document.getElementById("vehicleList").innerHTML=list.map(v=>`<div class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><div class="tag">Fahrzeug</div><h2 style="margin:0 0 6px">${esc(v.name||"Fahrzeug")}</h2><div class="small-text" style="font-size:15px;margin-bottom:12px">${esc(v.kennzeichen||"-")}</div><div class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</div>${v.is_reserve?'<div class="small-text" style="margin-top:10px">Reservefahrzeug</div>':''}<div style="margin-top:16px;color:#2563eb;font-weight:900">Öffnen →</div></div>`).join("") || '<div class="error">Keine Fahrzeuge gefunden.</div>';
+}
+checkUser();
+</script></body></html>
