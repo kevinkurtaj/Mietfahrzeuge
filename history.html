@@ -1,61 +1,205 @@
 <!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeughistorie</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
-:root{
-  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;
-  --card:rgba(255,255,255,.94);--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;
-}
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
-header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.06)}
-.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
-.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-main{max-width:1220px;margin:auto;padding:30px}
-.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
-.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
-.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
-.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
-.card,.stat,.auth-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.07)}
-.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
-.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
-textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
-.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
-.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
-.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
-.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
-.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
-.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
-.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
-.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
-@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
-</style></head>
-<body><header><a class="btn secondary" id="backLink" href="index.html">← Zurück</a><div class="header-title">Fahrzeughistorie</div></header>
-<main><div class="hero"><h1>Historie</h1><p id="subtitle">Alle Fahrzeugstatus-Änderungen und Schadensereignisse.</p></div><div class="grid" style="grid-template-columns:1fr 220px"><input id="search" placeholder="Suche nach Details, Aktion, Mitarbeiter ..."><select id="filter"><option value="all">Alle Einträge</option><option value="vehicle">Nur Fahrzeugstatus</option><option value="damage">Nur Schäden</option></select></div><div id="historyApp" class="card">Historie wird geladen ...</div></main>
-<div id="modal" class="modal"><div class="modal-box"><div id="modalContent"></div><button class="btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div>
-<script>
-const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Fahrzeughistorie</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
-function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function statusLabel(s){
-  switch(s){
-    case "einsatzbereit": return "einsatzbereit";
-    case "schaeden_vorhanden": return "Schäden vorhanden";
-    case "werkstatt": return "Werkstatt";
-    case "nicht_einsatzbereit": return "nicht einsatzbereit";
-    case "nicht_im_einsatz": return "nicht im Einsatz";
-    case "abruf": return "Abruf / Reserve";
-    default: return s || "unbekannt";
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+a {
+  text-decoration: none;
+  color: #111827;
+  font-weight: bold;
+}
+
+h1 {
+  margin: 0;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 220px 220px;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+input, select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.damage {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.vehicle {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.small {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.employee {
+  display: inline-block;
+  margin-top: 8px;
+  background: #eef2ff;
+  color: #3730a3;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.error {
+  background: #fef2f2;
+  color: #991b1b;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 500px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+}
+
+@media(max-width: 800px) {
+  .filters {
+    grid-template-columns: 1fr;
   }
 }
-function actionLabel(a){
-  switch(a){
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <a id="backLink" href="index.html">← Zurück</a>
+  <h1>Fahrzeughistorie</h1>
+</div>
+
+<div class="filters">
+  <input id="search" placeholder="Suche nach Details, Aktion, Mitarbeiter ...">
+
+  <select id="typeFilter">
+    <option value="all">Alle Einträge</option>
+    <option value="damage">Nur Schäden</option>
+    <option value="vehicle">Nur Fahrzeugstatus</option>
+  </select>
+
+  <select id="employeeFilter">
+    <option value="all">Alle Mitarbeiter</option>
+  </select>
+</div>
+
+<div id="historyApp">Historie wird geladen ...</div>
+
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div id="modalContent"></div>
+    <button onclick="closeModal()">Schließen</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const params = new URLSearchParams(window.location.search);
+const vehicleId = params.get("id");
+
+const historyApp = document.getElementById("historyApp");
+const searchInput = document.getElementById("search");
+const typeFilter = document.getElementById("typeFilter");
+const employeeFilter = document.getElementById("employeeFilter");
+
+let allData = [];
+let employees = [];
+let employeesMap = {};
+let damagesMap = {};
+let vehicleName = "";
+
+if (vehicleId) {
+  document.getElementById("backLink").href = "vehicle.html?id=" + vehicleId;
+}
+
+function formatDate(value) {
+  return value ? new Date(value).toLocaleString("de-DE") : "-";
+}
+
+function actionLabel(action) {
+  switch (action) {
     case "angelegt": return "Schaden angelegt";
     case "bilder_hochgeladen": return "Bilder hochgeladen";
     case "repariert": return "Schaden repariert";
@@ -63,48 +207,233 @@ function actionLabel(a){
     case "bearbeitet": return "Schaden bearbeitet";
     case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
     case "status_geaendert": return "Fahrzeugstatus geändert";
-    default: return a || "-";
+    default: return action || "-";
   }
 }
-async function getSessionUser(){
-  const { data } = await db.auth.getSession();
-  return data.session?.user || null;
-}
-async function getEmployeeByEmail(email){
-  if(!email) return null;
-  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
-  return data || null;
-}
-async function requireLogin(){
-  const user = await getSessionUser();
-  if(!user) window.location.href = "index.html";
-  return user;
-}
-async function logout(){
-  await db.auth.signOut();
-  window.location.href = "index.html";
+
+function employeeName(id) {
+  return employeesMap[id] || "Unbekannt";
 }
 
-const vehicleId=new URLSearchParams(location.search).get("id"); let allData=[], employeesMap={}, vehicleName="";
-if(vehicleId) document.getElementById("backLink").href="vehicle.html?id="+vehicleId;
-async function loadEmployees(){const {data}=await db.from("employees").select("id,name,email"); employeesMap={};(data||[]).forEach(e=>employeesMap[e.id]=e.name||e.email||("Mitarbeiter "+e.id));}
-function emp(id){return employeesMap[id]||"Unbekannt";}
-async function loadHistory(){
- if(!vehicleId){historyApp.innerHTML='<div class="error">Keine Fahrzeug-ID gefunden.</div>';return;}
- await loadEmployees();
- const {data:v}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle(); if(v){vehicleName=(v.name||"Fahrzeug")+(v.kennzeichen?" — "+v.kennzeichen:"");document.getElementById("subtitle").textContent="Historie für "+vehicleName;}
- const {data:vh,error:e1}=await db.from("vehicle_history").select("*").eq("vehicle_id",Number(vehicleId)); if(e1){historyApp.innerHTML='<div class="error">'+e1.message+'</div>';return;}
- const {data:damages,error:e2}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)); if(e2){historyApp.innerHTML='<div class="error">'+e2.message+'</div>';return;}
- const ids=(damages||[]).map(d=>d.id); const dm={};(damages||[]).forEach(d=>dm[d.id]=d); let dh=[];
- if(ids.length){const {data,error}=await db.from("damage_history").select("*").in("damage_id",ids); if(error){historyApp.innerHTML='<div class="error">'+error.message+'</div>';return;} dh=data||[];}
- allData=[...(vh||[]).map(i=>({...i,type:"vehicle",title:"Fahrzeugstatus",employee:emp(i.user_id)})),...dh.map(i=>{const d=dm[i.damage_id]||{};return {...i,type:"damage",title:[d.damage_type||"Schaden",d.area||"",d.severity||""].filter(Boolean).join(" / "),employee:emp(i.user_id)};})];
- allData.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
- if(!allData.length){historyApp.innerHTML=`Keine Historie gefunden.<br>Fahrzeug-ID: ${vehicleId}<br>Schäden gefunden: ${ids.length}`;return;}
- render();
+function getTagClass(item) {
+  if (item.type === "vehicle") return "vehicle";
+  if (item.action === "repariert") return "success";
+  if (item.action === "irrtuemlich") return "warning";
+  return "damage";
 }
-function tag(item){ if(item.type==="vehicle") return "vehicle"; if(item.action==="repariert") return "green"; if(item.action==="irrtuemlich") return "amber"; return "red"; }
-function render(){const s=document.getElementById("search").value.toLowerCase(); const f=document.getElementById("filter").value; const data=allData.filter(i=>(f==="all"||i.type===f)&&JSON.stringify(i).toLowerCase().includes(s)); historyApp.className=""; historyApp.innerHTML=data.map((i,idx)=>`<div class="card" onclick="openModal(${allData.indexOf(i)})"><div class="tag ${tag(i)}">${i.type==="vehicle"?"🚗 Fahrzeug":"⚠️ Schaden"} • ${actionLabel(i.action)}</div><div><strong>${esc(i.title)}</strong></div><div class="time">${fmtDate(i.created_at)} · ${esc(i.employee)}</div><div>${esc(i.details||"-")}</div></div>`).join("")||'<div class="card">Keine passenden Einträge.</div>';}
-function openModal(index){const i=allData[index]; document.getElementById("modalContent").innerHTML=`<h2>Detailansicht</h2><p><b>Typ:</b> ${i.type==="vehicle"?"Fahrzeug":"Schaden"}</p><p><b>Aktion:</b> ${actionLabel(i.action)}</p><p><b>Mitarbeiter:</b> ${esc(i.employee)}</p><p><b>Zeitpunkt:</b> ${fmtDate(i.created_at)}</p><p><b>Fahrzeug:</b> ${esc(vehicleName)}</p>${i.damage_id?`<p><b>Schaden-ID:</b> ${i.damage_id}</p>`:""}<p><b>Details:</b><br>${esc(i.details||"-")}</p>`; document.getElementById("modal").style.display="flex";}
-function closeModal(){document.getElementById("modal").style.display="none";}
-document.getElementById("search").addEventListener("input",render);document.getElementById("filter").addEventListener("change",render);loadHistory();
-</script></body></html>
+
+async function loadEmployees() {
+  const { data, error } = await db
+    .from("employees")
+    .select("id, name, email")
+    .order("name");
+
+  if (error) return;
+
+  employees = data || [];
+  employeesMap = {};
+
+  employees.forEach(emp => {
+    employeesMap[emp.id] = emp.name || emp.email || "Mitarbeiter " + emp.id;
+  });
+
+  employeeFilter.innerHTML =
+    `<option value="all">Alle Mitarbeiter</option>` +
+    employees.map(emp => `
+      <option value="${emp.id}">
+        ${emp.name || emp.email || "Mitarbeiter " + emp.id}
+      </option>
+    `).join("");
+}
+
+async function loadVehicle() {
+  const { data } = await db
+    .from("vehicles")
+    .select("*")
+    .eq("id", Number(vehicleId))
+    .maybeSingle();
+
+  if (data) {
+    vehicleName = (data.name || "Fahrzeug") + (data.kennzeichen ? " — " + data.kennzeichen : "");
+  }
+}
+
+async function loadHistory() {
+  if (!vehicleId) {
+    historyApp.innerHTML = `<div class="error">Keine Fahrzeug-ID gefunden.</div>`;
+    return;
+  }
+
+  await loadEmployees();
+  await loadVehicle();
+
+  const { data: vehicleHistory, error: vehicleError } = await db
+    .from("vehicle_history")
+    .select("*")
+    .eq("vehicle_id", Number(vehicleId));
+
+  if (vehicleError) {
+    historyApp.innerHTML = `<div class="error">${vehicleError.message}</div>`;
+    return;
+  }
+
+  const { data: damages, error: damagesError } = await db
+    .from("damages")
+    .select("*")
+    .eq("vehicle_id", Number(vehicleId));
+
+  if (damagesError) {
+    historyApp.innerHTML = `<div class="error">${damagesError.message}</div>`;
+    return;
+  }
+
+  damagesMap = {};
+  const damageIds = (damages || []).map(d => d.id);
+
+  (damages || []).forEach(d => {
+    damagesMap[d.id] = d;
+  });
+
+  let damageHistory = [];
+
+  if (damageIds.length > 0) {
+    const { data, error } = await db
+      .from("damage_history")
+      .select("*")
+      .in("damage_id", damageIds);
+
+    if (error) {
+      historyApp.innerHTML = `<div class="error">${error.message}</div>`;
+      return;
+    }
+
+    damageHistory = data || [];
+  }
+
+  allData = [
+    ...(vehicleHistory || []).map(item => ({
+      ...item,
+      type: "vehicle",
+      title: "Fahrzeugstatus",
+      employee_id: item.user_id,
+      employee_name: employeeName(item.user_id),
+      reported_employee_id: null,
+      reported_employee_name: null
+    })),
+
+    ...(damageHistory || []).map(item => {
+      const damage = damagesMap[item.damage_id] || {};
+      const reportedEmployeeId = damage.employee_id;
+      const actionEmployeeId = item.user_id || reportedEmployeeId;
+
+      return {
+        ...item,
+        type: "damage",
+        title: [
+          damage.damage_type || "Schaden",
+          damage.area || "",
+          damage.severity || ""
+        ].filter(Boolean).join(" / "),
+        employee_id: actionEmployeeId,
+        employee_name: employeeName(actionEmployeeId),
+        reported_employee_id: reportedEmployeeId,
+        reported_employee_name: employeeName(reportedEmployeeId)
+      };
+    })
+  ];
+
+  allData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  renderHistory();
+}
+
+function renderHistory() {
+  const search = searchInput.value.toLowerCase();
+  const type = typeFilter.value;
+  const emp = employeeFilter.value;
+
+  const filtered = allData.filter(item => {
+    const text = [
+      item.type,
+      item.action,
+      item.details,
+      item.title,
+      item.employee_name,
+      item.reported_employee_name
+    ].join(" ").toLowerCase();
+
+    const matchesSearch = text.includes(search);
+    const matchesType = type === "all" || item.type === type;
+    const matchesEmployee =
+      emp === "all" ||
+      String(item.employee_id) === emp ||
+      String(item.reported_employee_id) === emp;
+
+    return matchesSearch && matchesType && matchesEmployee;
+  });
+
+  if (filtered.length === 0) {
+    historyApp.innerHTML = `<div class="card">Keine passenden Einträge gefunden.</div>`;
+    return;
+  }
+
+  historyApp.innerHTML = filtered.map(item => {
+    const index = allData.indexOf(item);
+
+    return `
+      <div class="card" onclick="openModal(${index})">
+        <div class="tag ${getTagClass(item)}">
+          ${item.type === "vehicle" ? "🚗 Fahrzeug" : "⚠️ Schaden"} • ${actionLabel(item.action)}
+        </div>
+
+        <div><strong>${item.title || "-"}</strong></div>
+
+        <div class="employee">
+          👤 Aktion von: ${item.employee_name || "Unbekannt"}
+        </div>
+
+        ${item.type === "damage" ? `
+          <div class="employee">
+            📝 Schaden gemeldet von: ${item.reported_employee_name || "Unbekannt"}
+          </div>
+        ` : ""}
+
+        <div class="small">${formatDate(item.created_at)}</div>
+        <div>${item.details || "-"}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openModal(index) {
+  const item = allData[index];
+
+  document.getElementById("modalContent").innerHTML = `
+    <h2>Detailansicht</h2>
+    <p><strong>Typ:</strong> ${item.type === "vehicle" ? "Fahrzeug" : "Schaden"}</p>
+    <p><strong>Aktion:</strong> ${actionLabel(item.action)}</p>
+    <p><strong>Aktion von:</strong> ${item.employee_name || "Unbekannt"}</p>
+    ${item.type === "damage" ? `
+      <p><strong>Schaden gemeldet von:</strong> ${item.reported_employee_name || "Unbekannt"}</p>
+    ` : ""}
+    <p><strong>Fahrzeug:</strong> ${vehicleName || "Fahrzeug-ID " + vehicleId}</p>
+    <p><strong>Zeitpunkt:</strong> ${formatDate(item.created_at)}</p>
+    <p><strong>Details:</strong><br>${item.details || "-"}</p>
+  `;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+searchInput.addEventListener("input", renderHistory);
+typeFilter.addEventListener("change", renderHistory);
+employeeFilter.addEventListener("change", renderHistory);
+
+loadHistory();
+</script>
+
+</body>
+</html>
