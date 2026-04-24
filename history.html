@@ -3,29 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System</title>
+<title>Historie</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body { font-family: Arial; margin:0; background:#f4f6f8; }
-
-header {
-  background:white;
-  padding:15px;
-  border-bottom:1px solid #ddd;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-main { padding:20px; max-width:1000px; margin:auto; }
+header { background:white; padding:15px; border-bottom:1px solid #ddd; }
+main { padding:20px; max-width:900px; margin:auto; }
 
 input, select, button {
   padding:10px;
   border-radius:10px;
   border:1px solid #ccc;
-  margin:5px;
+  margin:5px 0;
+  width:100%;
 }
 
 button { cursor:pointer; }
@@ -66,31 +58,28 @@ button { cursor:pointer; }
 <body>
 
 <header>
-<div>🚗 Fahrzeug System</div>
-<button onclick="logout()">Logout</button>
+<h2>Fahrzeug Historie</h2>
 </header>
 
 <main>
 
 <!-- LOGIN -->
 <div id="loginBox">
-<h2>Login</h2>
-<input id="email" placeholder="Email"><br>
-<input id="password" type="password" placeholder="Passwort"><br>
+<h3>Login</h3>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Passwort">
 <button onclick="login()">Login</button>
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none">
 
-<div>
 <input id="searchInput" placeholder="Suche">
 <select id="filter">
 <option value="all">Alle</option>
 <option value="vehicle">Fahrzeug</option>
 <option value="damage">Schaden</option>
 </select>
-</div>
 
 <div id="historyApp"></div>
 
@@ -106,49 +95,36 @@ button { cursor:pointer; }
 </div>
 
 <script>
-const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(
+"https://iufkwovepjljycdulnwa.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
 
 let allData = [];
-let user = null;
 
 // LOGIN
 async function login(){
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value
-  });
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
 
-  if(error) return alert("Login Fehler");
+const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  user = data.user;
-  startApp();
+if(error){
+alert("Login fehlgeschlagen");
+return;
 }
 
-// LOGOUT
-async function logout(){
-  await supabase.auth.signOut();
-  location.reload();
+startApp();
 }
 
-// CHECK SESSION
-async function checkUser(){
-  const { data } = await supabase.auth.getSession();
-  if(data.session){
-    user = data.session.user;
-    startApp();
-  }
-}
-
+// START APP
 function startApp(){
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("app").style.display="block";
-  loadHistory();
+document.getElementById("loginBox").style.display="none";
+document.getElementById("app").style.display="block";
+loadHistory();
 }
 
-// LOAD HISTORY
+// HISTORY
 async function loadHistory(){
 
 const vehicleId = new URLSearchParams(window.location.search).get("id");
@@ -196,7 +172,7 @@ return (!search || (i.details||"").toLowerCase().includes(search)) &&
 
 data.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 
-document.getElementById("historyApp").innerHTML = data.map(item=>{
+document.getElementById("historyApp").innerHTML = data.map((item,index)=>{
 
 let tag="vehicle", label="🚗 Fahrzeug";
 
@@ -207,36 +183,20 @@ if(item.action==="repariert") tag="success";
 }
 
 return `
-<div class="card"
-data-item='${encodeURIComponent(JSON.stringify(item))}'
-onclick="handleClick(this)">
-
-<div class="tag ${tag}">
-${label} • ${item.action}
-</div>
-
-<div>
-${new Date(item.created_at).toLocaleString()}
-</div>
-
-<div>
-${item.details||""}
-</div>
-
+<div class="card" onclick="openModal(${index})">
+<div class="tag ${tag}">${label} • ${item.action}</div>
+<div>${new Date(item.created_at).toLocaleString()}</div>
+<div>${item.details||""}</div>
 </div>
 `;
 
 }).join("");
 }
 
-// CLICK FIX
-function handleClick(el){
-const item = JSON.parse(decodeURIComponent(el.dataset.item));
-openModal(item);
-}
-
 // MODAL
-async function openModal(item){
+async function openModal(index){
+
+const item = allData[index];
 
 let name="Unbekannt";
 
@@ -266,12 +226,8 @@ function closeModal(){
 document.getElementById("modal").style.display="none";
 }
 
-// EVENTS
 document.getElementById("searchInput").addEventListener("input",render);
 document.getElementById("filter").addEventListener("change",render);
-
-// START
-checkUser();
 </script>
 
 </body>
