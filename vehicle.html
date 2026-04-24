@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fahrzeugdetails</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+:root{
+  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;
+  --card:rgba(255,255,255,.94);--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;
+}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+main{max-width:1220px;margin:auto;padding:30px}
+.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
+.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
+.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
+.card,.stat,.auth-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.07)}
+.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
+textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
+.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
+.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
+.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
+@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
+</style></head>
+<body><header><a class="btn secondary" href="index.html">← Übersicht</a><div class="header-title">Fahrzeugdetails</div><div class="header-actions"><a id="historyBtn" class="btn secondary" href="#">Historie</a><button class="btn" onclick="logout()">Logout</button></div></header>
+<main><div class="hero"><h1 id="vehicleTitle">Fahrzeug wird geladen ...</h1><p id="vehicleSub">Details, Status und Schadenerfassung.</p></div>
+<div class="stats"><div class="stat"><div class="label">Status</div><strong id="statusText" style="font-size:22px">-</strong></div><div class="stat"><div class="label">Aktive Schäden</div><strong id="activeDamageCount">-</strong></div><div class="stat"><div class="label">Gesamtschäden</div><strong id="totalDamageCount">-</strong></div></div>
+<section class="card"><h2>Fahrzeugstatus ändern</h2><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional, z. B. in Werkstatt seit ..."></textarea><button class="btn" onclick="updateVehicleStatus()">Status speichern</button><div id="statusMsg" class="success-box"></div></section>
+<div class="grid"><section class="card"><h2>Schaden hinzufügen</h2><input id="damageType" placeholder="Schadensart, z. B. Kratzer"><input id="damageArea" placeholder="Bereich, z. B. vorne links"><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><textarea id="damageDesc" placeholder="Beschreibung"></textarea><textarea id="imageUrls" placeholder="Bild-URLs optional, eine pro Zeile"></textarea><button class="btn" onclick="addDamage()">Schaden speichern</button><div id="damageMsg" class="success-box"></div></section><section class="card"><h2>Aktive Schäden</h2><div id="damageList" class="table">Lade Schäden ...</div></section></div></main>
+<div id="modal" class="modal"><div class="modal-box"><div id="modalContent"></div><button class="btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div>
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function statusLabel(s){
+  switch(s){
+    case "einsatzbereit": return "einsatzbereit";
+    case "schaeden_vorhanden": return "Schäden vorhanden";
+    case "werkstatt": return "Werkstatt";
+    case "nicht_einsatzbereit": return "nicht einsatzbereit";
+    case "nicht_im_einsatz": return "nicht im Einsatz";
+    case "abruf": return "Abruf / Reserve";
+    default: return s || "unbekannt";
+  }
+}
+function actionLabel(a){
+  switch(a){
+    case "angelegt": return "Schaden angelegt";
+    case "bilder_hochgeladen": return "Bilder hochgeladen";
+    case "repariert": return "Schaden repariert";
+    case "irrtuemlich": return "Schaden irrtümlich";
+    case "bearbeitet": return "Schaden bearbeitet";
+    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
+    case "status_geaendert": return "Fahrzeugstatus geändert";
+    default: return a || "-";
+  }
+}
+async function getSessionUser(){
+  const { data } = await db.auth.getSession();
+  return data.session?.user || null;
+}
+async function getEmployeeByEmail(email){
+  if(!email) return null;
+  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
+  return data || null;
+}
+async function requireLogin(){
+  const user = await getSessionUser();
+  if(!user) window.location.href = "index.html";
+  return user;
+}
+async function logout(){
+  await db.auth.signOut();
+  window.location.href = "index.html";
+}
+
+const vehicleId=new URLSearchParams(location.search).get("id"); let vehicle=null; let currentEmployee=null; let damages=[];
+document.getElementById("historyBtn").href="history.html?id="+vehicleId;
+async function init(){ const user=await requireLogin(); currentEmployee=await getEmployeeByEmail(user.email); await loadVehicle(); await loadDamages(); }
+function show(el,text,ok=true){el.className=ok?"success-box":"error";el.style.display="block";el.textContent=text;}
+async function loadVehicle(){
+ const {data,error}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle();
+ if(error||!data){document.getElementById("vehicleTitle").textContent="Fahrzeug nicht gefunden";return;}
+ vehicle=data; document.getElementById("vehicleTitle").textContent=(data.name||"Fahrzeug")+" "+(data.kennzeichen?"— "+data.kennzeichen:"");
+ document.getElementById("vehicleSub").textContent="Fahrzeug-ID "+data.id; document.getElementById("statusText").textContent=statusLabel(data.status);
+ document.getElementById("vehicleStatus").value=data.status||"einsatzbereit";
+}
+async function loadDamages(){
+ const {data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false});
+ if(error){document.getElementById("damageList").innerHTML=`<div class="error">${error.message}</div>`;return;}
+ damages=data||[];
+ const active=damages.filter(d=>!["repariert","irrtuemlich"].includes(d.status));
+ document.getElementById("activeDamageCount").textContent=active.length; document.getElementById("totalDamageCount").textContent=damages.length;
+ document.getElementById("damageList").innerHTML=active.map(d=>`<div class="row"><div class="tag red">${esc(d.status||"offen")}</div><div><strong>${esc(d.damage_type||"Schaden")}</strong></div><div>${esc(d.area||"-")} · ${esc(d.severity||"-")}</div><div class="small-text">${fmtDate(d.created_at)}</div><div class="row-actions"><button class="btn small" onclick="openDamage(${d.id})">Details</button><button class="btn small success" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="btn small warning" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></div>`).join("")||"Keine aktiven Schäden.";
+}
+async function updateVehicleStatus(){
+ const status=document.getElementById("vehicleStatus").value; const note=document.getElementById("statusNote").value.trim(); const el=document.getElementById("statusMsg");
+ const {error}=await db.from("vehicles").update({status}).eq("id",Number(vehicleId)); if(error){show(el,error.message,false);return;}
+ await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugstatus_geaendert",details:note||status,user_id:currentEmployee?.id||null}]);
+ show(el,"Status gespeichert."); await loadVehicle();
+}
+async function addDamage(){
+ const el=document.getElementById("damageMsg"); const damage_type=document.getElementById("damageType").value.trim(); const area=document.getElementById("damageArea").value.trim(); const severity=document.getElementById("damageSeverity").value; const description=document.getElementById("damageDesc").value.trim();
+ if(!damage_type||!area){show(el,"Bitte Schadensart und Bereich eingeben.",false);return;}
+ const {data,error}=await db.from("damages").insert([{vehicle_id:Number(vehicleId),damage_type,area,severity,description,status:"offen",user_id:currentEmployee?.id||null}]).select().single();
+ if(error){show(el,error.message,false);return;}
+ await db.from("damage_history").insert([{damage_id:data.id,action:"angelegt",details:"Schaden angelegt: "+damage_type+" / "+area,user_id:currentEmployee?.id||null}]);
+ const urls=document.getElementById("imageUrls").value.split("\n").map(x=>x.trim()).filter(Boolean);
+ if(urls.length){ await db.from("damage_images").insert(urls.map(u=>({damage_id:data.id,image_url:u,uploaded_by:currentEmployee?.id||null}))); await db.from("damage_history").insert([{damage_id:data.id,action:"bilder_hochgeladen",details:urls.length+" Bild(er) hinterlegt",user_id:currentEmployee?.id||null}]); }
+ ["damageType","damageArea","damageDesc","imageUrls"].forEach(id=>document.getElementById(id).value=""); show(el,"Schaden gespeichert."); await loadDamages();
+}
+async function markDamage(id,status){
+ const note=prompt(status==="repariert"?"Notiz zur Reparatur:":"Warum irrtümlich?")||status;
+ const {error}=await db.from("damages").update({status}).eq("id",id); if(error){alert(error.message);return;}
+ await db.from("damage_history").insert([{damage_id:id,action:status,details:note,user_id:currentEmployee?.id||null}]); await loadDamages();
+}
+async function openDamage(id){
+ const d=damages.find(x=>x.id===id); const {data:imgs}=await db.from("damage_images").select("*").eq("damage_id",id);
+ document.getElementById("modalContent").innerHTML=`<h2>${esc(d.damage_type||"Schaden")}</h2><p><b>Bereich:</b> ${esc(d.area||"-")}</p><p><b>Schwere:</b> ${esc(d.severity||"-")}</p><p><b>Status:</b> ${esc(d.status||"-")}</p><p><b>Beschreibung:</b><br>${esc(d.description||"-")}</p>${(imgs||[]).map(i=>`<a href="${esc(i.image_url)}" target="_blank">Bild öffnen</a><br>`).join("")}`;
+ document.getElementById("modal").style.display="flex";
+}
+function closeModal(){document.getElementById("modal").style.display="none";}
+init();
+</script></body></html>
