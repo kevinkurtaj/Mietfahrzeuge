@@ -1,151 +1,105 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeug</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-body{font-family:Arial;background:#f4f6f8;margin:0}
-header{background:white;padding:20px;border-bottom:1px solid #ddd}
-main{padding:20px}
-button{padding:10px 14px;border:none;border-radius:10px;cursor:pointer}
-.action{background:#111;color:white}
-.secondary{background:#ddd}
-.panel{background:white;padding:20px;border-radius:15px;margin-bottom:20px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fahrzeugdetails</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; background: #f4f6f8; color: #1f2937; }
+    header { background: white; border-bottom: 1px solid #e5e7eb; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .back-btn { text-decoration: none; color: #111827; font-weight: 700; background: #f3f4f6; padding: 10px 14px; border-radius: 12px; display: inline-block; }
+    .header-title h1 { margin: 0; font-size: 26px; }
+    .header-title p { margin: 6px 0 0; color: #6b7280; font-size: 14px; }
+    main { max-width: 1550px; margin: 0 auto; padding: 24px 28px; }
+    .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .action-btn { border: none; background: #111827; color: white; padding: 12px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; }
+    .action-btn:hover { background: #1f2937; }
+    .action-btn.secondary { background: #e5e7eb; color: #111827; }
+    .action-btn.secondary:hover { background: #d1d5db; }
+    .action-btn.danger { background: #991b1b; color: white; }
+    .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 420px; gap: 20px; align-items: start; }
+    .panel { background: white; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,.04); }
+    .panel h2 { margin-top: 0; font-size: 18px; margin-bottom: 16px; }
+    .vehicle-meta { display: grid; gap: 10px; font-size: 14px; }
+    .status-pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-top: 8px; background: #f3f4f6; }
+    .model-box { min-height: 680px; display: flex; flex-direction: column; gap: 16px; }
+    .three-wrap { position: relative; width: 100%; height: 520px; border: 2px solid #e5e7eb; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, #eef4fb 0%, #dfe8f1 100%); }
+    #threeCanvas { width: 100%; height: 100%; display: block; }
+    .three-hint { position: absolute; bottom: 14px; left: 14px; background: rgba(255,255,255,.92); border: 1px solid #e5e7eb; padding: 8px 10px; border-radius: 12px; font-size: 12px; color: #374151; z-index: 2; }
+    .view-tab { background: #f3f4f6; border: none; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .damage-list { display: grid; gap: 12px; margin-top: 16px; }
+    .damage-card { border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; cursor: pointer; transition: .15s ease; }
+    .damage-card:hover { background: #f9fafb; }
+    .damage-title { font-weight: 700; margin-bottom: 6px; }
+    .damage-meta { font-size: 13px; color: #4b5563; display: grid; gap: 4px; }
+    .severity-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .detail-empty { color: #6b7280; font-size: 14px; line-height: 1.5; }
+    .detail-block { display: grid; gap: 10px; font-size: 14px; }
+    .detail-images { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .detail-images img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid #e5e7eb; background: #f3f4f6; }
+    .note-box { margin-top: 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; font-size: 14px; color: #374151; }
+    .loading, .error, .success { padding: 16px; border-radius: 14px; font-size: 14px; }
+    .loading { background: #eff6ff; color: #1d4ed8; }
+    .error { background: #fef2f2; color: #991b1b; }
+    .field-label { font-weight: 700; margin-top: 6px; }
+    .field-input, .field-select, .field-textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 10px; background: white; font-size: 14px; }
+    .field-textarea { resize: vertical; min-height: 100px; }
+    .history-box { margin-top: 18px; border-top: 1px solid #e5e7eb; padding-top: 14px; }
+    .history-title { font-weight: 700; margin-bottom: 10px; }
+    .history-list { display: grid; gap: 10px; }
+    .history-item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; font-size: 13px; line-height: 1.5; }
+    .status-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    @media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } .three-wrap { height: 430px; } }
+  </style>
 </head>
-
 <body>
-
-<header>
-<h2 id="vehicleTitle">Lädt...</h2>
-</header>
-
-<main>
-
-<div class="panel">
-<button class="action" onclick="openVehicleStatusForm()">Fahrzeugstatus ändern</button>
-</div>
-
-<div class="panel" id="vehicleInfo"></div>
-
-<div class="panel" id="damageDetails">Auswahl...</div>
-
-</main>
-
-<script>
-
-// 🔥 DEINE DATEN
-const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co/";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const params = new URLSearchParams(window.location.search);
-const vehicleId = params.get("id");
-
-let employees = {};
-const info = document.getElementById("vehicleInfo");
-const title = document.getElementById("vehicleTitle");
-const details = document.getElementById("damageDetails");
-
-// ------------------ LOAD ------------------
-
-async function loadEmployees(){
-const {data} = await supabase.from("employees").select("*");
-employees = Object.fromEntries(data.map(e=>[e.id,e.name]));
-}
-
-async function loadVehicle(){
-const {data} = await supabase.from("vehicles").select("*").eq("id",vehicleId).single();
-
-title.textContent = data.name + " - " + data.kennzeichen;
-
-info.innerHTML = `
-<b>Status:</b> ${data.status}<br>
-<b>Reserve:</b> ${data.is_reserve ? "Ja":"Nein"}
-`;
-}
-
-// ------------------ STATUS FORM ------------------
-
-function openVehicleStatusForm(){
-details.innerHTML = `
-<h3>Status ändern</h3>
-
-<select id="status">
-<option value="einsatzbereit">einsatzbereit</option>
-<option value="nicht_einsatzbereit">nicht einsatzbereit</option>
-<option value="werkstatt">Werkstatt</option>
-<option value="nicht_im_einsatz">nicht im Einsatz</option>
-<option value="abruf">Abruf / Reserve</option>
-</select>
-
-<br><br>
-
-<select id="user">
-${Object.entries(employees).map(([id,n])=>`<option value="${id}">${n}</option>`).join("")}
-</select>
-
-<br><br>
-
-<textarea id="note" placeholder="Notiz"></textarea>
-
-<br><br>
-
-<button class="action" onclick="saveStatus()">Speichern</button>
-<button class="secondary" onclick="details.innerHTML='Auswahl...'">Abbrechen</button>
-
-<div id="msg"></div>
-`;
-}
-
-// ------------------ SAVE ------------------
-
-async function saveStatus(){
-const status = document.getElementById("status").value;
-const user = document.getElementById("user").value;
-const note = document.getElementById("note").value;
-const msg = document.getElementById("msg");
-
-msg.innerHTML="speichert...";
-
-const {error} = await supabase
-.from("vehicles")
-.update({status})
-.eq("id",vehicleId);
-
-if(error){
-msg.innerHTML="Fehler!";
-return;
-}
-
-// HISTORY
-await supabase.from("vehicle_history").insert([{
-vehicle_id: vehicleId,
-action: "status_geaendert",
-user_id: user,
-details: status + " | " + note
-}]);
-
-msg.innerHTML="Gespeichert";
-
-loadVehicle();
-}
-
-// ------------------ INIT ------------------
-
-async function init(){
-await loadEmployees();
-await loadVehicle();
-}
-
-init();
-
-</script>
-
+  <header><a class="back-btn" href="index.html">← Zurück</a><div class="header-title"><h1 id="vehicleTitle">Fahrzeug wird geladen ...</h1><p id="vehicleSubtitle">Details, Schäden und Historie</p></div></header>
+  <main>
+    <div class="top-actions"><button class="action-btn" id="addDamageBtn">Schaden hinzufügen</button><a class="action-btn secondary" href="" id="historyBtn">Historie</a>
+      <button class="action-btn secondary" onclick="openVehicleStatusForm()">Fahrzeugstatus ändern</button><button class="action-btn secondary">Fahrzeug bearbeiten</button></div>
+    <div class="layout">
+      <section class="panel"><h2>Fahrzeugdaten</h2><div id="vehicleInfo" class="loading">Fahrzeugdaten werden geladen ...</div></section>
+      <section class="panel model-box"><h2>3D-Fahrzeugansicht</h2><div><button class="view-tab">3D aktiv</button></div><div class="three-wrap"><canvas id="threeCanvas"></canvas><div class="three-hint">Rote Punkte anklicken, um Schäden zu öffnen</div></div><div><h2>Aktive Schäden</h2><div id="damageList" class="loading">Schäden werden geladen ...</div></div></section>
+      <aside class="panel"><h2>Schadendetails</h2><div id="damageDetails" class="detail-empty">Klicke links auf einen Schaden oder auf einen roten 3D-Punkt.</div></aside>
+    </div>
+  </main>
+  <script>
+    const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const params = new URLSearchParams(window.location.search); const vehicleId = params.get("id");
+    const vehicleTitle = document.getElementById("vehicleTitle"), vehicleSubtitle = document.getElementById("vehicleSubtitle"), vehicleInfo = document.getElementById("vehicleInfo"), damageList = document.getElementById("damageList"), damageDetails = document.getElementById("damageDetails"), addDamageBtn = document.getElementById("addDamageBtn"), historyBtn = document.getElementById("historyBtn"), canvas = document.getElementById("threeCanvas");
+    let damages = [], employeesMap = {}, scene, camera, renderer, raycaster, mouse, hotspotMeshes = [], vehicleGroup = null;
+    function formatVehicleStatus(status){return {einsatzbereit:"einsatzbereit",schaeden_vorhanden:"Schäden vorhanden",werkstatt:"Werkstatt / Prüfung",nicht_im_einsatz:"nicht im Einsatz"}[status] || status || "-";}
+    function formatDamageStatus(status){return {offen:"offen",in_pruefung:"in Prüfung",repariert:"repariert",irrtuemlich:"irrtümlich angelegt"}[status] || status || "-";}
+    function formatAction(action){return {angelegt:"Schaden angelegt",repariert:"Als repariert markiert",irrtuemlich:"Als irrtümlich markiert",bilder_hochgeladen:"Bilder hochgeladen",bearbeitet:"Schaden bearbeitet"}[action] || action || "-";}
+    function getSeverityColor(severity){return {leicht:"#eab308",mittel:"#f97316",stark:"#dc2626"}[severity] || "#6b7280";}
+    function getSeverityThreeColor(severity){return {leicht:0xeab308,mittel:0xf97316,stark:0xdc2626}[severity] || 0xef4444;}
+    function formatDateTime(value){if(!value)return "-";return new Date(value).toLocaleString("de-DE");}
+    function getFallback3DPosition(area){switch((area||"").toLowerCase()){case"vorne":return{x:0,y:.7,z:2};case"hinten":return{x:0,y:.7,z:-2};case"links":return{x:-1.5,y:.8,z:0};case"rechts":return{x:1.5,y:.8,z:0};case"dach":return{x:0,y:1.9,z:0};case"innenraum":return{x:0,y:1,z:.5};case"laderaum":return{x:0,y:.9,z:-1.1};case"cockpit":return{x:0,y:1,z:1.2};case"motorraum":return{x:0,y:.6,z:1.9};case"beleuchtung":return{x:1.2,y:1,z:2};case"reifen / felgen":return{x:1.4,y:-.15,z:1.3};default:return{x:1.5,y:.8,z:0};}}
+    async function refreshVehicleStatus(){const{data,error}=await supabaseClient.from("damages").select("id").eq("vehicle_id",Number(vehicleId)).in("status",["offen","in_pruefung"]); if(error)return console.error(error); await supabaseClient.from("vehicles").update({status:data&&data.length>0?"schaeden_vorhanden":"einsatzbereit"}).eq("id",Number(vehicleId));}
+    function resetDamagePanel(){damageDetails.innerHTML='<div class="detail-empty">Klicke links auf einen Schaden oder auf einen roten 3D-Punkt.</div>';}
+    function renderAddDamageForm(){damageDetails.innerHTML=`<div class="detail-block"><div><strong>Neuen Schaden anlegen</strong></div><label class="field-label">Mitarbeiter</label><select id="damageEmployee" class="field-select">${Object.entries(employeesMap).map(([id,name])=>`<option value="${id}">${name}</option>`).join("")}</select><label class="field-label">Schadensart</label><select id="damageType" class="field-select"><option>Kratzer</option><option>Delle</option><option>Lackschaden</option><option>Riss</option><option>Bruch</option><option>Scheibenschaden</option><option>Scheinwerfer beschädigt</option><option>Rückleuchte beschädigt</option><option>Stoßstangenschaden</option><option>Spiegel beschädigt</option><option>Reifen / Felge beschädigt</option><option>Innenraumschaden</option><option>Laderaumschaden</option><option>Armaturenbrett beschädigt</option><option>Kontrollleuchte / Warnmeldung</option><option>Motorschaden / Motorauffälligkeit</option><option>Elektrikproblem</option><option>Sonstiges</option></select><label class="field-label">Bereich</label><select id="damageArea" class="field-select"><option>vorne</option><option>hinten</option><option>links</option><option>rechts</option><option>Dach</option><option>Unterseite</option><option>Innenraum</option><option>Laderaum</option><option>Cockpit</option><option>Motorraum</option><option>Beleuchtung</option><option>Reifen / Felgen</option></select><label class="field-label">Schweregrad</label><select id="damageSeverity" class="field-select"><option>leicht</option><option selected>mittel</option><option>stark</option></select><label class="field-label">Beschreibung</label><textarea id="damageDescription" class="field-textarea" placeholder="Schaden genau beschreiben"></textarea><label class="field-label">Bilder (mindestens 2)</label><input type="file" id="damageImages" class="field-input" accept="image/*" multiple /><div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"><button class="action-btn" onclick="saveDamage()">Speichern</button><button class="action-btn secondary" onclick="resetDamagePanel()">Abbrechen</button></div><div id="damageFormMessage" class="detail-empty" style="margin-top:10px;"></div></div>`;}
+    function renderStatusChangeForm(damageId,newStatus){const label=newStatus==="repariert"?"repariert":"irrtümlich"; const reasonOptions=newStatus==="irrtuemlich"?`<option value="doppelt erfasst">doppelt erfasst</option><option value="falsches Fahrzeug">falsches Fahrzeug</option><option value="kein echter Schaden">kein echter Schaden</option>`:`<option value="repariert">repariert</option><option value="Teil ersetzt">Teil ersetzt</option><option value="durch Werkstatt geprüft">durch Werkstatt geprüft</option>`; damageDetails.innerHTML=`<div class="detail-block"><div><strong>Schaden als ${label} markieren</strong></div><label class="field-label">Mitarbeiter</label><select id="statusEmployee" class="field-select">${Object.entries(employeesMap).map(([id,name])=>`<option value="${id}">${name}</option>`).join("")}</select><label class="field-label">Grund</label><select id="statusReason" class="field-select">${reasonOptions}</select><label class="field-label">Notiz / Beschreibung</label><textarea id="statusNote" class="field-textarea" placeholder="Zusätzliche Info eintragen"></textarea><div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"><button class="action-btn" onclick="saveDamageStatus(${damageId}, '${newStatus}')">Speichern</button><button class="action-btn secondary" onclick="showDamage(${damageId})">Abbrechen</button></div><div id="statusFormMessage" class="detail-empty" style="margin-top:10px;"></div></div>`;}
+    async function loadEmployees(){const{data,error}=await supabaseClient.from("employees").select("id, name").order("id",{ascending:true}); if(error)return console.error(error); employeesMap=Object.fromEntries((data||[]).map(emp=>[emp.id,emp.name]));}
+    async function loadVehicle(){const{data,error}=await supabaseClient.from("vehicles").select("*").eq("id",vehicleId).single(); if(error||!data){vehicleInfo.innerHTML='<div class="error">Fahrzeug konnte nicht geladen werden.</div>';vehicleTitle.textContent="Fahrzeug nicht gefunden";return;} vehicleTitle.textContent=`${data.name} — ${data.kennzeichen}`; vehicleSubtitle.textContent="Details, Schäden und Historie"; vehicleInfo.innerHTML=`<div class="vehicle-meta"><div><strong>Name:</strong> ${data.name}</div><div><strong>Kennzeichen:</strong> ${data.kennzeichen}</div><div><strong>Status:</strong> ${formatVehicleStatus(data.status)}</div><div><strong>Reservefahrzeug:</strong> ${data.is_reserve?"Ja":"Nein"}</div>${data.is_reserve?`<div><strong>Einsatzstatus:</strong> ${data.in_use?"im Einsatz":"nicht im Einsatz"}</div>`:""}<div><strong>Letzte Änderung:</strong> ${formatDateTime(data.updated_at)}</div></div><div class="status-pill">${formatVehicleStatus(data.status)}</div><div class="note-box"><strong>Fahrzeugnotiz:</strong><br>${data.note?data.note:"Keine Notiz vorhanden"}</div>`;}
+    async function loadDamages(){const{data,error}=await supabaseClient.from("damages").select("*").eq("vehicle_id",vehicleId).in("status",["offen","in_pruefung"]).order("created_at",{ascending:false}); if(error){damageList.innerHTML=`<div class="error">Schäden konnten nicht geladen werden: ${error.message}</div>`;return;} damages=data||[]; if(!damages.length){damageList.innerHTML='<div class="detail-empty">Für dieses Fahrzeug sind aktuell keine aktiven Schäden vorhanden.</div>';}else{damageList.innerHTML=`<div class="damage-list">${damages.map(damage=>`<div class="damage-card" onclick="showDamage(${damage.id})"><div class="damage-title"><span class="severity-dot" style="background:${getSeverityColor(damage.severity)}"></span>${damage.damage_type}</div><div class="damage-meta"><div><strong>Bereich:</strong> ${damage.area}</div><div><strong>Status:</strong> ${formatDamageStatus(damage.status)}</div><div><strong>Schweregrad:</strong> ${damage.severity}</div><div><strong>Angelegt:</strong> ${formatDateTime(damage.created_at)}</div></div></div>`).join("")}</div>`;} rebuildHotspots();}
+    async function loadDamageHistory(damageId){const{data,error}=await supabaseClient.from("damage_history").select("*").eq("damage_id",damageId).order("created_at",{ascending:false}); if(error)return[]; return data||[];}
+    async function showDamage(damageId){const damage=damages.find(d=>d.id===damageId)||await(async()=>{const{data}=await supabaseClient.from("damages").select("*").eq("id",damageId).single();return data;})(); if(!damage)return; const{data:imagesData}=await supabaseClient.from("damage_images").select("*").eq("damage_id",damageId).order("uploaded_at",{ascending:true}); const history=await loadDamageHistory(damageId); const images=imagesData||[]; damageDetails.innerHTML=`<div class="detail-block"><div><strong>Schadensart:</strong> ${damage.damage_type}</div><div><strong>Bereich:</strong> ${damage.area}</div><div><strong>Schweregrad:</strong> ${damage.severity}</div><div><strong>Status:</strong> ${formatDamageStatus(damage.status)}</div><div><strong>Beschreibung:</strong><br>${damage.description}</div><div><strong>Angelegt am:</strong> ${formatDateTime(damage.created_at)}</div><div><strong>Angelegt von:</strong> ${employeesMap[damage.created_by]||damage.created_by}</div><div><strong>Letzte Änderung:</strong> ${formatDateTime(damage.updated_at)}</div><div><strong>Zuletzt bearbeitet von:</strong> ${damage.updated_by?(employeesMap[damage.updated_by]||damage.updated_by):"-"}</div></div><div style="margin-top:16px;"><strong>Bilder:</strong></div>${images.length?`<div class="detail-images">${images.map(img=>`<img src="${img.image_url}" alt="Schadensbild">`).join("")}</div>`:`<div class="detail-empty" style="margin-top:8px;">Noch keine Bilder vorhanden.</div>`}<div class="status-actions"><button class="action-btn" onclick="renderStatusChangeForm(${damage.id}, 'repariert')">Als repariert markieren</button><button class="action-btn danger" onclick="renderStatusChangeForm(${damage.id}, 'irrtuemlich')">Als irrtümlich markieren</button></div><div class="history-box"><div class="history-title">Chronik</div>${history.length?`<div class="history-list">${history.map(item=>`<div class="history-item"><strong>${formatAction(item.action)}</strong><br>${formatDateTime(item.created_at)}<br>${employeesMap[item.user_id]||item.user_id}<br>${item.details?item.details:""}</div>`).join("")}</div>`:`<div class="detail-empty">Noch keine Chronik vorhanden.</div>`}</div>`;}
+    async function saveDamage(){const employeeId=document.getElementById("damageEmployee")?.value, damageType=document.getElementById("damageType")?.value, area=document.getElementById("damageArea")?.value, severity=document.getElementById("damageSeverity")?.value, description=document.getElementById("damageDescription")?.value.trim(), imageInput=document.getElementById("damageImages"), files=imageInput?.files, messageBox=document.getElementById("damageFormMessage"); if(!description){messageBox.innerHTML='<span style="color:#991b1b;">Bitte eine Beschreibung eingeben.</span>';return;} if(!files||files.length<2){messageBox.innerHTML='<span style="color:#991b1b;">Bitte mindestens 2 Bilder hochladen.</span>';return;} messageBox.textContent="Schaden wird gespeichert ..."; const fallbackPos=getFallback3DPosition(area); const{data,error}=await supabaseClient.from("damages").insert([{vehicle_id:Number(vehicleId),area,damage_type:damageType,severity,description,status:"offen",created_by:Number(employeeId),updated_by:Number(employeeId),model_position_x:fallbackPos.x,model_position_y:fallbackPos.y,model_position_z:fallbackPos.z}]).select().single(); if(error){messageBox.innerHTML=`<span style="color:#991b1b;">Fehler: ${error.message}</span>`;return;} for(let i=0;i<files.length;i++){const file=files[i], safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"), filePath=`damage_${data.id}/${Date.now()}_${i}_${safeName}`; const{error:uploadError}=await supabaseClient.storage.from("damage-photos").upload(filePath,file,{upsert:false}); if(uploadError){console.error(uploadError);continue;} const{data:publicUrlData}=supabaseClient.storage.from("damage-photos").getPublicUrl(filePath); const imageUrl=publicUrlData?.publicUrl; if(!imageUrl)continue; await supabaseClient.from("damage_images").insert([{damage_id:data.id,image_url:imageUrl,uploaded_by:Number(employeeId)}]);} await supabaseClient.from("damage_history").insert([{damage_id:data.id,action:"angelegt",user_id:Number(employeeId),details:`Schaden angelegt: ${damageType} / ${area}`},{damage_id:data.id,action:"bilder_hochgeladen",user_id:Number(employeeId),details:`${files.length} Bild(er) hochgeladen`}]); await refreshVehicleStatus(); messageBox.innerHTML='<span style="color:#166534;">Schaden erfolgreich gespeichert.</span>'; await loadVehicle(); await loadDamages(); await showDamage(data.id);}
+    async function saveDamageStatus(damageId,newStatus){const employeeId=document.getElementById("statusEmployee")?.value, reason=document.getElementById("statusReason")?.value, note=document.getElementById("statusNote")?.value.trim(), messageBox=document.getElementById("statusFormMessage"); if(!employeeId){messageBox.innerHTML='<span style="color:#991b1b;">Bitte Mitarbeiter auswählen.</span>';return;} messageBox.textContent="Status wird gespeichert ..."; const updateData={status:newStatus,updated_by:Number(employeeId)}; if(newStatus==="repariert"){updateData.repaired_at=new Date().toISOString();updateData.repaired_by=Number(employeeId);updateData.repair_note=`${reason}${note?" | "+note:""}`;} if(newStatus==="irrtuemlich"){updateData.false_reason=reason;updateData.false_note=note||null;} const{error}=await supabaseClient.from("damages").update(updateData).eq("id",damageId); if(error){messageBox.innerHTML=`<span style="color:#991b1b;">Fehler: ${error.message}</span>`;return;} await supabaseClient.from("damage_history").insert([{damage_id:damageId,action:newStatus,user_id:Number(employeeId),details:`${reason}${note?" | "+note:""}`}]); await refreshVehicleStatus(); await loadVehicle(); await loadDamages(); resetDamagePanel();}
+    function initThreeScene(){scene=new THREE.Scene(); const width=canvas.clientWidth||800, height=canvas.clientHeight||520; camera=new THREE.PerspectiveCamera(45,width/height,.1,1000); camera.position.set(7,4,8); camera.lookAt(0,1,0); renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true}); renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(width,height,false); raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2(); scene.add(new THREE.AmbientLight(0xffffff,1.3)); const dirLight=new THREE.DirectionalLight(0xffffff,1.1); dirLight.position.set(8,10,6); scene.add(dirLight); const floor=new THREE.Mesh(new THREE.CircleGeometry(14,48),new THREE.MeshStandardMaterial({color:0xd8e0e8})); floor.rotation.x=-Math.PI/2; floor.position.y=-.55; scene.add(floor); vehicleGroup=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(3.2,2.2,5),new THREE.MeshStandardMaterial({color:0xffffff,metalness:.15,roughness:.6})); body.position.y=.8; vehicleGroup.add(body); const cabin=new THREE.Mesh(new THREE.BoxGeometry(3.2,1.5,1.7),new THREE.MeshStandardMaterial({color:0xf8fafc,metalness:.15,roughness:.6})); cabin.position.set(0,1.25,1.95); vehicleGroup.add(cabin); const windshield=new THREE.Mesh(new THREE.BoxGeometry(2.8,.9,.06),new THREE.MeshStandardMaterial({color:0xa5d8ff,transparent:true,opacity:.65})); windshield.position.set(0,1.3,2.82); vehicleGroup.add(windshield); const wheelGeometry=new THREE.CylinderGeometry(.52,.52,.38,24), wheelMaterial=new THREE.MeshStandardMaterial({color:0x1f2937}); [[-1.55,-.05,1.6],[1.55,-.05,1.6],[-1.55,-.05,-1.6],[1.55,-.05,-1.6]].forEach(pos=>{const wheel=new THREE.Mesh(wheelGeometry,wheelMaterial); wheel.rotation.z=Math.PI/2; wheel.position.set(pos[0],pos[1],pos[2]); vehicleGroup.add(wheel);}); scene.add(vehicleGroup); canvas.addEventListener("click",onThreeClick); window.addEventListener("resize",onWindowResize); animate();}
+    function clearHotspots(){hotspotMeshes.forEach(mesh=>{scene.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();}); hotspotMeshes=[];}
+    function rebuildHotspots(){if(!scene)return; clearHotspots(); damages.forEach(damage=>{const fallback=getFallback3DPosition(damage.area); const pos={x:damage.model_position_x!=null?Number(damage.model_position_x):fallback.x,y:damage.model_position_y!=null?Number(damage.model_position_y):fallback.y,z:damage.model_position_z!=null?Number(damage.model_position_z):fallback.z}; const hotspot=new THREE.Mesh(new THREE.SphereGeometry(.14,20,20),new THREE.MeshStandardMaterial({color:getSeverityThreeColor(damage.severity),emissive:getSeverityThreeColor(damage.severity),emissiveIntensity:.35})); hotspot.position.set(pos.x,pos.y,pos.z); hotspot.userData.damageId=damage.id; scene.add(hotspot); hotspotMeshes.push(hotspot);});}
+    function onThreeClick(event){const rect=canvas.getBoundingClientRect(); mouse.x=((event.clientX-rect.left)/rect.width)*2-1; mouse.y=-((event.clientY-rect.top)/rect.height)*2+1; raycaster.setFromCamera(mouse,camera); const intersects=raycaster.intersectObjects(hotspotMeshes); if(intersects.length>0){const damageId=intersects[0].object.userData.damageId; if(damageId)showDamage(damageId);}}
+    function onWindowResize(){if(!renderer||!camera)return; const width=canvas.clientWidth||800, height=canvas.clientHeight||520; camera.aspect=width/height; camera.updateProjectionMatrix(); renderer.setSize(width,height,false);}
+    function animate(){requestAnimationFrame(animate); if(vehicleGroup)vehicleGroup.rotation.y+=.005; if(renderer&&scene&&camera)renderer.render(scene,camera);}
+    async function init(){if(!vehicleId){vehicleTitle.textContent="Keine Fahrzeug-ID";vehicleInfo.innerHTML='<div class="error">Es wurde keine Fahrzeug-ID übergeben.</div>';damageList.innerHTML="";return;} historyBtn.href=`history.html?id=${vehicleId}`; addDamageBtn.addEventListener("click",renderAddDamageForm); initThreeScene(); await loadEmployees(); await loadVehicle(); await loadDamages();}
+    window.showDamage=showDamage; window.saveDamage=saveDamage; window.saveDamageStatus=saveDamageStatus; window.renderStatusChangeForm=renderStatusChangeForm; window.resetDamagePanel=resetDamagePanel;
+    init();
+  </script>
 </body>
 </html>
