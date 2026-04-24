@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fahrzeughistorie</title>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -18,21 +17,60 @@
     header {
       background: white;
       padding: 20px;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     main {
-      padding: 20px;
-      max-width: 1000px;
+      padding: 24px;
+      max-width: 900px;
       margin: auto;
     }
 
     .card {
       background: white;
-      padding: 15px;
-      border-radius: 12px;
+      padding: 14px;
+      border-radius: 14px;
       margin-bottom: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid #e5e7eb;
+      transition: 0.15s;
+    }
+
+    .card:hover {
+      background: #f9fafb;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .vehicle {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .damage {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .time {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .details {
+      margin-top: 4px;
+      color: #374151;
     }
 
     .loading {
@@ -53,7 +91,6 @@
 </main>
 
 <script>
-  // ✅ DEINE DATEN
   const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 
@@ -73,29 +110,70 @@
 
     title.textContent = "Fahrzeug Historie";
 
-    const { data, error } = await supabaseClient
+    // Fahrzeugstatus
+    const { data: vehicleHistory } = await supabaseClient
       .from("vehicle_history")
       .select("*")
-      .eq("vehicle_id", vehicleId)
-      .order("created_at", { ascending: false });
+      .eq("vehicle_id", vehicleId);
 
-    if (error) {
-      historyApp.innerHTML = "Fehler: " + error.message;
-      return;
+    // Schäden holen
+    const { data: damages } = await supabaseClient
+      .from("damages")
+      .select("id")
+      .eq("vehicle_id", vehicleId);
+
+    const damageIds = (damages || []).map(d => d.id);
+
+    let damageHistory = [];
+
+    if (damageIds.length > 0) {
+      const res = await supabaseClient
+        .from("damage_history")
+        .select("*")
+        .in("damage_id", damageIds);
+
+      damageHistory = res.data || [];
     }
 
-    if (!data.length) {
+    const combined = [
+      ...(vehicleHistory || []).map(item => ({ ...item, type: "vehicle" })),
+      ...(damageHistory || []).map(item => ({ ...item, type: "damage" }))
+    ];
+
+    combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (!combined.length) {
       historyApp.innerHTML = "Keine Historie vorhanden";
       return;
     }
 
-    historyApp.innerHTML = data.map(item => `
-      <div class="card">
-        <strong>${item.action}</strong><br>
-        ${new Date(item.created_at).toLocaleString()}<br>
-        ${item.details || ""}
-      </div>
-    `).join("");
+    historyApp.innerHTML = combined.map(item => {
+      let tagClass = "vehicle";
+      let label = "🚗 Fahrzeug";
+
+      if (item.type === "damage") {
+        label = "⚠️ Schaden";
+        tagClass = "damage";
+
+        if (item.action === "repariert") tagClass = "success";
+      }
+
+      return `
+        <div class="card">
+          <div class="tag ${tagClass}">
+            ${label} • ${item.action}
+          </div>
+
+          <div class="time">
+            ${new Date(item.created_at).toLocaleString()}
+          </div>
+
+          <div class="details">
+            ${item.details || ""}
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   loadHistory();
