@@ -2,154 +2,232 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fahrzeug</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
-    font-family: Arial;
-    background: #f4f6f9;
-    padding: 40px;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f1f5f9;
 }
 
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    max-width: 500px;
-    margin: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+header{
+  display:flex;
+  justify-content:space-between;
+  padding:20px;
+  background:white;
+  border-bottom:1px solid #ddd;
 }
 
-input, textarea, select {
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
 }
 
-button {
-    margin-top: 15px;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: #2d6cdf;
-    color: white;
-    cursor: pointer;
+.card{
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:15px;
 }
 
-button:hover {
-    background: #1f4fa3;
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
-.error {
-    color: red;
-    margin-top: 10px;
+button{
+  padding:10px 15px;
+  border:none;
+  background:black;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
 }
-.success {
-    color: green;
-    margin-top: 10px;
+
+.row{
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
 }
+
+.zone{
+  padding:8px;
+  background:#3b82f6;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
+  display:inline-block;
+  margin:5px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="card">
-<h2>Schaden hinzufügen</h2>
+<header>
+  <button onclick="location.href='index.html'">← Zurück</button>
+  <div id="userInfo"></div>
+  <button onclick="logout()">Logout</button>
+</header>
 
-<input id="title" placeholder="z.B. Kratzer">
-<input id="location" placeholder="z.B. vorne">
-<select id="severity">
+<main>
+
+<h2 id="vehicleTitle">Lädt...</h2>
+
+<div class="card">
+  <b>Zonen auswählen:</b><br>
+  <div class="zone" onclick="setArea('vorne')">vorne</div>
+  <div class="zone" onclick="setArea('hinten')">hinten</div>
+  <div class="zone" onclick="setArea('Seite')">Seite</div>
+  <div class="zone" onclick="setArea('Dach')">Dach</div>
+</div>
+
+<div class="card">
+  <h3>Schaden hinzufügen</h3>
+
+  <input id="type" placeholder="z.B Kratzer">
+  <input id="area" placeholder="z.B vorne">
+
+  <select id="severity">
     <option value="leicht">leicht</option>
     <option value="mittel">mittel</option>
     <option value="schwer">schwer</option>
-</select>
+  </select>
 
-<textarea id="description" placeholder="Beschreibung"></textarea>
+  <textarea id="desc" placeholder="Beschreibung"></textarea>
 
-<button onclick="saveDamage()">Schaden speichern</button>
-
-<div id="msg"></div>
+  <button onclick="addDamage()">Speichern</button>
+  <div id="msg"></div>
 </div>
+
+<div class="card">
+  <h3>Aktive Schäden</h3>
+  <div id="damageList"></div>
+</div>
+
+</main>
 
 <script>
 
-const SUPABASE_URL = "https://iufkwovepjjlycdulnwa.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 🔥 Fahrzeug-ID holen
-const params = new URLSearchParams(window.location.search);
-const vehicleId = params.get("id");
+const vehicleId = new URLSearchParams(location.search).get("id");
 
-// 🔥 aktueller User
-async function getCurrentUser() {
-    const { data } = await db.auth.getUser();
-    return data.user;
+let currentUser;
+let employee;
+
+function setArea(a){
+  document.getElementById("area").value = a;
 }
 
-// 🔥 Mitarbeiter anhand Email holen
-async function getEmployee(user) {
-    if (!user) return null;
+async function init(){
+  const { data } = await db.auth.getSession();
+  currentUser = data.session?.user;
 
-    const { data } = await db
-        .from("employees")
-        .select("*")
-        .eq("email", user.email)
-        .single();
+  if(!currentUser){
+    location.href="index.html";
+    return;
+  }
 
-    return data;
+  const empRes = await db.from("employees")
+    .select("*")
+    .eq("email", currentUser.email)
+    .single();
+
+  employee = empRes.data;
+
+  document.getElementById("userInfo").innerText =
+    "👤 " + (employee?.name || currentUser.email);
+
+  loadVehicle();
+  loadDamages();
 }
 
-// 🔥 Schaden speichern
-async function saveDamage() {
+async function loadVehicle(){
+  const { data } = await db.from("vehicles")
+    .select("*")
+    .eq("id", vehicleId)
+    .single();
 
-    const msg = document.getElementById("msg");
-    msg.innerHTML = "";
-
-    const user = await getCurrentUser();
-
-    if (!user) {
-        msg.innerHTML = "<div class='error'>Nicht eingeloggt</div>";
-        return;
-    }
-
-    const employee = await getEmployee(user);
-
-    const title = document.getElementById("title").value;
-    const location = document.getElementById("location").value;
-    const severity = document.getElementById("severity").value;
-    const description = document.getElementById("description").value;
-
-    const { error } = await db.from("damages").insert({
-        vehicle_id: vehicleId,
-        title: title,
-        location: location,
-        severity: severity,
-        description: description,
-        user_id: user.id,          // 🔥 FIX (UUID!)
-        employee_id: employee?.id  // 🔥 Mitarbeiter
-    });
-
-    if (error) {
-        msg.innerHTML = "<div class='error'>" + error.message + "</div>";
-        return;
-    }
-
-    // 🔥 History log
-    await db.from("damage_history").insert({
-        damage_id: null,
-        action_text: "Schaden gemeldet",
-        user_id: user.id,
-        details: title + " (" + location + ")"
-    });
-
-    msg.innerHTML = "<div class='success'>Gespeichert</div>";
+  document.getElementById("vehicleTitle").innerText =
+    data.name + " (" + data.kennzeichen + ")";
 }
+
+async function loadDamages(){
+  const { data } = await db.from("damages")
+    .select("*")
+    .eq("vehicle_id", vehicleId)
+    .eq("status","offen");
+
+  document.getElementById("damageList").innerHTML =
+    data.map(d=>`
+      <div class="row">
+        <b>${d.damage_type}</b><br>
+        ${d.area} | ${d.severity}
+      </div>
+    `).join("") || "Keine Schäden";
+}
+
+async function addDamage(){
+
+  const type = document.getElementById("type").value;
+  const area = document.getElementById("area").value;
+  const severity = document.getElementById("severity").value;
+  const desc = document.getElementById("desc").value;
+
+  if(!employee){
+    alert("Kein Mitarbeiter gefunden!");
+    return;
+  }
+
+  const { data, error } = await db.from("damages").insert([{
+    vehicle_id: Number(vehicleId),
+    damage_type:type,
+    area,
+    severity,
+    description:desc,
+    status:"offen",
+    employee_id: employee.id,
+    user_id: currentUser.id
+  }]).select().single();
+
+  if(error){
+    document.getElementById("msg").innerText = error.message;
+    return;
+  }
+
+  await db.from("damage_history").insert([{
+    damage_id:data.id,
+    action:"angelegt",
+    details:type+" "+area,
+    user_id:employee.id,
+    auth_user_id:currentUser.id
+  }]);
+
+  document.getElementById("msg").innerText="✔ gespeichert";
+
+  loadDamages();
+}
+
+async function logout(){
+  await db.auth.signOut();
+  location.href="index.html";
+}
+
+init();
 
 </script>
 
