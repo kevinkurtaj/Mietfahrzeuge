@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fahrzeughistorie</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; background: #f4f6f8; color: #1f2937; }
+    header { background: white; border-bottom: 1px solid #e5e7eb; padding: 20px 28px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .back-btn { text-decoration:none; color:#111827; font-weight:700; background:#f3f4f6; padding:10px 14px; border-radius:12px; }
+    main { max-width: 1300px; margin: 0 auto; padding: 28px; }
+    h1 { margin:0; font-size:26px; }
+    .sub { color:#6b7280; margin-top:6px; font-size:14px; }
+    .filters { background:white; border:1px solid #e5e7eb; border-radius:18px; padding:16px; display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+    select, input { padding:10px; border:1px solid #d1d5db; border-radius:10px; min-width:180px; }
+    .card { background:white; border:1px solid #e5e7eb; border-radius:18px; padding:18px; box-shadow:0 10px 25px rgba(0,0,0,.04); margin-bottom:14px; }
+    .title { font-weight:700; font-size:17px; margin-bottom:8px; }
+    .meta { display:grid; gap:5px; font-size:14px; color:#374151; }
+    .badge { display:inline-block; padding:5px 9px; border-radius:999px; font-size:12px; font-weight:700; background:#f3f4f6; margin-right:6px; }
+    .open { background:#dbeafe; color:#1d4ed8; } .repair { background:#dcfce7; color:#166534; } .false { background:#fee2e2; color:#991b1b; }
+    .images { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-top:12px; }
+    .images img { width:100%; height:100px; object-fit:cover; border-radius:12px; border:1px solid #e5e7eb; }
+    .history { margin-top:12px; border-top:1px solid #e5e7eb; padding-top:12px; display:grid; gap:8px; }
+    .history-item { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:10px; font-size:13px; line-height:1.5; }
+    .empty, .loading, .error { padding:18px; border-radius:14px; background:white; border:1px solid #e5e7eb; }
+    .error { background:#fef2f2; color:#991b1b; }
+  </style>
+</head>
+<body>
+  <header><a class="back-btn" id="backBtn" href="index.html">← Zurück</a><div><h1 id="title">Historie wird geladen ...</h1><div class="sub">Archivierte, reparierte, irrtümliche und aktive Schäden</div></div></header>
+  <main>
+    <div class="filters"><select id="statusFilter"><option value="">Alle Status</option><option value="offen">offen</option><option value="in_pruefung">in Prüfung</option><option value="repariert">repariert</option><option value="irrtuemlich">irrtümlich</option></select><select id="employeeFilter"><option value="">Alle Mitarbeiter</option></select><input id="searchInput" type="text" placeholder="Suche Schadensart/Bereich/Beschreibung" /></div>
+    <div id="historyApp" class="loading">Historie wird geladen ...</div>
+  </main>
+  <script>
+    const SUPABASE_URL = "HIER_DEINE_PROJECT_URL_EINFÜGEN";
+    const SUPABASE_ANON_KEY = "HIER_DEINEN_ANON_KEY_EINFÜGEN";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const params = new URLSearchParams(window.location.search); const vehicleId = params.get("id");
+    const title = document.getElementById("title"), backBtn = document.getElementById("backBtn"), app = document.getElementById("historyApp"), statusFilter = document.getElementById("statusFilter"), employeeFilter = document.getElementById("employeeFilter"), searchInput = document.getElementById("searchInput");
+    let damages = [], employeesMap = {}, imagesByDamage = {}, historyByDamage = {};
+    function formatDateTime(value){if(!value)return "-";return new Date(value).toLocaleString("de-DE");}
+    function formatStatus(status){return {offen:"offen",in_pruefung:"in Prüfung",repariert:"repariert",irrtuemlich:"irrtümlich"}[status] || status || "-";}
+    function formatAction(action){return {angelegt:"Schaden angelegt",repariert:"Als repariert markiert",irrtuemlich:"Als irrtümlich markiert",bilder_hochgeladen:"Bilder hochgeladen",bearbeitet:"Bearbeitet"}[action] || action || "-";}
+    function badgeClass(status){if(status==="repariert")return"repair"; if(status==="irrtuemlich")return"false"; return"open";}
+    async function loadEmployees(){const{data,error}=await supabaseClient.from("employees").select("id, name").order("id",{ascending:true}); if(error)return; employeesMap=Object.fromEntries((data||[]).map(emp=>[emp.id,emp.name])); employeeFilter.innerHTML='<option value="">Alle Mitarbeiter</option>'+(data||[]).map(emp=>`<option value="${emp.id}">${emp.name}</option>`).join("");}
+    async function loadVehicle(){const{data,error}=await supabaseClient.from("vehicles").select("*").eq("id",vehicleId).single(); if(error||!data){title.textContent="Fahrzeug nicht gefunden";app.innerHTML='<div class="error">Fahrzeug konnte nicht geladen werden.</div>';return;} title.textContent=`${data.name} — ${data.kennzeichen}`; backBtn.href=`vehicle.html?id=${vehicleId}`;}
+    async function loadDamages(){const{data,error}=await supabaseClient.from("damages").select("*").eq("vehicle_id",vehicleId).order("created_at",{ascending:false}); if(error){app.innerHTML=`<div class="error">Historie konnte nicht geladen werden: ${error.message}</div>`;return;} damages=data||[];}
+    async function loadImages(){if(!damages.length)return; const ids=damages.map(d=>d.id); const{data}=await supabaseClient.from("damage_images").select("*").in("damage_id",ids).order("uploaded_at",{ascending:true}); imagesByDamage={}; (data||[]).forEach(img=>{if(!imagesByDamage[img.damage_id])imagesByDamage[img.damage_id]=[]; imagesByDamage[img.damage_id].push(img);});}
+    async function loadHistory(){if(!damages.length)return; const ids=damages.map(d=>d.id); const{data}=await supabaseClient.from("damage_history").select("*").in("damage_id",ids).order("created_at",{ascending:false}); historyByDamage={}; (data||[]).forEach(item=>{if(!historyByDamage[item.damage_id])historyByDamage[item.damage_id]=[]; historyByDamage[item.damage_id].push(item);});}
+    function applyFilters(){const status=statusFilter.value, employee=employeeFilter.value, search=searchInput.value.trim().toLowerCase(); const filtered=damages.filter(d=>{const matchesStatus=!status||d.status===status; const matchesEmployee=!employee||String(d.created_by)===employee||String(d.updated_by)===employee||String(d.repaired_by)===employee; const haystack=`${d.damage_type||""} ${d.area||""} ${d.description||""} ${d.severity||""}`.toLowerCase(); return matchesStatus&&matchesEmployee&&(!search||haystack.includes(search));}); renderHistory(filtered);}
+    function renderHistory(list){if(!list.length){app.innerHTML='<div class="empty">Keine passenden Einträge gefunden.</div>';return;} app.innerHTML=list.map(d=>{const imgs=imagesByDamage[d.id]||[], hist=historyByDamage[d.id]||[]; return `<div class="card"><div class="title">${d.damage_type} — ${d.area}</div><div><span class="badge ${badgeClass(d.status)}">${formatStatus(d.status)}</span><span class="badge">${d.severity}</span></div><div class="meta" style="margin-top:10px;"><div><strong>Beschreibung:</strong> ${d.description}</div><div><strong>Angelegt:</strong> ${formatDateTime(d.created_at)}</div><div><strong>Angelegt von:</strong> ${employeesMap[d.created_by]||d.created_by}</div><div><strong>Letzte Änderung:</strong> ${formatDateTime(d.updated_at)}</div><div><strong>Zuletzt bearbeitet von:</strong> ${d.updated_by?(employeesMap[d.updated_by]||d.updated_by):"-"}</div>${d.repair_note?`<div><strong>Reparaturinfo:</strong> ${d.repair_note}</div>`:""}${d.false_reason?`<div><strong>Irrtümlich-Grund:</strong> ${d.false_reason}</div>`:""}${d.false_note?`<div><strong>Irrtümlich-Notiz:</strong> ${d.false_note}</div>`:""}</div>${imgs.length?`<div class="images">${imgs.map(img=>`<img src="${img.image_url}" alt="Schadensbild">`).join("")}</div>`:`<div class="meta" style="margin-top:10px;">Keine Bilder vorhanden.</div>`}<div class="history"><strong>Chronik</strong>${hist.length?hist.map(h=>`<div class="history-item"><strong>${formatAction(h.action)}</strong><br>${formatDateTime(h.created_at)}<br>${employeesMap[h.user_id]||h.user_id}<br>${h.details||""}</div>`).join(""):`<div class="meta">Keine Chronik vorhanden.</div>`}</div></div>`;}).join("");}
+    async function init(){if(!vehicleId){title.textContent="Keine Fahrzeug-ID";app.innerHTML='<div class="error">Keine Fahrzeug-ID übergeben.</div>';return;} await loadEmployees(); await loadVehicle(); await loadDamages(); await loadImages(); await loadHistory(); applyFilters(); statusFilter.addEventListener("change",applyFilters); employeeFilter.addEventListener("change",applyFilters); searchInput.addEventListener("input",applyFilters);}
+    init();
+  </script>
+</body>
+</html>
