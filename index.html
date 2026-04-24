@@ -20,6 +20,7 @@ body {
   min-height: 100vh;
 }
 
+/* HEADER */
 header {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -46,12 +47,14 @@ header button {
   font-weight: 700;
 }
 
+/* MAIN */
 main {
   padding: 30px;
   max-width: 1100px;
   margin: auto;
 }
 
+/* LOGIN */
 #loginBox {
   width: 100%;
   max-width: 380px;
@@ -83,7 +86,6 @@ main {
   border: 1px solid #d1d5db;
   border-radius: 12px;
   font-size: 14px;
-  outline: none;
 }
 
 #loginBox input:focus {
@@ -100,17 +102,13 @@ main {
   color: white;
   font-weight: 800;
   cursor: pointer;
-  font-size: 15px;
 }
 
 #loginBox button:hover {
   background: #1f2937;
 }
 
-#app {
-  margin-top: 20px;
-}
-
+/* APP */
 #vehicleList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -178,53 +176,60 @@ const supabase = window.supabase.createClient(
 
 // LOGIN
 async function login(){
-const { error } = await supabase.auth.signInWithPassword({
-email: document.getElementById("email").value,
-password: document.getElementById("password").value
-});
+  const { error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value
+  });
 
-if(error) return alert("Login Fehler");
+  if(error){
+    alert("Login fehlgeschlagen");
+    return;
+  }
 
-startApp();
+  startApp();
 }
 
 // LOGOUT
 async function logout(){
-await supabase.auth.signOut();
-location.reload();
+  await supabase.auth.signOut();
+  location.reload();
 }
 
 // CHECK LOGIN
 async function checkUser(){
-const { data } = await supabase.auth.getSession();
-if(data.session) startApp();
+  const { data } = await supabase.auth.getSession();
+  if(data.session){
+    startApp();
+  }
 }
 
-// START
+// START APP
 function startApp(){
-document.getElementById("loginBox").style.display="none";
-document.getElementById("app").style.display="block";
-loadVehicles();
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  loadVehicles();
 }
 
 // LOAD VEHICLES
 async function loadVehicles(){
-const { data } = await supabase
-.from("vehicles")
-.select("*");
+  const { data } = await supabase
+    .from("vehicles")
+    .select("*");
 
-document.getElementById("vehicleList").innerHTML = data.map(v=>`
-<div class="card" onclick="openVehicle(${v.id})">
-<b>${v.name}</b><br>
-${v.kennzeichen}
-</div>
-`).join("");
+  document.getElementById("vehicleList").innerHTML = data.map(v => `
+    <div class="card" onclick="openVehicle(${v.id})">
+      <b>${v.name}</b><br>
+      ${v.kennzeichen || ""}
+    </div>
+  `).join("");
 }
 
+// OPEN VEHICLE
 function openVehicle(id){
-location.href = "vehicle.html?id=" + id;
+  location.href = "vehicle.html?id=" + id;
 }
 
+// INIT
 checkUser();
 </script>
 
