@@ -35,8 +35,8 @@
     <div id="historyApp" class="loading">Historie wird geladen ...</div>
   </main>
   <script>
-    const SUPABASE_URL = "HIER_DEINE_PROJECT_URL_EINFÜGEN";
-    const SUPABASE_ANON_KEY = "HIER_DEINEN_ANON_KEY_EINFÜGEN";
+    const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const params = new URLSearchParams(window.location.search); const vehicleId = params.get("id");
     const title = document.getElementById("title"), backBtn = document.getElementById("backBtn"), app = document.getElementById("historyApp"), statusFilter = document.getElementById("statusFilter"), employeeFilter = document.getElementById("employeeFilter"), searchInput = document.getElementById("searchInput");
