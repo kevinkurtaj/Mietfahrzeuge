@@ -1,241 +1,64 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schadendokumentation Mietfahrzeuge</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="icon" href="data:,">
-
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: linear-gradient(135deg, #eef2f7 0%, #dbe4ee 100%);
-      color: #111827;
-      min-height: 100vh;
-    }
-
-    header {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(10px);
-      padding: 18px 28px;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.04);
-    }
-
-    .brand {
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .logout-btn {
-      border: none;
-      background: #111827;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-      display: none;
-    }
-
-    main {
-      padding: 30px;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    #loginBox {
-      width: 100%;
-      max-width: 390px;
-      margin: 110px auto 0;
-      background: white;
-      padding: 34px;
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
-      border: 1px solid #e5e7eb;
-    }
-
-    #loginBox h2 {
-      margin: 0 0 8px;
-      font-size: 28px;
-    }
-
-    .login-subtitle {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 22px;
-    }
-
-    #loginBox input {
-      width: 100%;
-      padding: 13px 14px;
-      margin-bottom: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    #loginBox input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    #loginBox button {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 12px;
-      background: #111827;
-      color: white;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    #loginBox button:hover {
-      background: #1f2937;
-    }
-
-    #loginMessage {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #991b1b;
-    }
-
-    #app {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .page-title {
-      margin-bottom: 20px;
-    }
-
-    .page-title h1 {
-      margin: 0;
-      font-size: 30px;
-    }
-
-    .page-title p {
-      margin: 6px 0 0;
-      color: #6b7280;
-    }
-
-    #vehicleList {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 20px;
-      border: 1px solid #e5e7eb;
-      cursor: pointer;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
-      transition: 0.18s ease;
-      position: relative;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
-    }
-
-    .card-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .kennzeichen {
-      color: #374151;
-      margin-bottom: 12px;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      background: #f3f4f6;
-      color: #374151;
-    }
-
-    .einsatzbereit {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .werkstatt,
-    .nicht_einsatzbereit {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .nicht_im_einsatz {
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    .abruf {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .open-link {
-      margin-top: 14px;
-      color: #2563eb;
-      font-weight: 800;
-      font-size: 14px;
-    }
-
-    .loading,
-    .error {
-      background: white;
-      padding: 18px;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .error {
-      color: #991b1b;
-      background: #fef2f2;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schadendokumentation Mietfahrzeuge</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:linear-gradient(135deg,#eef2f7 0%,#dbe4ee 100%);color:#111827;min-height:100vh}
+header{background:rgba(255,255,255,.92);backdrop-filter:blur(10px);padding:18px 28px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 18px rgba(0,0,0,.04)}
+.brand{font-size:20px;font-weight:800}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{border:none;background:#111827;color:white;padding:10px 15px;border-radius:10px;cursor:pointer;font-weight:800;text-decoration:none;display:none}
+.btn.secondary{background:#e5e7eb;color:#111827}
+main{padding:30px;max-width:1100px;margin:auto}
+#loginBox{width:100%;max-width:390px;margin:110px auto 0;background:white;padding:34px;border-radius:24px;box-shadow:0 20px 50px rgba(15,23,42,.12);border:1px solid #e5e7eb}
+#loginBox h2{margin:0 0 8px;font-size:28px}
+.login-subtitle{font-size:14px;color:#6b7280;margin-bottom:22px}
+#loginBox input{width:100%;padding:13px 14px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:12px;font-size:14px;outline:none}
+#loginBox input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+#loginBox button{width:100%;padding:13px;border:none;border-radius:12px;background:#111827;color:white;font-weight:800;cursor:pointer;font-size:15px}
+#loginMessage{margin-top:12px;font-size:14px;color:#991b1b}
+#app{display:none;margin-top:20px}
+.page-title{margin-bottom:20px}
+.page-title h1{margin:0;font-size:30px}
+.page-title p{margin:6px 0 0;color:#6b7280}
+#vehicleList{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.card{background:white;padding:20px;border-radius:20px;border:1px solid #e5e7eb;cursor:pointer;box-shadow:0 12px 28px rgba(15,23,42,.07);transition:.18s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(15,23,42,.12)}
+.card-title{font-size:18px;font-weight:800;margin-bottom:6px}
+.kennzeichen{color:#374151;margin-bottom:12px}
+.status{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#f3f4f6;color:#374151}
+.einsatzbereit{background:#dcfce7;color:#166534}
+.werkstatt,.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}
+.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.abruf{background:#dbeafe;color:#1d4ed8}
+.open-link{margin-top:14px;color:#2563eb;font-weight:800;font-size:14px}
+.loading,.error{background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb}
+.error{color:#991b1b;background:#fef2f2}
+.user-info{font-size:13px;color:#6b7280;display:none}
+</style>
 </head>
-
 <body>
-
 <header>
   <div class="brand">🚐 Schadendokumentation Mietfahrzeuge</div>
-  <button id="logoutBtn" class="logout-btn" onclick="logout()">Logout</button>
+  <div class="header-actions">
+    <div id="userInfo" class="user-info"></div>
+    <a id="adminBtn" class="btn secondary" href="admin.html">Admin Panel</a>
+    <button id="logoutBtn" class="btn" onclick="logout()">Logout</button>
+  </div>
 </header>
 
 <main>
-
   <div id="loginBox">
     <h2>Anmeldung</h2>
     <div class="login-subtitle">Bitte mit deinem Zugang anmelden.</div>
-
     <input id="email" type="email" placeholder="E-Mail-Adresse">
     <input id="password" type="password" placeholder="Passwort">
-
     <button onclick="login()">Einloggen</button>
-
     <div id="loginMessage"></div>
   </div>
 
@@ -244,127 +67,99 @@
       <h1>Fahrzeugübersicht</h1>
       <p>Übersicht aller Inhofer-Sprinter und Reservefahrzeuge</p>
     </div>
-
     <div id="vehicleList" class="loading">Fahrzeuge werden geladen ...</div>
   </div>
-
 </main>
 
 <script>
-  const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const SUPABASE_URL="https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ADMIN_EMAILS=["kevin.kurtaj@moebel-inhofer.de","kevinkurtaj@gmx.de"];
 
-  const loginBox = document.getElementById("loginBox");
-  const app = document.getElementById("app");
-  const vehicleList = document.getElementById("vehicleList");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const loginMessage = document.getElementById("loginMessage");
+const loginBox=document.getElementById("loginBox");
+const app=document.getElementById("app");
+const vehicleList=document.getElementById("vehicleList");
+const logoutBtn=document.getElementById("logoutBtn");
+const adminBtn=document.getElementById("adminBtn");
+const loginMessage=document.getElementById("loginMessage");
+const userInfo=document.getElementById("userInfo");
 
-  function formatVehicleStatus(status) {
-    switch (status) {
-      case "einsatzbereit": return "einsatzbereit";
-      case "schaeden_vorhanden": return "Schäden vorhanden";
-      case "werkstatt": return "Werkstatt";
-      case "nicht_einsatzbereit": return "nicht einsatzbereit";
-      case "nicht_im_einsatz": return "nicht im Einsatz";
-      case "abruf": return "Abruf / Reserve";
-      default: return status || "unbekannt";
-    }
+function formatVehicleStatus(status){
+  switch(status){
+    case "einsatzbereit":return "einsatzbereit";
+    case "schaeden_vorhanden":return "Schäden vorhanden";
+    case "werkstatt":return "Werkstatt";
+    case "nicht_einsatzbereit":return "nicht einsatzbereit";
+    case "nicht_im_einsatz":return "nicht im Einsatz";
+    case "abruf":return "Abruf / Reserve";
+    default:return status||"unbekannt";
   }
+}
 
-  async function login() {
-    loginMessage.textContent = "";
+async function login(){
+  loginMessage.textContent="";
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+  if(!email||!password){loginMessage.textContent="Bitte E-Mail und Passwort eingeben.";return;}
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){loginMessage.textContent="Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";return;}
+  startApp();
+}
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+async function logout(){
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
 
-    if (!email || !password) {
-      loginMessage.textContent = "Bitte E-Mail und Passwort eingeben.";
-      return;
-    }
-
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-    if (error) {
-      loginMessage.textContent = "Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";
-      return;
-    }
-
-    startApp();
+async function checkUser(){
+  const {data}=await supabaseClient.auth.getSession();
+  if(data.session) startApp();
+  else {
+    loginBox.style.display="block";
+    app.style.display="none";
+    logoutBtn.style.display="none";
+    adminBtn.style.display="none";
+    userInfo.style.display="none";
   }
+}
 
-  async function logout() {
-    await supabaseClient.auth.signOut();
-    location.reload();
-  }
+async function startApp(){
+  const {data}=await supabaseClient.auth.getSession();
+  const email=data.session?.user?.email||"";
+  loginBox.style.display="none";
+  app.style.display="block";
+  logoutBtn.style.display="inline-block";
+  userInfo.style.display="block";
+  userInfo.textContent=email;
+  adminBtn.style.display=ADMIN_EMAILS.includes(email) ? "inline-block" : "none";
+  loadVehicles();
+}
 
-  async function checkUser() {
-    const { data } = await supabaseClient.auth.getSession();
+async function loadVehicles(){
+  vehicleList.className="loading";
+  vehicleList.innerHTML="Fahrzeuge werden geladen ...";
+  const {data,error}=await supabaseClient.from("vehicles").select("*").order("id",{ascending:true});
+  if(error){vehicleList.className="error";vehicleList.innerHTML="Fahrzeuge konnten nicht geladen werden: "+error.message;return;}
+  if(!data||data.length===0){vehicleList.className="error";vehicleList.innerHTML="Keine Fahrzeuge gefunden.";return;}
+  vehicleList.className="";
+  vehicleList.innerHTML=data.map(vehicle=>{
+    const status=vehicle.status||"";
+    return `
+      <div class="card" onclick="openVehicle(${vehicle.id})">
+        <div class="card-title">${vehicle.name||"Fahrzeug"}</div>
+        <div class="kennzeichen">${vehicle.kennzeichen||"-"}</div>
+        <div class="status ${status}">${formatVehicleStatus(status)}</div>
+        ${vehicle.is_reserve?`<div style="margin-top:8px;font-size:13px;color:#6b7280;">Reservefahrzeug</div>`:""}
+        <div class="open-link">Öffnen →</div>
+      </div>
+    `;
+  }).join("");
+}
 
-    if (data.session) {
-      startApp();
-    } else {
-      loginBox.style.display = "block";
-      app.style.display = "none";
-      logoutBtn.style.display = "none";
-    }
-  }
-
-  function startApp() {
-    loginBox.style.display = "none";
-    app.style.display = "block";
-    logoutBtn.style.display = "inline-block";
-    loadVehicles();
-  }
-
-  async function loadVehicles() {
-    vehicleList.className = "loading";
-    vehicleList.innerHTML = "Fahrzeuge werden geladen ...";
-
-    const { data, error } = await supabaseClient
-      .from("vehicles")
-      .select("*")
-      .order("id", { ascending: true });
-
-    if (error) {
-      vehicleList.className = "error";
-      vehicleList.innerHTML = "Fahrzeuge konnten nicht geladen werden: " + error.message;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      vehicleList.className = "error";
-      vehicleList.innerHTML = "Keine Fahrzeuge gefunden.";
-      return;
-    }
-
-    vehicleList.className = "";
-
-    vehicleList.innerHTML = data.map(vehicle => {
-      const status = vehicle.status || "";
-      return `
-        <div class="card" onclick="openVehicle(${vehicle.id})">
-          <div class="card-title">${vehicle.name || "Fahrzeug"}</div>
-          <div class="kennzeichen">${vehicle.kennzeichen || "-"}</div>
-          <div class="status ${status}">${formatVehicleStatus(status)}</div>
-          ${vehicle.is_reserve ? `<div style="margin-top:8px;font-size:13px;color:#6b7280;">Reservefahrzeug</div>` : ""}
-          <div class="open-link">Öffnen →</div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  function openVehicle(id) {
-    location.href = "vehicle.html?id=" + id;
-  }
-
-  checkUser();
+function openVehicle(id){location.href="vehicle.html?id="+id;}
+checkUser();
 </script>
-
 </body>
 </html>
