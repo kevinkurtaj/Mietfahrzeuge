@@ -7,56 +7,255 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
 <style>
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:#f4f6f8;color:#111827}
-header{background:white;border-bottom:1px solid #e5e7eb;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}
-main{max-width:1150px;margin:auto;padding:28px}
-.btn{border:none;background:#111827;color:white;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
-.btn.secondary{background:#e5e7eb;color:#111827}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.card{background:white;border:1px solid #e5e7eb;border-radius:22px;padding:20px;box-shadow:0 12px 28px rgba(15,23,42,.06);margin-bottom:18px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
-.stat{background:white;border:1px solid #e5e7eb;border-radius:20px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.05)}
-.stat div:first-child{font-size:13px;color:#6b7280;margin-bottom:8px}
-.stat strong{font-size:28px}
-h1{margin:0 0 6px}
-.sub{color:#6b7280;margin-bottom:22px}
-input{width:100%;padding:12px;border-radius:12px;border:1px solid #d1d5db;margin-bottom:10px}
-.table{display:grid;gap:10px;max-height:460px;overflow:auto}
-.row{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#f9fafb}
-.small{font-size:12px;color:#6b7280}
-.tag{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:#dbeafe;color:#1d4ed8;margin-bottom:6px}
-.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:14px;padding:14px}
-.success{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:14px;padding:14px;margin-top:10px;display:none}
-@media(max-width:850px){.grid{grid-template-columns:1fr}}
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top right, rgba(37,99,235,0.16), transparent 35%),
+    linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #111827;
+  min-height: 100vh;
+}
+
+header {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #e5e7eb;
+  padding: 18px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+}
+
+.header-title {
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: none;
+  background: #111827;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn.secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+main {
+  max-width: 1180px;
+  margin: auto;
+  padding: 32px;
+}
+
+.hero {
+  margin-bottom: 22px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 36px;
+  letter-spacing: -0.7px;
+}
+
+.hero p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.auth-card {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.stat {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+}
+
+.stat .label {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.stat strong {
+  font-size: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.card {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+  margin-bottom: 18px;
+}
+
+.card h2 {
+  margin: 0 0 14px;
+}
+
+input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.14);
+}
+
+.table {
+  display: grid;
+  gap: 10px;
+  max-height: 460px;
+  overflow: auto;
+}
+
+.row {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 13px;
+  background: #f8fafc;
+}
+
+.small {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 900;
+  background: #dbeafe;
+  color: #1d4ed8;
+  margin-bottom: 7px;
+}
+
+.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.success {
+  background: #ecfdf5;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 10px;
+  display: none;
+}
+
+@media(max-width:850px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  main {
+    padding: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
+
 <body>
 <header>
-  <strong>⚙️ Admin Panel</strong>
-  <div style="display:flex;gap:10px;">
+  <div class="header-title">⚙️ Admin Panel</div>
+  <div class="header-actions">
     <a class="btn secondary" href="index.html">Zur Übersicht</a>
     <button class="btn" onclick="logout()">Logout</button>
   </div>
 </header>
 
 <main>
-  <h1>Administration</h1>
-  <div class="sub">Dashboard, Mitarbeiter und Passwort-Reset für Mitarbeiter.</div>
+  <div class="hero">
+    <h1>Administration</h1>
+    <p>Dashboard, Mitarbeiter, Passwort-Reset und Sicherheitsprotokoll.</p>
+  </div>
 
-  <div id="authBox" class="card">Prüfe Anmeldung ...</div>
+  <div id="authBox" class="auth-card">Prüfe Anmeldung ...</div>
 
   <div id="adminApp" style="display:none;">
     <div class="stats">
-      <div class="stat"><div>Fahrzeuge</div><strong id="vehicleCount">-</strong></div>
-      <div class="stat"><div>Aktive Schäden</div><strong id="damageCount">-</strong></div>
-      <div class="stat"><div>Mitarbeiter</div><strong id="employeeCount">-</strong></div>
-      <div class="stat"><div>Passwort-Reset Logs</div><strong id="logCount">-</strong></div>
+      <div class="stat">
+        <div class="label">Fahrzeuge</div>
+        <strong id="vehicleCount">-</strong>
+      </div>
+      <div class="stat">
+        <div class="label">Aktive Schäden</div>
+        <strong id="damageCount">-</strong>
+      </div>
+      <div class="stat">
+        <div class="label">Mitarbeiter</div>
+        <strong id="employeeCount">-</strong>
+      </div>
+      <div class="stat">
+        <div class="label">Reset Logs</div>
+        <strong id="logCount">-</strong>
+      </div>
     </div>
 
     <section class="card">
-      <h2>Passwort-Reset senden</h2>
-      <input id="resetEmail" type="email" placeholder="E-Mail des Mitarbeiters">
+      <h2>Passwort-Reset für Mitarbeiter</h2>
+      <input id="resetEmail" type="email" placeholder="E-Mail-Adresse des Mitarbeiters">
       <button class="btn" onclick="sendReset()">Reset-Link senden</button>
       <div id="resetMsg" class="success"></div>
     </section>
@@ -78,113 +277,164 @@ input{width:100%;padding:12px;border-radius:12px;border:1px solid #d1d5db;margin
 </main>
 
 <script>
-const SUPABASE_URL="https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const ADMIN_EMAILS=["kevin.kurtaj@moebel-inhofer.de","kevinkurtaj@gmx.de"];
+const ADMIN_EMAILS = [
+  "kevin.kurtaj@moebel-inhofer.de",
+  "kevinkurtaj@gmx.de"
+];
 
-const authBox=document.getElementById("authBox");
-const adminApp=document.getElementById("adminApp");
-const employeesBox=document.getElementById("employeesBox");
-const logsBox=document.getElementById("logsBox");
-const resetMsg=document.getElementById("resetMsg");
+const authBox = document.getElementById("authBox");
+const adminApp = document.getElementById("adminApp");
+const employeesBox = document.getElementById("employeesBox");
+const logsBox = document.getElementById("logsBox");
+const resetMsg = document.getElementById("resetMsg");
 
-let employees=[];
-let logs=[];
+let employees = [];
+let logs = [];
 
-function formatDate(value){return value?new Date(value).toLocaleString("de-DE"):"-";}
+function formatDate(value) {
+  return value ? new Date(value).toLocaleString("de-DE") : "-";
+}
 
-async function init(){
-  const {data}=await supabaseClient.auth.getSession();
-  if(!data.session){authBox.innerHTML='<div class="error">Nicht angemeldet. Bitte zuerst über die Startseite einloggen.</div>';return;}
-  const email=data.session.user.email;
-  if(!ADMIN_EMAILS.includes(email)){authBox.innerHTML=`<div class="error">Kein Admin-Zugriff für: <strong>${email}</strong></div>`;return;}
-  authBox.innerHTML=`👤 Angemeldet als Admin:<br><strong>${email}</strong>`;
-  adminApp.style.display="block";
+async function init() {
+  const { data } = await supabaseClient.auth.getSession();
+
+  if (!data.session) {
+    authBox.innerHTML = '<div class="error">Nicht angemeldet. Bitte zuerst über die Startseite einloggen.</div>';
+    return;
+  }
+
+  const email = data.session.user.email;
+
+  if (!ADMIN_EMAILS.includes(email)) {
+    authBox.innerHTML = `<div class="error">Kein Admin-Zugriff für: <strong>${email}</strong></div>`;
+    return;
+  }
+
+  authBox.innerHTML = `👤 Angemeldet als Admin:<br><strong>${email}</strong>`;
+  adminApp.style.display = "block";
+
   await loadDashboard();
   await loadEmployees();
   await loadLogs();
 }
 
-async function loadDashboard(){
-  const vehicles=await supabaseClient.from("vehicles").select("id",{count:"exact",head:true});
-  const damages=await supabaseClient.from("damages").select("id",{count:"exact",head:true}).in("status",["offen","in_pruefung"]);
-  const emps=await supabaseClient.from("employees").select("id",{count:"exact",head:true});
-  const resetLogs=await supabaseClient.from("password_reset_activity").select("id",{count:"exact",head:true});
-  document.getElementById("vehicleCount").textContent=vehicles.count??"-";
-  document.getElementById("damageCount").textContent=damages.count??"-";
-  document.getElementById("employeeCount").textContent=emps.count??"-";
-  document.getElementById("logCount").textContent=resetLogs.count??"-";
+async function loadDashboard() {
+  const vehicles = await supabaseClient.from("vehicles").select("id", { count: "exact", head: true });
+  const damages = await supabaseClient.from("damages").select("id", { count: "exact", head: true }).in("status", ["offen", "in_pruefung"]);
+  const emps = await supabaseClient.from("employees").select("id", { count: "exact", head: true });
+  const resetLogs = await supabaseClient.from("password_reset_activity").select("id", { count: "exact", head: true });
+
+  document.getElementById("vehicleCount").textContent = vehicles.count ?? "-";
+  document.getElementById("damageCount").textContent = damages.count ?? "-";
+  document.getElementById("employeeCount").textContent = emps.count ?? "-";
+  document.getElementById("logCount").textContent = resetLogs.count ?? "-";
 }
 
-async function sendReset(){
-  const email=document.getElementById("resetEmail").value.trim();
-  resetMsg.style.display="none";
-  if(!email){alert("Bitte E-Mail eingeben.");return;}
-  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{
-    redirectTo:"https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html"
+async function sendReset() {
+  const email = document.getElementById("resetEmail").value.trim();
+  resetMsg.style.display = "none";
+
+  if (!email) {
+    alert("Bitte E-Mail eingeben.");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html"
   });
-  if(error){resetMsg.className="error";resetMsg.style.display="block";resetMsg.textContent="Fehler: "+error.message;return;}
-  resetMsg.className="success";
-  resetMsg.style.display="block";
-  resetMsg.textContent="Reset-Link wurde gesendet an: "+email;
+
+  if (error) {
+    resetMsg.className = "error";
+    resetMsg.style.display = "block";
+    resetMsg.textContent = "Fehler: " + error.message;
+    return;
+  }
+
+  resetMsg.className = "success";
+  resetMsg.style.display = "block";
+  resetMsg.textContent = "Reset-Link wurde gesendet an: " + email;
+
   await supabaseClient.from("password_reset_activity").insert([{
     email,
-    status:"reset_mail_sent",
-    details:"Admin hat Passwort-Reset-Mail gesendet"
+    status: "reset_mail_sent",
+    details: "Admin hat Passwort-Reset-Mail gesendet"
   }]);
+
   await loadLogs();
   await loadDashboard();
 }
 
-async function loadEmployees(){
-  const {data,error}=await supabaseClient.from("employees").select("*").order("id",{ascending:true});
-  if(error){employeesBox.innerHTML=`<div class="error">${error.message}</div>`;return;}
-  employees=data||[];
+async function loadEmployees() {
+  const { data, error } = await supabaseClient
+    .from("employees")
+    .select("*")
+    .order("id", { ascending: true });
+
+  if (error) {
+    employeesBox.innerHTML = `<div class="error">${error.message}</div>`;
+    return;
+  }
+
+  employees = data || [];
   renderEmployees();
 }
 
-function renderEmployees(){
-  const search=document.getElementById("employeeSearch").value.toLowerCase().trim();
-  const data=employees.filter(e=>JSON.stringify(e).toLowerCase().includes(search));
-  employeesBox.innerHTML=data.map(e=>`
+function renderEmployees() {
+  const search = document.getElementById("employeeSearch").value.toLowerCase().trim();
+  const data = employees.filter(e => JSON.stringify(e).toLowerCase().includes(search));
+
+  employeesBox.innerHTML = data.map(e => `
     <div class="row">
       <div class="tag">Mitarbeiter</div>
-      <div><strong>${e.name||"-"}</strong></div>
+      <div><strong>${e.name || "-"}</strong></div>
       <div class="small">ID: ${e.id}</div>
-      ${e.email?`<div class="small">E-Mail: ${e.email}</div>`:""}
+      ${e.email ? `<div class="small">E-Mail: ${e.email}</div>` : ""}
     </div>
-  `).join("")||"Keine Mitarbeiter gefunden.";
+  `).join("") || "Keine Mitarbeiter gefunden.";
 }
 
-async function loadLogs(){
-  const {data,error}=await supabaseClient.from("password_reset_activity").select("*").order("created_at",{ascending:false}).limit(100);
-  if(error){logsBox.innerHTML=`<div class="error">Logs konnten nicht geladen werden: ${error.message}</div>`;return;}
-  logs=data||[];
+async function loadLogs() {
+  const { data, error } = await supabaseClient
+    .from("password_reset_activity")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    logsBox.innerHTML = `<div class="error">Logs konnten nicht geladen werden: ${error.message}</div>`;
+    return;
+  }
+
+  logs = data || [];
   renderLogs();
 }
 
-function renderLogs(){
-  const search=document.getElementById("logSearch").value.toLowerCase().trim();
-  const data=logs.filter(l=>JSON.stringify(l).toLowerCase().includes(search));
-  logsBox.innerHTML=data.map(l=>`
+function renderLogs() {
+  const search = document.getElementById("logSearch").value.toLowerCase().trim();
+  const data = logs.filter(l => JSON.stringify(l).toLowerCase().includes(search));
+
+  logsBox.innerHTML = data.map(l => `
     <div class="row">
-      <div class="tag">${l.status||"log"}</div>
-      <div><strong>${l.email||"Unbekannt"}</strong></div>
-      <div>${l.details||"-"}</div>
+      <div class="tag">${l.status || "log"}</div>
+      <div><strong>${l.email || "Unbekannt"}</strong></div>
+      <div>${l.details || "-"}</div>
       <div class="small">${formatDate(l.created_at)}</div>
     </div>
-  `).join("")||"Keine Logs gefunden.";
+  `).join("") || "Keine Logs gefunden.";
 }
 
-async function logout(){
+async function logout() {
   await supabaseClient.auth.signOut();
-  window.location.href="index.html";
+  window.location.href = "index.html";
 }
 
-document.getElementById("employeeSearch").addEventListener("input",renderEmployees);
-document.getElementById("logSearch").addEventListener("input",renderLogs);
+document.getElementById("employeeSearch").addEventListener("input", renderEmployees);
+document.getElementById("logSearch").addEventListener("input", renderLogs);
+
 init();
 </script>
 </body>
