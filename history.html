@@ -4,55 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fahrzeughistorie</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-:root{--bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb}
+:root{--bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--blue:#2563eb}
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:radial-gradient(circle at top right,rgba(37,99,235,.16),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
-header{position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
-.container{max-width:1050px;margin:auto;padding:20px}
+body{margin:0;color:var(--ink);background:radial-gradient(circle at top right,rgba(37,99,235,.16),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2))}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+main{max-width:1080px;margin:auto;padding:20px}
+.title{font-weight:900;font-size:24px;letter-spacing:-.4px}
+.back{color:#1d4ed8;font-weight:700;text-decoration:none}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.card{background:white;padding:15px;border-radius:14px;margin-bottom:10px;border:1px solid var(--line);box-shadow:0 10px 24px rgba(15,23,42,.07)}
-input,select{padding:11px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff}
-input{min-width:240px}
-input:focus,select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.14)}
-.tag{background:#3b82f6;color:#fff;padding:3px 8px;border-radius:6px;font-size:12px}
-.small{color:var(--muted);font-size:13px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 26px rgba(15,23,42,.07);margin-bottom:10px}
+input,select{padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+input{min-width:240px;flex:1}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{display:inline-block;background:#dbeafe;color:#1d4ed8;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-left:6px}
+.small{font-size:13px;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:20px}
 </style>
 </head>
-
 <body>
-
 <header>
-    <div style="font-weight:900;font-size:20px">📜 Fahrzeughistorie</div>
-    <div>
-        <a href="index.html" style="color:#1d4ed8;font-weight:700">Zurück</a>
-    </div>
+  <div class="title">📜 Fahrzeughistorie</div>
+  <a class="back" href="index.html">Zurück</a>
 </header>
-
-<div class="container">
-
-    <div class="toolbar">
-      <input id="search" placeholder="Suche...">
-      
-      <select id="filter">
-          <option value="all">Alle</option>
-          <option value="angelegt">Schaden erstellt</option>
-          <option value="repariert">Repariert</option>
-          <option value="irrtuemlich">Irrtümlich</option>
-      </select>
-    </div>
-
-    <div id="historyList"></div>
-
-</div>
+<main>
+  <div class="toolbar">
+    <input id="search" placeholder="Suche in Aktion, Details, User...">
+    <select id="filter">
+      <option value="all">Alle Aktionen</option>
+      <option value="angelegt">Schaden erstellt</option>
+      <option value="repariert">Repariert</option>
+      <option value="irrtuemlich">Irrtümlich</option>
+    </select>
+  </div>
+  <div id="historyList"></div>
+</main>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const list = document.getElementById("historyList");
@@ -60,98 +51,78 @@ const search = document.getElementById("search");
 const filter = document.getElementById("filter");
 const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
-let data = [];
+let entries = [];
 
-async function loadHistory() {
-
-    const { data: history, error } = await db
-        .from("damage_history")
-        .select(`
-            id,
-            action,
-            created_at,
-            details,
-            user_id,
-            damages (
-                id,
-                damage_type,
-                area,
-                vehicle_id
-            )
-        `)
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        console.error(error);
-        alert("Fehler beim Laden");
-        return;
-    }
-
-    data = (history || []).filter(item => {
-        if (!Number.isInteger(vehicleId) || vehicleId <= 0) return true;
-        return Number(item?.damages?.vehicle_id) === vehicleId;
-    });
-    render();
+function label(action){
+  switch(action){
+    case "angelegt": return "Schaden angelegt";
+    case "repariert": return "Repariert";
+    case "irrtuemlich": return "Irrtümlich";
+    default: return action || "-";
+  }
 }
 
-function render() {
-    const s = search.value.toLowerCase();
-    const f = filter.value;
+async function loadHistory(){
+  const { data, error } = await db
+    .from("damage_history")
+    .select(`
+      id,
+      action,
+      created_at,
+      details,
+      user_id,
+      damages (
+        id,
+        damage_type,
+        area,
+        vehicle_id
+      )
+    `)
+    .order("created_at", { ascending: false });
 
-    list.innerHTML = "";
+  if (error) {
+    list.innerHTML = `<div class="card">❌ ${error.message}</div>`;
+    return;
+  }
 
-    const filtered = data.filter(item => {
-        const haystack = [
-            item.action,
-            item.details,
-            item.user_id,
-            item.damages?.damage_type,
-            item.damages?.area
-        ].map(v => String(v ?? "").toLowerCase()).join(" ");
+  entries = (data || []).filter(item => {
+    if (!Number.isInteger(vehicleId) || vehicleId <= 0) return true;
+    return Number(item?.damages?.vehicle_id) === vehicleId;
+  });
 
-        const matchSearch = haystack.includes(s);
-        const matchFilter = f === "all" || item.action === f;
-        return matchSearch && matchFilter;
-    });
-
-    if (filtered.length === 0) {
-        list.innerHTML = '<div class="card">Keine Einträge gefunden.</div>';
-        return;
-    }
-
-    filtered.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        const title = document.createElement("b");
-        title.textContent = item.action || "-";
-
-        const tag = document.createElement("span");
-        tag.className = "tag";
-        tag.textContent = item.damages?.damage_type || "-";
-
-        const line1 = document.createElement("div");
-        line1.textContent = `📍 ${item.damages?.area || "-"}`;
-
-        const line2 = document.createElement("div");
-        line2.textContent = `👤 User ID: ${item.user_id || "-"}`;
-
-        const line3 = document.createElement("div");
-        line3.textContent = `📝 ${item.details || ""}`;
-
-        const line4 = document.createElement("div");
-        line4.textContent = `🕒 ${new Date(item.created_at).toLocaleString()}`;
-
-        div.append(title, document.createTextNode(" "), tag, document.createElement("br"), line1, line2, line3, line4);
-        list.appendChild(div);
-    });
+  render();
 }
 
-search.oninput = render;
-filter.onchange = render;
+function render(){
+  const s = search.value.toLowerCase();
+  const f = filter.value;
 
+  const filtered = entries.filter(item => {
+    const haystack = [item.action, item.details, item.user_id, item.damages?.damage_type, item.damages?.area]
+      .map(v => String(v ?? "").toLowerCase())
+      .join(" ");
+
+    return haystack.includes(s) && (f === "all" || item.action === f);
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="card empty">Keine Einträge gefunden.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(item => `
+    <div class="card">
+      <div><strong>${label(item.action)}</strong><span class="tag">${item.damages?.damage_type || "-"}</span></div>
+      <div class="small" style="margin-top:6px">📍 ${item.damages?.area || "-"} · 👤 User ID: ${item.user_id || "-"}</div>
+      <div style="margin-top:8px">📝 ${item.details || "-"}</div>
+      <div class="small" style="margin-top:8px">🕒 ${new Date(item.created_at).toLocaleString("de-DE")}</div>
+    </div>
+  `).join("");
+}
+
+search.addEventListener("input", render);
+filter.addEventListener("change", render);
 loadHistory();
 </script>
-
 </body>
 </html>
