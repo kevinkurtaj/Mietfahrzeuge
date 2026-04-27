@@ -42,6 +42,37 @@ button:hover{opacity:.95}
 .modal.show{display:flex}
 .modal-box{width:100%;max-width:520px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.28)}
 @media(max-width:900px){main{padding:14px}.h1{font-size:28px}.grid{grid-template-columns:1fr}}
+:root{
+  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --card:#ffffff;--primary:#111827;--primary-h:#1f2937;--blue:#2563eb;--green:#166534;--red:#991b1b;
+}
+*{box-sizing:border-box}
+body{
+  font-family:Arial,Helvetica,sans-serif;margin:0;padding:30px;color:var(--ink);
+  background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));
+}
+h1{margin:0 0 14px 0;font-size:34px;letter-spacing:-.4px}
+.subtitle{color:var(--muted);margin-bottom:18px}
+.card{background:var(--card);padding:18px;border-radius:18px;margin-bottom:14px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(15,23,42,.08)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #cbd5e1;margin-bottom:10px}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+button{padding:10px 14px;border:none;border-radius:12px;background:var(--primary);color:#fff;cursor:pointer;font-weight:700}
+button:hover{background:var(--primary-h)}
+.tag{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#dbeafe;color:#1d4ed8;margin-bottom:8px}
+.tag.green{background:#dcfce7;color:var(--green)}
+.tag.red{background:#fee2e2;color:var(--red)}
+.employee{display:inline-block;margin-top:6px;background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}
+.small{color:var(--muted);font-size:13px}
+.error{background:#fef2f2;color:var(--red);padding:12px;border-radius:10px}
+.success{background:#ecfdf5;color:var(--green);padding:12px;border-radius:10px;display:none}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn-secondary{background:#e5e7eb;color:#111827}
+.btn-danger{background:#991b1b}
+.btn-danger:hover{background:#7f1d1d}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal-box{width:100%;max-width:520px;background:white;border-radius:18px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+@media(max-width:800px){.grid{grid-template-columns:1fr}body{padding:16px}h1{font-size:28px}}
 </style>
 </head>
 <body>
@@ -60,6 +91,9 @@ button:hover{opacity:.95}
     <button class="tab" data-tab="damageLogs">Schäden-Log</button>
     <button class="tab" data-tab="resetLogs">Reset-Logs</button>
   </div>
+<h1>Admin Panel</h1>
+<div class="subtitle">Mitarbeiter verwalten, Passwörter zurücksetzen und Aktivität prüfen.</div>
+<div id="authBox" class="card">Prüfe Anmeldung...</div>
 
   <section class="tab-panel active" id="panel-overview">
     <div class="grid3" style="margin-bottom:14px">
@@ -106,6 +140,21 @@ button:hover{opacity:.95}
     <div class="card">
       <h3>Schäden-Log</h3>
       <div id="damageLogsBox" class="list"></div>
+      <h2>Mitarbeiter anlegen</h2>
+      <input id="newName" placeholder="Name">
+      <input id="newEmail" type="email" placeholder="E-Mail">
+      <select id="newRole">
+        <option value="employee">Mitarbeiter</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="createEmployee()">Mitarbeiter erstellen</button>
+      <div id="createMsg" class="success"></div>
+    </div>
+
+    <div class="card">
+      <h2>Mitarbeiter</h2>
+      <input id="employeeSearch" placeholder="Mitarbeiter suchen...">
+      <div id="employeesBox"></div>
     </div>
   </section>
 
@@ -125,6 +174,25 @@ button:hover{opacity:.95}
     <input id="editEmail" type="email" placeholder="E-Mail">
     <select id="editRole"><option value="employee">Mitarbeiter</option><option value="admin">Admin</option></select>
     <div class="small" style="margin-bottom:10px">Passwortänderung läuft sicher über Reset-Link.</div>
+    <div class="btn-row">
+      <button onclick="saveEmployeeEdits()">Speichern</button>
+      <button class="btn-secondary" onclick="sendResetFromEditor()">Passwort-Reset senden</button>
+      <button class="btn-secondary" onclick="closeEmployeeModal()">Schließen</button>
+    </div>
+    <div id="employeeEditMsg" class="small" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="employeeModal" class="modal" onclick="if(event.target===this) closeEmployeeModal()">
+  <div class="modal-box">
+    <h2>Mitarbeiter bearbeiten</h2>
+    <input id="editName" placeholder="Name">
+    <input id="editEmail" type="email" placeholder="E-Mail">
+    <select id="editRole">
+      <option value="employee">Mitarbeiter</option>
+      <option value="admin">Admin</option>
+    </select>
+    <div class="small">Passwortänderung erfolgt sicher über einen Reset-Link per E-Mail.</div>
     <div class="btn-row">
       <button onclick="saveEmployeeEdits()">Speichern</button>
       <button class="btn-secondary" onclick="sendResetFromEditor()">Passwort-Reset senden</button>
@@ -155,10 +223,22 @@ function setMsg(node, text, ok = true) {
   node.className = ok ? "success" : "error";
   node.textContent = text;
 }
+let editingEmployeeId = null;
+let hasIsActiveColumn = false;
 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === `panel-${tab}`));
+}
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  }[ch]));
 }
 
 function employeeName(id) {
@@ -196,12 +276,35 @@ async function checkAdmin() {
 
   el('authBox').textContent = `Angemeldet als Admin: ${user.email}`;
   return true;
+  const { data: employee } = await db
+    .from("employees")
+    .select("*")
+    .eq("email", user.email)
+    .maybeSingle();
+
+  if (employee?.role !== "admin") {
+    authBox.innerHTML = `<div class="error">Kein Admin-Zugriff für ${esc(user.email)}</div>`;
+    return;
+  }
+
+  authBox.innerHTML = `Angemeldet als Admin: <strong>${esc(user.email)}</strong>`;
+  adminApp.style.display = "block";
+
+  await loadAll();
+}
+
+async function loadAll() {
+  await loadEmployees();
+  await loadDamages();
+  await loadDamageLogs();
+  await loadLogs();
 }
 
 async function loadEmployees() {
   const { data, error } = await db.from('employees').select('*').order('name');
   if (error) {
     el('employeesBox').innerHTML = `<div class="error">${esc(error.message)}</div>`;
+    employeesBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -212,6 +315,19 @@ async function loadEmployees() {
 
   el('employeeFilter').innerHTML = `<option value="all">Alle Mitarbeiter</option>` +
     employees.map(emp => `<option value="${esc(emp.id)}">${esc(emp.name || emp.email || `Mitarbeiter ${emp.id}`)}</option>`).join('');
+  hasIsActiveColumn = employees.length > 0 && Object.prototype.hasOwnProperty.call(employees[0], "is_active");
+
+  employees.forEach(emp => {
+    employeesMap[emp.id] = emp.name || emp.email || "Mitarbeiter " + emp.id;
+  });
+
+  employeeFilter.innerHTML =
+    `<option value="all">Alle Mitarbeiter</option>` +
+    employees.map(emp => `
+      <option value="${emp.id}">
+        ${esc(emp.name || emp.email || "Mitarbeiter " + emp.id)}
+      </option>
+    `).join("");
 
   renderEmployees();
   renderStats();
@@ -233,6 +349,11 @@ function renderEmployees() {
         ${emp.email ? `<button class="btn-secondary" onclick="sendReset('${encodeURIComponent(emp.email)}', true)">Passwort-Reset</button>` : ''}
         ${hasIsActiveColumn ? `<button class="btn-danger" onclick="toggleEmployeeActive('${encodeURIComponent(String(emp.id))}', ${emp.is_active === false ? 'true' : 'false'})">${emp.is_active === false ? 'Aktivieren' : 'Deaktivieren'}</button>` : ''}
       </div>
+      <div class="tag">${emp.role === "admin" ? "Admin" : "Mitarbeiter"}</div>
+      <div><strong>${esc(emp.name || "-")}</strong></div>
+      <div class="small">E-Mail: ${esc(emp.email || "-")}</div>
+      <div class="small">ID: ${esc(emp.id)}</div>
+      ${emp.email ? `<button onclick="sendReset('${encodeURIComponent(emp.email)}', true)">Reset senden</button>` : ""}
     </div>
   `).join('') || '<div class="small">Keine Mitarbeiter gefunden.</div>';
 }
@@ -253,6 +374,7 @@ async function createEmployee() {
   const { error } = await db.from('employees').insert([payload]);
   if (error) {
     setMsg(el('createMsg'), `Fehler beim Anlegen: ${error.message}`, false);
+    damageLogsBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -312,6 +434,11 @@ async function sendReset(emailFromButton = null, encoded = false) {
       sourceEmail = emailFromButton;
     }
   }
+    return `
+      <div class="card">
+        <div class="tag">${actionLabel(log.action)}</div>
+        <div><strong>${esc(damage.damage_type || "Schaden")}</strong></div>
+        <div>${esc(damage.area || "-")} · ${esc(damage.severity || "-")}</div>
 
   const email = sourceEmail.trim();
   if (!email) {
@@ -332,6 +459,27 @@ async function sendReset(emailFromButton = null, encoded = false) {
   await db.from('password_reset_activity').insert({ email, status: 'reset_mail_sent', details: 'Admin hat Reset-Link gesendet' });
   await loadLogs();
 }
+        <div class="small">${esc(formatDate(log.created_at))}</div>
+        <div>${esc(log.details || "-")}</div>
+      </div>
+    `;
+  }).join("") || "Keine Schäden gefunden.";
+}
+
+async function sendReset(emailFromButton = null, encoded = false) {
+  let sourceEmail = resetEmail.value;
+  if (emailFromButton) {
+    if (encoded) {
+      try {
+        sourceEmail = decodeURIComponent(emailFromButton);
+      } catch (_) {
+        sourceEmail = "";
+      }
+    } else {
+      sourceEmail = emailFromButton;
+    }
+  }
+  const email = sourceEmail.trim();
 
 async function sendResetFromEditor() {
   const email = el('editEmail').value.trim();
@@ -404,10 +552,129 @@ function renderDamageLogs() {
   }).join('') || '<div class="small">Keine Schäden gefunden.</div>';
 }
 
+function openEmployeeModal(encodedId) {
+  let id = "";
+  try {
+    id = decodeURIComponent(encodedId);
+  } catch (_) {
+    return;
+  }
+
+  const emp = employees.find(e => String(e.id) === id);
+  if (!emp) return;
+
+  editingEmployeeId = emp.id;
+  editName.value = emp.name || "";
+  editEmail.value = emp.email || "";
+  editRole.value = emp.role === "admin" ? "admin" : "employee";
+  employeeEditMsg.textContent = "";
+  employeeModal.style.display = "flex";
+}
+
+function closeEmployeeModal() {
+  employeeModal.style.display = "none";
+  editingEmployeeId = null;
+}
+
+async function saveEmployeeEdits() {
+  if (!editingEmployeeId) return;
+
+  const name = editName.value.trim();
+  const email = editEmail.value.trim();
+  const role = editRole.value;
+
+  if (!email) {
+    employeeEditMsg.textContent = "E-Mail darf nicht leer sein.";
+    return;
+  }
+
+  const { error } = await db
+    .from("employees")
+    .update({ name, email, role })
+    .eq("id", editingEmployeeId);
+
+  if (error) {
+    employeeEditMsg.textContent = "Fehler beim Speichern: " + error.message;
+    return;
+  }
+
+  employeeEditMsg.textContent = "✅ Mitarbeiter gespeichert.";
+  await loadEmployees();
+}
+
+async function sendResetFromEditor() {
+  const email = editEmail.value.trim();
+  if (!email) {
+    employeeEditMsg.textContent = "Bitte zuerst eine gültige E-Mail eintragen.";
+    return;
+  }
+  await sendReset(email);
+  employeeEditMsg.textContent = "Reset-Link wurde gesendet.";
+}
+
+async function createEmployee() {
+  const name = newName.value.trim();
+  const email = newEmail.value.trim();
+  const role = newRole.value;
+
+  createMsg.style.display = "none";
+  createMsg.className = "success";
+
+  if (!name || !email) {
+    createMsg.className = "error";
+    createMsg.style.display = "block";
+    createMsg.textContent = "Bitte Name und E-Mail ausfüllen.";
+    return;
+  }
+
+  const payload = { name, email, role };
+  if (hasIsActiveColumn) payload.is_active = true;
+
+  const { error } = await db.from("employees").insert([payload]);
+  if (error) {
+    createMsg.className = "error";
+    createMsg.style.display = "block";
+    createMsg.textContent = "Fehler beim Anlegen: " + error.message;
+    return;
+  }
+
+  createMsg.className = "success";
+  createMsg.style.display = "block";
+  createMsg.textContent = "✅ Mitarbeiter angelegt.";
+  newName.value = "";
+  newEmail.value = "";
+  newRole.value = "employee";
+  await loadEmployees();
+}
+
+async function toggleEmployeeActive(encodedId, nextActive) {
+  if (!hasIsActiveColumn) return;
+
+  let id = "";
+  try {
+    id = decodeURIComponent(encodedId);
+  } catch (_) {
+    return;
+  }
+
+  const { error } = await db
+    .from("employees")
+    .update({ is_active: nextActive })
+    .eq("id", id);
+
+  if (error) {
+    alert("Fehler beim Aktualisieren: " + error.message);
+    return;
+  }
+
+  await loadEmployees();
+}
+
 async function loadLogs() {
   const { data, error } = await db.from('password_reset_activity').select('*').order('created_at', { ascending: false });
   if (error) {
     el('logsBox').innerHTML = `<div class="error">${esc(error.message)}</div>`;
+    logsBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -426,6 +693,10 @@ function renderLogs() {
       <div><strong>${esc(log.email || 'Unbekannt')}</strong></div>
       <div>${esc(log.details || '-')}</div>
       <div class="small">${esc(fmtDate(log.created_at))}</div>
+      <div class="tag">${esc(log.status || "Log")}</div>
+      <div><strong>${esc(log.email || "Unbekannt")}</strong></div>
+      <div>${esc(log.details || "-")}</div>
+      <div class="small">${esc(formatDate(log.created_at))}</div>
     </div>
   `).join('') || '<div class="small">Keine Logs gefunden.</div>';
 }
