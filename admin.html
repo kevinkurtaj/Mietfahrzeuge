@@ -235,16 +235,11 @@ function renderEmployees() {
 
   employeesBox.innerHTML = filtered.map(emp => `
     <div class="card">
-      <div class="tag ${emp.role === "admin" ? "" : "green"}">${emp.role === "admin" ? "Admin" : "Mitarbeiter"}</div>
-      ${hasIsActiveColumn ? `<div class="tag ${emp.is_active === false ? "red" : "green"}">${emp.is_active === false ? "Inaktiv" : "Aktiv"}</div>` : ""}
+      <div class="tag">${emp.role === "admin" ? "Admin" : "Mitarbeiter"}</div>
       <div><strong>${esc(emp.name || "-")}</strong></div>
       <div class="small">E-Mail: ${esc(emp.email || "-")}</div>
       <div class="small">ID: ${esc(emp.id)}</div>
-      <div class="btn-row">
-        <button onclick="openEmployeeModal('${encodeURIComponent(String(emp.id))}')">Bearbeiten</button>
-        ${emp.email ? `<button class="btn-secondary" onclick="sendReset('${encodeURIComponent(emp.email)}', true)">Passwort-Reset</button>` : ""}
-        ${hasIsActiveColumn ? `<button class="btn-danger" onclick="toggleEmployeeActive('${encodeURIComponent(String(emp.id))}', ${emp.is_active === false ? "true" : "false"})">${emp.is_active === false ? "Aktivieren" : "Deaktivieren"}</button>` : ""}
-      </div>
+      ${emp.email ? `<button onclick="sendReset('${encodeURIComponent(emp.email)}', true)">Reset senden</button>` : ""}
     </div>
   `).join("") || "Keine Mitarbeiter gefunden.";
 }
