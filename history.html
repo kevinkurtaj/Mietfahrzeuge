@@ -8,67 +8,42 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
-    font-family: Arial;
-    background: #f4f6f9;
-    margin: 0;
-}
-
-header {
-    background: #111827;
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.container {
-    padding: 20px;
-}
-
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-
-input, select {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
-.tag {
-    background: #3b82f6;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-}
+:root{--bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:radial-gradient(circle at top right,rgba(37,99,235,.16),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
+header{position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.container{max-width:1050px;margin:auto;padding:20px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.card{background:white;padding:15px;border-radius:14px;margin-bottom:10px;border:1px solid var(--line);box-shadow:0 10px 24px rgba(15,23,42,.07)}
+input,select{padding:11px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff}
+input{min-width:240px}
+input:focus,select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{background:#3b82f6;color:#fff;padding:3px 8px;border-radius:6px;font-size:12px}
+.small{color:var(--muted);font-size:13px}
 </style>
 </head>
 
 <body>
 
 <header>
-    <div>📜 Fahrzeughistorie</div>
+    <div style="font-weight:900;font-size:20px">📜 Fahrzeughistorie</div>
     <div>
-        <a href="index.html" style="color:white;">Zurück</a>
+        <a href="index.html" style="color:#1d4ed8;font-weight:700">Zurück</a>
     </div>
 </header>
 
 <div class="container">
 
-    <input id="search" placeholder="Suche...">
-    
-    <select id="filter">
-        <option value="all">Alle</option>
-        <option value="created">Schaden erstellt</option>
-        <option value="repaired">Repariert</option>
-    </select>
+    <div class="toolbar">
+      <input id="search" placeholder="Suche...">
+      
+      <select id="filter">
+          <option value="all">Alle</option>
+          <option value="angelegt">Schaden erstellt</option>
+          <option value="repariert">Repariert</option>
+          <option value="irrtuemlich">Irrtümlich</option>
+      </select>
+    </div>
 
     <div id="historyList"></div>
 
@@ -83,6 +58,7 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const list = document.getElementById("historyList");
 const search = document.getElementById("search");
 const filter = document.getElementById("filter");
+const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
 let data = [];
 
@@ -98,8 +74,9 @@ async function loadHistory() {
             user_id,
             damages (
                 id,
-                type,
-                location
+                damage_type,
+                area,
+                vehicle_id
             )
         `)
         .order("created_at", { ascending: false });
@@ -110,7 +87,10 @@ async function loadHistory() {
         return;
     }
 
-    data = history;
+    data = (history || []).filter(item => {
+        if (!Number.isInteger(vehicleId) || vehicleId <= 0) return true;
+        return Number(item?.damages?.vehicle_id) === vehicleId;
+    });
     render();
 }
 
@@ -120,26 +100,49 @@ function render() {
 
     list.innerHTML = "";
 
-    data
-    .filter(item => {
-        const matchSearch = item.details?.toLowerCase().includes(s);
+    const filtered = data.filter(item => {
+        const haystack = [
+            item.action,
+            item.details,
+            item.user_id,
+            item.damages?.damage_type,
+            item.damages?.area
+        ].map(v => String(v ?? "").toLowerCase()).join(" ");
+
+        const matchSearch = haystack.includes(s);
         const matchFilter = f === "all" || item.action === f;
         return matchSearch && matchFilter;
-    })
-    .forEach(item => {
+    });
 
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="card">Keine Einträge gefunden.</div>';
+        return;
+    }
+
+    filtered.forEach(item => {
         const div = document.createElement("div");
         div.className = "card";
 
-        div.innerHTML = `
-            <b>${item.action}</b> 
-            <span class="tag">${item.damages?.type || "-"}</span><br>
-            📍 ${item.damages?.location || "-"}<br>
-            👤 User ID: ${item.user_id || "-"}<br>
-            📝 ${item.details || ""}<br>
-            🕒 ${new Date(item.created_at).toLocaleString()}
-        `;
+        const title = document.createElement("b");
+        title.textContent = item.action || "-";
 
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = item.damages?.damage_type || "-";
+
+        const line1 = document.createElement("div");
+        line1.textContent = `📍 ${item.damages?.area || "-"}`;
+
+        const line2 = document.createElement("div");
+        line2.textContent = `👤 User ID: ${item.user_id || "-"}`;
+
+        const line3 = document.createElement("div");
+        line3.textContent = `📝 ${item.details || ""}`;
+
+        const line4 = document.createElement("div");
+        line4.textContent = `🕒 ${new Date(item.created_at).toLocaleString()}`;
+
+        div.append(title, document.createTextNode(" "), tag, document.createElement("br"), line1, line2, line3, line4);
         list.appendChild(div);
     });
 }
