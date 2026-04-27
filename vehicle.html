@@ -7,16 +7,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{--bg1:#f8fafc;--bg2:#e2e8f0;--line:#e5e7eb}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f1f5f9;
+  background: radial-gradient(circle at top right,rgba(37,99,235,.14),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));
   color: #111827;
 }
 
 header {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  position: sticky; top:0; z-index:10;
+  background: rgba(255,255,255,.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
   padding: 14px 24px;
   display: flex;
   justify-content: space-between;
@@ -34,6 +37,7 @@ main {
   border-radius: 18px;
   padding: 22px;
   margin-bottom: 18px;
+  border:1px solid var(--line);
   box-shadow: 0 10px 30px rgba(15,23,42,0.08);
 }
 
@@ -212,7 +216,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const vehicleId = new URLSearchParams(window.location.search).get("id");
+const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
 let currentUser = null;
 let currentEmployee = null;
@@ -223,14 +227,31 @@ function setArea(area) {
 }
 
 function showMessage(id, text, type = "success") {
-  document.getElementById(id).innerHTML = `<div class="${type}">${text}</div>`;
+  const safeType = type === "error" ? "error" : "success";
+  document.getElementById(id).innerHTML = `<div class="${safeType}">${esc(text)}</div>`;
 }
 
 function formatDate(value) {
   return value ? new Date(value).toLocaleString("de-DE") : "-";
 }
 
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
+
 async function init() {
+  if (!Number.isInteger(vehicleId) || vehicleId <= 0) {
+    document.getElementById("vehicleTitle").textContent = "Ungültige Fahrzeug-ID";
+    document.getElementById("damageList").innerHTML = `<div class="error">Bitte ein gültiges Fahrzeug öffnen.</div>`;
+    return;
+  }
+
   const { data: sessionData } = await db.auth.getSession();
   currentUser = sessionData.session?.user;
 
@@ -248,9 +269,9 @@ async function init() {
   currentEmployee = employee;
 
   if (!currentEmployee) {
-    document.getElementById("userInfo").innerHTML = "⚠ Kein Mitarbeiter gefunden";
+    document.getElementById("userInfo").textContent = "⚠ Kein Mitarbeiter gefunden";
   } else {
-    document.getElementById("userInfo").innerHTML = "👤 " + currentEmployee.name;
+    document.getElementById("userInfo").textContent = "👤 " + (currentEmployee.name || currentEmployee.email || "Unbekannt");
   }
 
   await loadEmployees();
@@ -268,14 +289,14 @@ async function loadEmployees() {
 }
 
 function employeeName(id) {
-  return employeesMap[id] || "Unbekannt";
+  return esc(employeesMap[id] || "Unbekannt");
 }
 
 async function loadVehicle() {
   const { data, error } = await db
     .from("vehicles")
     .select("*")
-    .eq("id", Number(vehicleId))
+    .eq("id", vehicleId)
     .maybeSingle();
 
   if (error || !data) {
@@ -295,12 +316,12 @@ async function loadDamages() {
   const { data, error } = await db
     .from("damages")
     .select("*")
-    .eq("vehicle_id", Number(vehicleId))
+    .eq("vehicle_id", vehicleId)
     .order("created_at", { ascending: false });
 
   if (error) {
     document.getElementById("damageList").innerHTML =
-      `<div class="error">${error.message}</div>`;
+      `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -315,11 +336,11 @@ async function loadDamages() {
 
   document.getElementById("damageList").innerHTML = active.map(d => `
     <div class="damage">
-      <strong>${d.damage_type || "-"}</strong><br>
-      ${d.area || "-"} · ${d.severity || "-"}<br>
+      <strong>${esc(d.damage_type || "-")}</strong><br>
+      ${esc(d.area || "-")} · ${esc(d.severity || "-")}<br>
       <div class="employee">👤 Gemeldet von: ${employeeName(d.employee_id)}</div>
-      <div class="small">${formatDate(d.created_at)}</div>
-      <p>${d.description || ""}</p>
+      <div class="small">${esc(formatDate(d.created_at))}</div>
+      <p>${esc(d.description || "")}</p>
 
       <button onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
       <button onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
@@ -355,7 +376,7 @@ async function saveDamage() {
   const { data: damage, error } = await db
     .from("damages")
     .insert([{
-      vehicle_id: Number(vehicleId),
+      vehicle_id: vehicleId,
       damage_type: type,
       area: area,
       severity: severity,
@@ -369,7 +390,7 @@ async function saveDamage() {
 
   if (error) {
     console.error(error);
-    showMessage("message", "Fehler: " + error.message, "error");
+    showMessage("message", "Fehler: " + (error.message || "Unbekannter Fehler"), "error");
     return;
   }
 
@@ -385,7 +406,7 @@ async function saveDamage() {
 
   if (historyError) {
     console.error(historyError);
-    showMessage("message", "Schaden gespeichert, aber Historie Fehler: " + historyError.message, "error");
+    showMessage("message", "Schaden gespeichert, aber Historie Fehler: " + (historyError.message || "Unbekannter Fehler"), "error");
     return;
   }
 
@@ -405,15 +426,15 @@ async function saveStatus() {
   const { error } = await db
     .from("vehicles")
     .update({ status: status })
-    .eq("id", Number(vehicleId));
+    .eq("id", vehicleId);
 
   if (error) {
-    showMessage("statusMessage", "Fehler: " + error.message, "error");
+    showMessage("statusMessage", "Fehler: " + (error.message || "Unbekannter Fehler"), "error");
     return;
   }
 
   await db.from("vehicle_history").insert([{
-    vehicle_id: Number(vehicleId),
+    vehicle_id: vehicleId,
     action: "fahrzeugstatus_geaendert",
     details: note || status,
     user_id: currentEmployee?.id || null,
