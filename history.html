@@ -52,6 +52,7 @@ const filter = document.getElementById("filter");
 const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
 let entries = [];
+const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 
 function label(action){
   switch(action){
@@ -81,7 +82,7 @@ async function loadHistory(){
     .order("created_at", { ascending: false });
 
   if (error) {
-    list.innerHTML = `<div class="card">❌ ${error.message}</div>`;
+    list.innerHTML = `<div class="card">❌ ${esc(error.message)}</div>`;
     return;
   }
 
@@ -112,10 +113,10 @@ function render(){
 
   list.innerHTML = filtered.map(item => `
     <div class="card">
-      <div><strong>${label(item.action)}</strong><span class="tag">${item.damages?.damage_type || "-"}</span></div>
-      <div class="small" style="margin-top:6px">📍 ${item.damages?.area || "-"} · 👤 User ID: ${item.user_id || "-"}</div>
-      <div style="margin-top:8px">📝 ${item.details || "-"}</div>
-      <div class="small" style="margin-top:8px">🕒 ${new Date(item.created_at).toLocaleString("de-DE")}</div>
+      <div><strong>${esc(label(item.action))}</strong><span class="tag">${esc(item.damages?.damage_type || "-")}</span></div>
+      <div class="small" style="margin-top:6px">📍 ${esc(item.damages?.area || "-")} · 👤 User ID: ${esc(item.user_id || "-")}</div>
+      <div style="margin-top:8px">📝 ${esc(item.details || "-")}</div>
+      <div class="small" style="margin-top:8px">🕒 ${esc(new Date(item.created_at).toLocaleString("de-DE"))}</div>
     </div>
   `).join("");
 }

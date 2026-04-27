@@ -32,6 +32,21 @@ main {
   padding: 28px;
 }
 
+.hero {
+  margin-bottom: 16px;
+}
+
+.hero h1 {
+  margin: 0 0 6px 0;
+  font-size: 34px;
+  letter-spacing: -.4px;
+}
+
+.hero p {
+  margin: 0;
+  color: #64748b;
+}
+
 .card {
   background: white;
   border-radius: 18px;
@@ -71,6 +86,8 @@ button, .btn {
   text-decoration: none;
 }
 
+button:hover,.btn:hover{opacity:.95}
+
 .btn-secondary {
   background: #e5e7eb;
   color: #111827;
@@ -86,6 +103,7 @@ button, .btn {
   cursor: pointer;
   font-weight: bold;
 }
+.zone:hover{filter:brightness(1.05)}
 
 .damage {
   border: 1px solid #e5e7eb;
@@ -131,6 +149,7 @@ button, .btn {
   .grid {
     grid-template-columns: 1fr;
   }
+  .hero h1{font-size:28px}
 }
 </style>
 </head>
@@ -145,8 +164,10 @@ button, .btn {
 
 <main>
 
-<h1 id="vehicleTitle">Fahrzeug wird geladen...</h1>
-<p id="vehicleSub" class="small"></p>
+<div class="hero">
+  <h1 id="vehicleTitle">Fahrzeug wird geladen...</h1>
+  <p id="vehicleSub" class="small"></p>
+</div>
 
 <div class="card">
   <h3>Zonen auswählen</h3>
@@ -280,7 +301,8 @@ async function init() {
 }
 
 async function loadEmployees() {
-  const { data } = await db.from("employees").select("*");
+  const { data, error } = await db.from("employees").select("*");
+  if (error) return;
 
   employeesMap = {};
   (data || []).forEach(emp => {
@@ -301,6 +323,7 @@ async function loadVehicle() {
 
   if (error || !data) {
     document.getElementById("vehicleTitle").innerText = "Fahrzeug nicht gefunden";
+    document.getElementById("vehicleSub").innerText = error?.message || "Bitte über die Fahrzeugübersicht öffnen.";
     return;
   }
 
