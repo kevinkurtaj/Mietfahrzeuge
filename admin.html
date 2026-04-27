@@ -152,9 +152,8 @@ button:hover{background:var(--primary-h)}
     </div>
 
     <div class="card">
-      <h2>Mitarbeiter</h2>
-      <input id="employeeSearch" placeholder="Mitarbeiter suchen...">
-      <div id="employeesBox"></div>
+      <h3>Schäden-Log</h3>
+      <div id="damageLogsBox" class="list"></div>
     </div>
   </section>
 
@@ -290,14 +289,23 @@ async function checkAdmin() {
   authBox.innerHTML = `Angemeldet als Admin: <strong>${esc(user.email)}</strong>`;
   adminApp.style.display = "block";
 
-  await loadAll();
+function openEmployeeModal(encodedId) {
+  let id = '';
+  try { id = decodeURIComponent(encodedId); } catch (_) { return; }
+  const emp = employees.find(e => String(e.id) === id);
+  if (!emp) return;
+
+  editingEmployeeId = emp.id;
+  el('editName').value = emp.name || '';
+  el('editEmail').value = emp.email || '';
+  el('editRole').value = emp.role === 'admin' ? 'admin' : 'employee';
+  el('employeeEditMsg').textContent = '';
+  el('employeeModal').classList.add('show');
 }
 
-async function loadAll() {
-  await loadEmployees();
-  await loadDamages();
-  await loadDamageLogs();
-  await loadLogs();
+function closeEmployeeModal() {
+  editingEmployeeId = null;
+  el('employeeModal').classList.remove('show');
 }
 
 async function loadEmployees() {
@@ -317,8 +325,24 @@ async function loadEmployees() {
     employees.map(emp => `<option value="${esc(emp.id)}">${esc(emp.name || emp.email || `Mitarbeiter ${emp.id}`)}</option>`).join('');
   hasIsActiveColumn = employees.length > 0 && Object.prototype.hasOwnProperty.call(employees[0], "is_active");
 
-  employees.forEach(emp => {
-    employeesMap[emp.id] = emp.name || emp.email || "Mitarbeiter " + emp.id;
+async function sendReset(emailFromButton = null, encoded = false) {
+  let sourceEmail = el('resetEmail').value;
+  if (emailFromButton) {
+    if (encoded) {
+      try { sourceEmail = decodeURIComponent(emailFromButton); } catch (_) { sourceEmail = ''; }
+    } else {
+      sourceEmail = emailFromButton;
+    }
+  }
+
+  const email = sourceEmail.trim();
+  if (!email) {
+    setMsg(el('resetMsg'), 'Bitte E-Mail eingeben.', false);
+    return;
+  }
+
+  const { error } = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html'
   });
 
   employeeFilter.innerHTML =
