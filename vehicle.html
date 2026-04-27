@@ -7,16 +7,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{--bg1:#f8fafc;--bg2:#e2e8f0;--line:#e5e7eb}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f1f5f9;
+  background: radial-gradient(circle at top right,rgba(37,99,235,.14),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));
   color: #111827;
 }
 
 header {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  position: sticky; top:0; z-index:10;
+  background: rgba(255,255,255,.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
   padding: 14px 24px;
   display: flex;
   justify-content: space-between;
@@ -34,6 +37,7 @@ main {
   border-radius: 18px;
   padding: 22px;
   margin-bottom: 18px;
+  border:1px solid var(--line);
   box-shadow: 0 10px 30px rgba(15,23,42,0.08);
 }
 
