@@ -66,8 +66,9 @@ input, select {
     
     <select id="filter">
         <option value="all">Alle</option>
-        <option value="created">Schaden erstellt</option>
-        <option value="repaired">Repariert</option>
+        <option value="angelegt">Schaden erstellt</option>
+        <option value="repariert">Repariert</option>
+        <option value="irrtuemlich">Irrtümlich</option>
     </select>
 
     <div id="historyList"></div>
@@ -83,6 +84,7 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const list = document.getElementById("historyList");
 const search = document.getElementById("search");
 const filter = document.getElementById("filter");
+const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
 let data = [];
 
@@ -98,8 +100,9 @@ async function loadHistory() {
             user_id,
             damages (
                 id,
-                type,
-                location
+                damage_type,
+                area,
+                vehicle_id
             )
         `)
         .order("created_at", { ascending: false });
@@ -110,7 +113,10 @@ async function loadHistory() {
         return;
     }
 
-    data = history;
+    data = (history || []).filter(item => {
+        if (!Number.isInteger(vehicleId) || vehicleId <= 0) return true;
+        return Number(item?.damages?.vehicle_id) === vehicleId;
+    });
     render();
 }
 
@@ -120,26 +126,49 @@ function render() {
 
     list.innerHTML = "";
 
-    data
-    .filter(item => {
-        const matchSearch = item.details?.toLowerCase().includes(s);
+    const filtered = data.filter(item => {
+        const haystack = [
+            item.action,
+            item.details,
+            item.user_id,
+            item.damages?.damage_type,
+            item.damages?.area
+        ].map(v => String(v ?? "").toLowerCase()).join(" ");
+
+        const matchSearch = haystack.includes(s);
         const matchFilter = f === "all" || item.action === f;
         return matchSearch && matchFilter;
-    })
-    .forEach(item => {
+    });
 
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="card">Keine Einträge gefunden.</div>';
+        return;
+    }
+
+    filtered.forEach(item => {
         const div = document.createElement("div");
         div.className = "card";
 
-        div.innerHTML = `
-            <b>${item.action}</b> 
-            <span class="tag">${item.damages?.type || "-"}</span><br>
-            📍 ${item.damages?.location || "-"}<br>
-            👤 User ID: ${item.user_id || "-"}<br>
-            📝 ${item.details || ""}<br>
-            🕒 ${new Date(item.created_at).toLocaleString()}
-        `;
+        const title = document.createElement("b");
+        title.textContent = item.action || "-";
 
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = item.damages?.damage_type || "-";
+
+        const line1 = document.createElement("div");
+        line1.textContent = `📍 ${item.damages?.area || "-"}`;
+
+        const line2 = document.createElement("div");
+        line2.textContent = `👤 User ID: ${item.user_id || "-"}`;
+
+        const line3 = document.createElement("div");
+        line3.textContent = `📝 ${item.details || ""}`;
+
+        const line4 = document.createElement("div");
+        line4.textContent = `🕒 ${new Date(item.created_at).toLocaleString()}`;
+
+        div.append(title, document.createTextNode(" "), tag, document.createElement("br"), line1, line2, line3, line4);
         list.appendChild(div);
     });
 }

@@ -80,8 +80,18 @@ function formatDate(value) {
   return value ? new Date(value).toLocaleString("de-DE") : "-";
 }
 
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
+
 function employeeName(id) {
-  return employeesMap[id] || "Unbekannt";
+  return esc(employeesMap[id] || "Unbekannt");
 }
 
 function actionLabel(action) {
@@ -115,11 +125,11 @@ async function checkAdmin() {
     .maybeSingle();
 
   if (employee?.role !== "admin") {
-    authBox.innerHTML = `<div class="error">Kein Admin-Zugriff für ${user.email}</div>`;
+    authBox.innerHTML = `<div class="error">Kein Admin-Zugriff für ${esc(user.email)}</div>`;
     return;
   }
 
-  authBox.innerHTML = `Angemeldet als Admin: <strong>${user.email}</strong>`;
+  authBox.innerHTML = `Angemeldet als Admin: <strong>${esc(user.email)}</strong>`;
   adminApp.style.display = "block";
 
   await loadAll();
@@ -139,7 +149,7 @@ async function loadEmployees() {
     .order("name");
 
   if (error) {
-    employeesBox.innerHTML = `<div class="error">${error.message}</div>`;
+    employeesBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -154,7 +164,7 @@ async function loadEmployees() {
     `<option value="all">Alle Mitarbeiter</option>` +
     employees.map(emp => `
       <option value="${emp.id}">
-        ${emp.name || emp.email || "Mitarbeiter " + emp.id}
+        ${esc(emp.name || emp.email || "Mitarbeiter " + emp.id)}
       </option>
     `).join("");
 
@@ -171,10 +181,10 @@ function renderEmployees() {
   employeesBox.innerHTML = filtered.map(emp => `
     <div class="card">
       <div class="tag">${emp.role === "admin" ? "Admin" : "Mitarbeiter"}</div>
-      <div><strong>${emp.name || "-"}</strong></div>
-      <div class="small">E-Mail: ${emp.email || "-"}</div>
-      <div class="small">ID: ${emp.id}</div>
-      ${emp.email ? `<button onclick="sendReset('${emp.email}')">Reset senden</button>` : ""}
+      <div><strong>${esc(emp.name || "-")}</strong></div>
+      <div class="small">E-Mail: ${esc(emp.email || "-")}</div>
+      <div class="small">ID: ${esc(emp.id)}</div>
+      ${emp.email ? `<button onclick="sendReset('${encodeURIComponent(emp.email)}', true)">Reset senden</button>` : ""}
     </div>
   `).join("") || "Keine Mitarbeiter gefunden.";
 }
@@ -197,7 +207,7 @@ async function loadDamageLogs() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    damageLogsBox.innerHTML = `<div class="error">${error.message}</div>`;
+    damageLogsBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -239,8 +249,8 @@ function renderDamageLogs() {
     return `
       <div class="card">
         <div class="tag">${actionLabel(log.action)}</div>
-        <div><strong>${damage.damage_type || "Schaden"}</strong></div>
-        <div>${damage.area || "-"} · ${damage.severity || "-"}</div>
+        <div><strong>${esc(damage.damage_type || "Schaden")}</strong></div>
+        <div>${esc(damage.area || "-")} · ${esc(damage.severity || "-")}</div>
 
         <div class="employee">
           📝 Gemeldet von: ${employeeName(reportedEmployeeId)}
@@ -250,15 +260,27 @@ function renderDamageLogs() {
           👤 Aktion von: ${employeeName(actionEmployeeId)}
         </div>
 
-        <div class="small">${formatDate(log.created_at)}</div>
-        <div>${log.details || "-"}</div>
+        <div class="small">${esc(formatDate(log.created_at))}</div>
+        <div>${esc(log.details || "-")}</div>
       </div>
     `;
   }).join("") || "Keine Schäden gefunden.";
 }
 
-async function sendReset(emailFromButton = null) {
-  const email = (emailFromButton || resetEmail.value).trim();
+async function sendReset(emailFromButton = null, encoded = false) {
+  let sourceEmail = resetEmail.value;
+  if (emailFromButton) {
+    if (encoded) {
+      try {
+        sourceEmail = decodeURIComponent(emailFromButton);
+      } catch (_) {
+        sourceEmail = "";
+      }
+    } else {
+      sourceEmail = emailFromButton;
+    }
+  }
+  const email = sourceEmail.trim();
 
   if (!email) {
     alert("Bitte E-Mail eingeben.");
@@ -296,7 +318,7 @@ async function loadLogs() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    logsBox.innerHTML = `<div class="error">${error.message}</div>`;
+    logsBox.innerHTML = `<div class="error">${esc(error.message)}</div>`;
     return;
   }
 
@@ -313,10 +335,10 @@ function renderLogs() {
 
   logsBox.innerHTML = filtered.map(log => `
     <div class="card">
-      <div class="tag">${log.status || "Log"}</div>
-      <div><strong>${log.email || "Unbekannt"}</strong></div>
-      <div>${log.details || "-"}</div>
-      <div class="small">${formatDate(log.created_at)}</div>
+      <div class="tag">${esc(log.status || "Log")}</div>
+      <div><strong>${esc(log.email || "Unbekannt")}</strong></div>
+      <div>${esc(log.details || "-")}</div>
+      <div class="small">${esc(formatDate(log.created_at))}</div>
     </div>
   `).join("") || "Keine Logs gefunden.";
 }
