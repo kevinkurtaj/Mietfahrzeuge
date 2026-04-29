@@ -1,4 +1,12 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Fahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fahrzeuge</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" href="data:,">
+<style>
 :root{
   --bg:#f6f8fc;
   --card:#ffffff;
@@ -72,29 +80,78 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0
 @media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.vehicle-card{padding:20px;cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}.vehicle-card h3{font-size:20px;margin:12px 0 6px}.login-card{max-width:430px;margin:70px auto;padding:26px}</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox" id="userArea" style="display:none"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div><a id="adminBtn" class="secondary-btn" href="admin.html" style="display:none">Admin Panel</a><button class="secondary-btn" onclick="logout()">Logout</button></div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" href="history.html">🕘 Historie</a><a class="nav-item" href="admin.html">👥 Admin Panel</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section id="loginBox" class="card login-card"><h1 style="margin-top:0">Anmeldung</h1><p style="color:var(--muted)">Bitte mit deinem Zugang anmelden.</p><label>E-Mail</label><input id="email" type="email" autocomplete="email"><label>Passwort</label><input id="password" type="password" autocomplete="current-password"><button class="primary-btn" style="width:100%;margin-top:10px" onclick="login()">Einloggen</button><div id="loginMsg"></div></section><section id="app" style="display:none"><div class="page-head"><div class="title-wrap"><h1>Fahrzeugübersicht</h1><p><span>Übersicht aller Mietfahrzeuge, Status und Schäden.</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></div><div class="stats"><div class="card stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="card stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div><div class="card stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div><div class="card stat"><div class="label">Aktive Schäden</div><strong id="damageCount">-</strong></div></div><div id="vehicleList" class="vehicle-grid"></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div></main></div></div><div class="toast" id="toast"></div><script>
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.vehicle-card{padding:20px;cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}.vehicle-card h3{font-size:20px;margin:12px 0 6px}.login-card{max-width:430px;margin:70px auto;padding:26px}
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.vehicle-card{padding:20px;cursor:pointer;transition:.18s}
+.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}
+.vehicle-card h3{font-size:20px;margin:12px 0 6px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar">
+  <div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div>
+  <div class="userbox" id="userArea">
+    <div class="avatar" id="avatar">KK</div>
+    <div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div>
+    <a id="adminBtn" class="secondary-btn" href="admin.html" style="display:none">Admin Panel</a>
+    <button class="secondary-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <nav class="nav">
+    <a class="nav-item active" href="index.html">🚘 Fahrzeuge</a>
+    <a class="nav-item" href="history.html">🕘 Historie</a>
+    <a class="nav-item" href="admin.html">👥 Admin Panel</a>
+  </nav>
+  <button class="nav-item" onclick="logout()">↩ Logout</button>
+</aside>
+
+<main class="content">
+<section id="app">
+  <div class="page-head">
+    <div class="title-wrap">
+      <h1>Fahrzeugübersicht</h1>
+      <p><span>Übersicht aller Mietfahrzeuge, Status und Schäden.</span></p>
+    </div>
+    <div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="card stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div>
+    <div class="card stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div>
+    <div class="card stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div>
+    <div class="card stat"><div class="label">Aktive Schäden</div><strong id="damageCount">-</strong></div>
+  </div>
+
+  <div id="vehicleList" class="vehicle-grid"></div>
+</section>
+<div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div>
+</main>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function esc(value){return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function fmtDate(value){return value ? new Date(value).toLocaleDateString("de-DE") : "-";}
-function fmtTime(value){return value ? new Date(value).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : "-";}
-function fullDateTime(value){return value ? new Date(value).toLocaleString("de-DE") : "-";}
 function initials(name){const p=String(name||"").trim().split(/\s+/); if(p.length>=2)return (p[0][0]+p[1][0]).toUpperCase(); return String(name||"U").slice(0,2).toUpperCase();}
-function showToast(message,type="success"){const t=document.getElementById("toast"); if(!t) return alert(message); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
+function showToast(message,type="success"){const t=document.getElementById("toast"); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
 function statusLabel(status){switch(status){case "einsatzbereit":return "einsatzbereit";case "abruf":return "Abruf / Reserve";case "werkstatt":return "Werkstatt";case "nicht_einsatzbereit":return "nicht einsatzbereit";case "nicht_im_einsatz":return "nicht im Einsatz";default:return status||"unbekannt";}}
-function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case "bilder_hochgeladen":return "Bilder hochgeladen";case "repariert":return "Schaden repariert";case "irrtuemlich":return "Schaden irrtümlich";case "bearbeitet":return "Schaden bearbeitet";case "fahrzeugstatus_geaendert":return "Fahrzeugstatus geändert";case "status_geaendert":return "Fahrzeugstatus geändert";default:return a||"-";}}
 async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
-async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
-async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
-async function logout(){await db.auth.signOut(); location.href="index.html";}
-async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const adminBtn=document.getElementById("adminBtn"); if(adminBtn) adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
-function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
-
-document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
-async function login(){const email=document.getElementById("email").value.trim();const password=document.getElementById("password").value;const {error}=await db.auth.signInWithPassword({email,password});if(error){document.getElementById("loginMsg").innerHTML='<div class="empty-state" style="margin-top:10px;color:#991b1b">'+esc(error.message)+'</div>';return;}start();}
-async function start(){updateClock();const user=await getSessionUser();if(!user)return;document.getElementById("loginBox").style.display="none";document.getElementById("app").style.display="block";document.getElementById("userArea").style.display="flex";await hydrateTopUser("index");await loadVehicles();}
-async function loadVehicles(){const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true}); if(error){showToast(error.message,"error");return;} const vehicles=data||[]; const {count:damageCount}=await db.from("damages").select("id",{count:"exact",head:true}).not("status","in",`(repariert,irrtuemlich)`); document.getElementById("vehicleCount").textContent=vehicles.length; document.getElementById("readyCount").textContent=vehicles.filter(v=>v.status==="einsatzbereit").length; document.getElementById("blockedCount").textContent=vehicles.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length; document.getElementById("damageCount").textContent=damageCount??0; document.getElementById("vehicleList").innerHTML=vehicles.map(v=>`<article class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><span class="badge">Fahrzeug</span><h3>${esc(v.name||"Inhofer-Sprinter")}</h3><div style="color:var(--muted);font-weight:800;margin-bottom:14px">${esc(v.kennzeichen||"-")}</div><span class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</span><div style="margin-top:18px;color:var(--blue);font-weight:950">Öffnen →</div></article>`).join("")||'<div class="empty-state">Keine Fahrzeuge gefunden.</div>';}
+async function getEmployeeByEmail(email){const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
+async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="login.html"; return null;} return user;}
+async function logout(){await db.auth.signOut(); location.href="login.html";}
+async function hydrateTopUser(){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; topUserName.textContent=name; topUserRole.textContent=emp?.role==="admin"?"Admin":"Mitarbeiter"; avatar.textContent=initials(name); adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
+function updateClock(){const now=new Date(); dateText.textContent=now.toLocaleDateString("de-DE"); timeText.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
+async function start(){updateClock();const user=await requireLogin();if(!user)return;await hydrateTopUser();await loadVehicles();}
+async function loadVehicles(){const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true}); if(error){showToast(error.message,"error");return;} const vehicles=data||[]; const {count:damageCount}=await db.from("damages").select("id",{count:"exact",head:true}).not("status","in",`(repariert,irrtuemlich)`); vehicleCount.textContent=vehicles.length; readyCount.textContent=vehicles.filter(v=>v.status==="einsatzbereit").length; blockedCount.textContent=vehicles.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length; document.getElementById("damageCount").textContent=damageCount??0; vehicleList.innerHTML=vehicles.map(v=>`<article class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><span class="badge">Fahrzeug</span><h3>${esc(v.name||"Inhofer-Sprinter")}</h3><div style="color:var(--muted);font-weight:800;margin-bottom:14px">${esc(v.kennzeichen||"-")}</div><span class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</span><div style="margin-top:18px;color:var(--blue);font-weight:950">Öffnen →</div></article>`).join("")||'<div class="empty-state">Keine Fahrzeuge gefunden.</div>';}
 start();
-</script></body></html>
+</script>
+</body>
+</html>
