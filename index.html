@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fahrzeuge</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
+
 <style>
 :root{
   --bg:#f6f8fc;
@@ -14,149 +16,595 @@
   --muted:#64748b;
   --line:#e2e8f0;
   --blue:#2563eb;
-  --blue2:#3b82f6;
   --green:#16a34a;
   --red:#ef4444;
-  --orange:#f59e0b;
-  --gray:#64748b;
-  --shadow:0 18px 50px rgba(15,23,42,.08);
-  --soft-shadow:0 10px 30px rgba(15,23,42,.06);
-  --radius:22px;
+  --shadow:0 10px 30px rgba(15,23,42,.06);
 }
-*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
+
+*{
+  box-sizing:border-box;
+  font-family:Inter, Arial, sans-serif;
+}
+
 body{
-  margin:0;min-height:100vh;color:var(--text);
-  background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 32%),linear-gradient(135deg,#f8fafc,#eef2f7);
+  margin:0;
+  min-height:100vh;
+  background:#f6f8fc;
+  color:var(--text);
+  overflow-x:hidden;
 }
+
 .app-shell{
   width:100vw;
   min-height:100vh;
-  margin:0;
-  background:rgba(255,255,255,.82);
-  border:none;
-  border-radius:0;
-  box-shadow:none;
-  overflow:hidden;
+  background:rgba(255,255,255,.78);
 }
-.topbar{
-  height:80px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
-}
-.brand{display:flex;align-items:center;gap:14px;font-size:21px;font-weight:900;letter-spacing:-.3px}
-.brand-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--blue);border:1px solid #bfdbfe;background:#eff6ff;font-size:24px}
-.userbox{display:flex;align-items:center;gap:14px}
-.avatar{width:40px;height:40px;border-radius:999px;background:#eef2ff;color:#1d4ed8;font-weight:900;display:grid;place-items:center}
-.user-name{font-weight:900}.user-role{color:var(--muted);font-size:13px;margin-top:2px}
-.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 108px)}
-.sidebar{border-right:1px solid var(--line);padding:28px 14px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55)}
-.nav{display:grid;gap:14px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:#334155;text-decoration:none;font-weight:800;cursor:pointer;border:none;background:transparent;font-size:15px;text-align:left}
-.nav-item.active{background:linear-gradient(135deg,var(--blue),#4f46e5);color:white;box-shadow:0 12px 28px rgba(37,99,235,.28)}
-.nav-item:hover:not(.active){background:#f1f5f9}
-.content{padding:28px 26px 20px}
-.page-head{position:relative;min-height:78px;display:flex;align-items:flex-start;justify-content:center;margin-bottom:24px}
-.back-btn{position:absolute;left:0;top:10px;display:inline-flex;align-items:center;gap:8px;border:none;background:transparent;color:#334155;font-weight:800;cursor:pointer;font-size:15px}
-.title-wrap{text-align:center}.title-wrap h1{margin:0;font-size:30px;letter-spacing:-.8px}.title-wrap p{margin:8px 0 0;color:var(--muted);font-size:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-.date-box{position:absolute;right:0;top:4px;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;color:#475569;font-size:14px;align-items:center}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-shadow)}
-.panel{padding:18px}
-.panel-title{display:flex;align-items:center;gap:10px;margin:0 0 22px;font-size:19px;font-weight:950}
-.icon-badge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line)}
-label{display:block;font-size:13px;font-weight:900;margin:14px 0 8px}
-input,select,textarea{
-  width:100%;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:10px;padding:12px 13px;outline:none;font-size:14px;transition:.16s;
-}
-textarea{min-height:80px;resize:vertical}
-input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 4px rgba(37,99,235,.10)}
-.primary-btn{border:none;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(37,99,235,.24)}
-.primary-btn:hover{transform:translateY(-1px)}
-.secondary-btn{border:1px solid #bfdbfe;background:#fff;color:var(--blue);border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}
-.success-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
-.danger-btn{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{padding:22px}.stat .label{font-size:13px;color:var(--muted);font-weight:900}.stat strong{display:block;margin-top:8px;font-size:32px}
-.badge{display:inline-flex;align-items:center;width:max-content;padding:7px 11px;border-radius:9px;font-size:12px;font-weight:950;background:#e5e7eb;color:#475569}
-.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
-.severity{padding:7px 12px;border-radius:9px;font-size:12px;font-weight:950}.severity.leicht{background:#dcfce7;color:#166534}.severity.mittel{background:#fef3c7;color:#92400e}.severity.schwer{background:#fee2e2;color:#991b1b}
-.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,.24);display:none;z-index:50;max-width:420px}.toast.success{background:#166534}.toast.error{background:#991b1b}
-.empty-state{padding:28px;text-align:center;color:#64748b;background:#fbfdff;border:1px dashed #cbd5e1;border-radius:16px}
-.footer{text-align:center;color:#64748b;font-size:13px;padding:18px 0 10px}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:40}
-.modal-box{width:100%;max-width:560px;background:white;border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(15,23,42,.28)}
-@media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
-@media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.vehicle-card{padding:20px;cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}.vehicle-card h3{font-size:20px;margin:12px 0 6px}.login-card{max-width:430px;margin:70px auto;padding:26px}
-.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.vehicle-card{padding:20px;cursor:pointer;transition:.18s}
-.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}
-.vehicle-card h3{font-size:20px;margin:12px 0 6px}
+.topbar{
+  height:82px;
+  padding:0 38px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--line);
+  background:white;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-size:22px;
+  font-weight:900;
+}
+
+.brand-icon{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  color:var(--blue);
+  font-size:24px;
+}
+
+.userbox{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.avatar{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#eef2ff;
+  color:#1d4ed8;
+  font-weight:900;
+  display:grid;
+  place-items:center;
+}
+
+.user-name{
+  font-weight:900;
+}
+
+.user-role{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height:calc(100vh - 82px);
+}
+
+.sidebar{
+  border-right:1px solid var(--line);
+  padding:28px 18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  background:white;
+}
+
+.nav{
+  display:grid;
+  gap:14px;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:15px 16px;
+  border-radius:14px;
+  color:#334155;
+  text-decoration:none;
+  font-weight:900;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  font-size:15px;
+  text-align:left;
+}
+
+.nav-item.active{
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:white;
+  box-shadow:0 14px 28px rgba(37,99,235,.24);
+}
+
+.nav-item:hover:not(.active){
+  background:#f1f5f9;
+}
+
+.content{
+  padding:42px 60px;
+}
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:30px;
+}
+
+.title-wrap{
+  text-align:center;
+  width:100%;
+}
+
+.title-wrap h1{
+  margin:0;
+  font-size:34px;
+  letter-spacing:-1px;
+}
+
+.title-wrap p{
+  margin:8px 0 0;
+  color:var(--muted);
+}
+
+.date-box{
+  position:absolute;
+  right:60px;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:8px 10px;
+  color:#475569;
+  font-size:14px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:22px;
+  margin-bottom:30px;
+}
+
+.card{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+
+.stat{
+  padding:26px;
+}
+
+.stat .label{
+  font-size:13px;
+  color:var(--muted);
+  font-weight:900;
+}
+
+.stat strong{
+  display:block;
+  margin-top:10px;
+  font-size:36px;
+}
+
+.vehicle-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:18px;
+}
+
+.vehicle-card{
+  padding:22px;
+  cursor:pointer;
+  transition:.18s;
+}
+
+.vehicle-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 18px 44px rgba(15,23,42,.10);
+}
+
+.vehicle-card h3{
+  margin:14px 0 6px;
+  font-size:20px;
+}
+
+.badge{
+  display:inline-flex;
+  padding:7px 11px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:#e5e7eb;
+  color:#475569;
+}
+
+.badge.einsatzbereit{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge.werkstatt,
+.badge.nicht_einsatzbereit{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.badge.abruf{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.badge.nicht_im_einsatz{
+  background:#e5e7eb;
+  color:#374151;
+}
+
+.open-link{
+  margin-top:18px;
+  color:#2563eb;
+  font-weight:950;
+}
+
+.empty-state{
+  padding:32px;
+  border-radius:18px;
+  border:1px dashed #cbd5e1;
+  background:#fbfdff;
+  color:#64748b;
+  text-align:center;
+}
+
+.toast{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  background:#0f172a;
+  color:white;
+  padding:14px 18px;
+  border-radius:14px;
+  box-shadow:0 20px 45px rgba(15,23,42,.24);
+  display:none;
+  z-index:50;
+}
+
+.toast.error{
+  background:#991b1b;
+}
+
+.footer{
+  color:#64748b;
+  font-size:13px;
+  text-align:center;
+  padding:28px 0 0;
+}
+
+@media(max-width:900px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .sidebar{
+    display:none;
+  }
+
+  .content{
+    padding:26px;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .date-box{
+    display:none;
+  }
+}
+
+@media(max-width:650px){
+  .topbar{
+    height:auto;
+    padding:18px;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .stats{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <div class="app-shell">
-<header class="topbar">
-  <div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div>
-  <div class="userbox" id="userArea">
-    <div class="avatar" id="avatar">KK</div>
-    <div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div>
-    <a id="adminBtn" class="secondary-btn" href="admin.html" style="display:none">Admin Panel</a>
-    <button class="secondary-btn" onclick="logout()">Logout</button>
-  </div>
-</header>
 
-<div class="layout">
-<aside class="sidebar">
-  <nav class="nav">
-    <a class="nav-item active" href="index.html">🚘 Fahrzeuge</a>
-    <a class="nav-item" href="history.html">🕘 Historie</a>
-    <a class="nav-item" href="admin.html">👥 Admin Panel</a>
-  </nav>
-  <button class="nav-item" onclick="logout()">↩ Logout</button>
-</aside>
-
-<main class="content">
-<section id="app">
-  <div class="page-head">
-    <div class="title-wrap">
-      <h1>Fahrzeugübersicht</h1>
-      <p><span>Übersicht aller Mietfahrzeuge, Status und Schäden.</span></p>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🚐</div>
+      <div>Schadendokumentation Mietfahrzeuge</div>
     </div>
-    <div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div>
-  </div>
 
-  <div class="stats">
-    <div class="card stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div>
-    <div class="card stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div>
-    <div class="card stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div>
-    <div class="card stat"><div class="label">Aktive Schäden</div><strong id="damageCount">-</strong></div>
-  </div>
+    <div class="userbox">
+      <div class="avatar" id="avatar">KK</div>
+      <div>
+        <div class="user-name" id="topUserName">Benutzer</div>
+        <div class="user-role" id="topUserRole">Mitarbeiter</div>
+      </div>
+    </div>
+  </header>
 
-  <div id="vehicleList" class="vehicle-grid"></div>
-</section>
-<div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div>
-</main>
+  <div class="layout">
+
+    <aside class="sidebar">
+      <nav class="nav">
+        <a class="nav-item active" href="index.html">🚘 Fahrzeuge</a>
+        <a class="nav-item" href="history.html">🕘 Historie</a>
+        <a id="sidebarAdminLink" class="nav-item" href="admin.html" style="display:none;">👥 Admin Panel</a>
+      </nav>
+
+      <button class="nav-item" onclick="logout()">↩ Logout</button>
+    </aside>
+
+    <main class="content">
+
+      <section class="page-head">
+        <div class="title-wrap">
+          <h1>Fahrzeugübersicht</h1>
+          <p>Übersicht aller Mietfahrzeuge, Status und Schäden.</p>
+        </div>
+
+        <div class="date-box">
+          <span>📅</span><span id="dateText">-</span>
+          <span>🕙</span><span id="timeText">-</span>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="card stat">
+          <div class="label">Fahrzeuge</div>
+          <strong id="vehicleCount">-</strong>
+        </div>
+
+        <div class="card stat">
+          <div class="label">Einsatzbereit</div>
+          <strong id="readyCount">-</strong>
+        </div>
+
+        <div class="card stat">
+          <div class="label">Werkstatt / gesperrt</div>
+          <strong id="blockedCount">-</strong>
+        </div>
+
+        <div class="card stat">
+          <div class="label">Aktive Schäden</div>
+          <strong id="damageCount">-</strong>
+        </div>
+      </section>
+
+      <section id="vehicleList" class="vehicle-grid"></section>
+
+      <div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div>
+    </main>
+
+  </div>
 </div>
-</div>
-<div class="toast" id="toast"></div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function esc(value){return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function initials(name){const p=String(name||"").trim().split(/\s+/); if(p.length>=2)return (p[0][0]+p[1][0]).toUpperCase(); return String(name||"U").slice(0,2).toUpperCase();}
-function showToast(message,type="success"){const t=document.getElementById("toast"); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
-function statusLabel(status){switch(status){case "einsatzbereit":return "einsatzbereit";case "abruf":return "Abruf / Reserve";case "werkstatt":return "Werkstatt";case "nicht_einsatzbereit":return "nicht einsatzbereit";case "nicht_im_einsatz":return "nicht im Einsatz";default:return status||"unbekannt";}}
-async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
-async function getEmployeeByEmail(email){const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
-async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="login.html"; return null;} return user;}
-async function logout(){await db.auth.signOut(); location.href="login.html";}
-async function hydrateTopUser(){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; topUserName.textContent=name; topUserRole.textContent=emp?.role==="admin"?"Admin":"Mitarbeiter"; avatar.textContent=initials(name); adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
-function updateClock(){const now=new Date(); dateText.textContent=now.toLocaleDateString("de-DE"); timeText.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
-async function start(){updateClock();const user=await requireLogin();if(!user)return;await hydrateTopUser();await loadVehicles();}
-async function loadVehicles(){const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true}); if(error){showToast(error.message,"error");return;} const vehicles=data||[]; const {count:damageCount}=await db.from("damages").select("id",{count:"exact",head:true}).not("status","in",`(repariert,irrtuemlich)`); vehicleCount.textContent=vehicles.length; readyCount.textContent=vehicles.filter(v=>v.status==="einsatzbereit").length; blockedCount.textContent=vehicles.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length; document.getElementById("damageCount").textContent=damageCount??0; vehicleList.innerHTML=vehicles.map(v=>`<article class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><span class="badge">Fahrzeug</span><h3>${esc(v.name||"Inhofer-Sprinter")}</h3><div style="color:var(--muted);font-weight:800;margin-bottom:14px">${esc(v.kennzeichen||"-")}</div><span class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</span><div style="margin-top:18px;color:var(--blue);font-weight:950">Öffnen →</div></article>`).join("")||'<div class="empty-state">Keine Fahrzeuge gefunden.</div>';}
-start();
+let currentUser = null;
+let currentEmployee = null;
+
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[m]));
+}
+
+function initials(name){
+  const parts = String(name || "").trim().split(/\s+/);
+
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  return String(name || "U").slice(0,2).toUpperCase();
+}
+
+function showToast(message, type = "success"){
+  const toast = document.getElementById("toast");
+  toast.className = "toast " + type;
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 3500);
+}
+
+function statusLabel(status){
+  switch(status){
+    case "einsatzbereit":
+      return "einsatzbereit";
+    case "abruf":
+      return "Abruf / Reserve";
+    case "werkstatt":
+      return "Werkstatt";
+    case "nicht_einsatzbereit":
+      return "nicht einsatzbereit";
+    case "nicht_im_einsatz":
+      return "nicht im Einsatz";
+    default:
+      return status || "unbekannt";
+  }
+}
+
+async function getSessionUser(){
+  const { data } = await db.auth.getSession();
+  return data.session?.user || null;
+}
+
+async function getEmployeeByEmail(email){
+  const { data } = await db
+    .from("employees")
+    .select("*")
+    .eq("email", email)
+    .maybeSingle();
+
+  return data || null;
+}
+
+async function requireLogin(){
+  const user = await getSessionUser();
+
+  if (!user) {
+    location.href = "login.html";
+    return null;
+  }
+
+  return user;
+}
+
+async function logout(){
+  await db.auth.signOut();
+  location.href = "login.html";
+}
+
+function updateClock(){
+  const now = new Date();
+
+  document.getElementById("dateText").textContent =
+    now.toLocaleDateString("de-DE");
+
+  document.getElementById("timeText").textContent =
+    now.toLocaleTimeString("de-DE", {
+      hour:"2-digit",
+      minute:"2-digit"
+    }) + " Uhr";
+}
+
+async function hydrateTopUser(){
+  const user = await getSessionUser();
+
+  if (!user) return;
+
+  const emp = await getEmployeeByEmail(user.email);
+  currentEmployee = emp;
+
+  const name = emp?.name || user.email;
+
+  document.getElementById("topUserName").textContent = name;
+  document.getElementById("topUserRole").textContent =
+    emp?.role === "admin" ? "Admin" : "Mitarbeiter";
+
+  document.getElementById("avatar").textContent = initials(name);
+
+  const sidebarAdminLink = document.getElementById("sidebarAdminLink");
+
+  if (sidebarAdminLink) {
+    sidebarAdminLink.style.display =
+      emp?.role === "admin" ? "flex" : "none";
+  }
+}
+
+async function loadVehicles(){
+  const { data: vehicles, error } = await db
+    .from("vehicles")
+    .select("*")
+    .order("id", { ascending:true });
+
+  if (error) {
+    showToast(error.message, "error");
+    return;
+  }
+
+  const { count: damageCount } = await db
+    .from("damages")
+    .select("id", { count:"exact", head:true })
+    .not("status", "in", "(repariert,irrtuemlich)");
+
+  const list = vehicles || [];
+
+  document.getElementById("vehicleCount").textContent = list.length;
+
+  document.getElementById("readyCount").textContent =
+    list.filter(v => v.status === "einsatzbereit").length;
+
+  document.getElementById("blockedCount").textContent =
+    list.filter(v =>
+      v.status === "werkstatt" ||
+      v.status === "nicht_einsatzbereit"
+    ).length;
+
+  document.getElementById("damageCount").textContent =
+    damageCount ?? 0;
+
+  document.getElementById("vehicleList").innerHTML =
+    list.map(vehicle => `
+      <article class="card vehicle-card" onclick="location.href='vehicle.html?id=${vehicle.id}'">
+        <span class="badge">Fahrzeug</span>
+
+        <h3>${esc(vehicle.name || "Inhofer-Sprinter")}</h3>
+
+        <div style="color:var(--muted);font-weight:800;margin-bottom:14px;">
+          ${esc(vehicle.kennzeichen || "-")}
+        </div>
+
+        <span class="badge ${esc(vehicle.status || "")}">
+          ${statusLabel(vehicle.status)}
+        </span>
+
+        <div class="open-link">Öffnen →</div>
+      </article>
+    `).join("") || '<div class="empty-state">Keine Fahrzeuge gefunden.</div>';
+}
+
+async function init(){
+  updateClock();
+
+  currentUser = await requireLogin();
+
+  if (!currentUser) return;
+
+  await hydrateTopUser();
+  await loadVehicles();
+}
+
+init();
 </script>
+
 </body>
 </html>
