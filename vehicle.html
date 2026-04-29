@@ -5,459 +5,316 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fahrzeug</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f1f5f9;
-  color: #111827;
-}
+:root{--bg1:#050c18;--bg2:#0b1730;--ink:#e5e7eb;--muted:#94a3b8;--line:#243045;--card:#0c1526;--blue:#3b82f6;--purple:#7c3aed;--green:#16a34a;--amber:#f59e0b;--red:#ef4444;--dark:#050b16}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;color:var(--ink);background:radial-gradient(circle at top right,rgba(59,130,246,.22),transparent 40%),linear-gradient(140deg,var(--bg1),var(--bg2))}
+header{position:sticky;top:0;z-index:20;background:rgba(6,13,26,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:12px}
+main{max-width:1680px;margin:auto;padding:28px 30px}
+.hero h1{margin:0 0 4px 0;font-size:32px;letter-spacing:-.4px}
+.hero p{margin:0;color:var(--muted)}
+.user{font-size:13px;background:rgba(37,99,235,.2);color:#dbeafe;padding:8px 12px;border-radius:999px;border:1px solid rgba(59,130,246,.35)}
+.layout{display:grid;grid-template-columns:minmax(360px,420px) minmax(700px,1fr) minmax(360px,420px);gap:14px;align-items:start}
+.card{background:linear-gradient(180deg,#0d172b,#0b1324);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 26px rgba(2,6,23,.45)}
+input,select,textarea{width:100%;padding:12px;border:1px solid #334155;border-radius:12px;margin-bottom:10px;background:#0b1426;color:#e5e7eb}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+textarea{min-height:84px;resize:vertical}
+button,.btn{border:none;background:linear-gradient(90deg,#2563eb,#7c3aed);color:#fff;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;text-decoration:none}
+button:hover,.btn:hover{opacity:.95}
+.btn-secondary{background:#1e293b;color:#e2e8f0;border:1px solid #334155}
+.error{background:#3b1116;color:#fecaca;border-radius:10px;padding:12px;margin-top:10px;border:1px solid #7f1d1d}
+.success{background:#052e1c;color:#bbf7d0;border-radius:10px;padding:12px;margin-top:10px;border:1px solid #166534}
+.damage{border:1px solid var(--line);background:#0a1222;border-radius:14px;padding:14px;margin-bottom:10px}
+.small{font-size:13px;color:var(--muted)}
+.employee{display:inline-block;background:#111c31;color:#bfdbfe;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-top:6px}
+.damage-list{min-height:500px;max-height:70vh;overflow:auto;padding-right:4px}
 
-header {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 14px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.viewer-card{background:radial-gradient(circle at top,#102348,#060d1b);color:#e2e8f0;border:1px solid #334155}
+.viewer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.viewer-title{font-weight:900;font-size:18px}
+.viewer-sub{font-size:12px;color:#94a3b8}
+.viewer{position:relative;border:1px solid #334155;border-radius:16px;overflow:hidden;background:#020617;min-height:500px;display:flex;align-items:center;justify-content:center}
+.viewer img{width:100%;height:500px;object-fit:cover}
+.nav-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(15,23,42,.72);border:1px solid #334155;width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.nav-left{left:10px}.nav-right{right:10px}
+.zone-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.zone-chip{background:#1e293b;color:#bfdbfe;border:1px solid #334155;padding:8px 10px;border-radius:999px;font-size:12px;cursor:pointer}
+.zone-chip.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.sev{float:right;font-size:12px;font-weight:800;padding:4px 8px;border-radius:999px}
+.sev.leicht{background:rgba(22,163,74,.15);color:#86efac;border:1px solid #166534}
+.sev.mittel{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid #92400e}
+.sev.schwer{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid #991b1b}
+.dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:8px;vertical-align:middle}
+.dot.leicht{background:#22c55e}.dot.mittel{background:#f59e0b}.dot.schwer{background:#ef4444}
 
-main {
-  max-width: 1100px;
-  margin: auto;
-  padding: 28px;
+@media(max-width:1460px){
+  header{grid-template-columns:1fr;justify-items:start}
+  .layout{grid-template-columns:1fr 1fr}
+  .layout > section:last-child{grid-column:1 / -1}
 }
-
-.card {
-  background: white;
-  border-radius: 18px;
-  padding: 22px;
-  margin-bottom: 18px;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.08);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  box-sizing: border-box;
-}
-
-textarea {
-  min-height: 80px;
-}
-
-button, .btn {
-  background: #111827;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
-}
-
-.zone {
-  display: inline-block;
-  background: #2563eb;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.damage {
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-
-.small {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.success {
-  background: #dcfce7;
-  color: #166534;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 10px;
-}
-
-.error {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 10px;
-}
-
-.employee {
-  display: inline-block;
-  background: #eef2ff;
-  color: #3730a3;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-@media(max-width:800px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+@media(max-width:1100px){
+  main{padding:16px}
+  .layout{grid-template-columns:1fr}
+  .viewer,.viewer img{min-height:320px;height:320px}
 }
 </style>
 </head>
-
 <body>
-
 <header>
   <button class="btn-secondary" onclick="location.href='index.html'">← Zurück</button>
-  <div id="userInfo">Lade Benutzer...</div>
+  <div class="hero"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p id="vehicleSub">-</p></div>
+  <div id="userInfo" class="user">Lade Benutzer...</div>
   <button onclick="logout()">Logout</button>
 </header>
 
 <main>
+  <div class="layout">
+    <section class="card">
+      <h2>Schaden hinzufügen</h2>
+      <input id="type" placeholder="z.B. Kratzer">
+      <input id="area" placeholder="z.B. vorne-links">
+      <select id="severity">
+        <option value="leicht">leicht</option>
+        <option value="mittel">mittel</option>
+        <option value="schwer">schwer</option>
+      </select>
+      <textarea id="description" placeholder="Beschreibung"></textarea>
+      <input id="damageImages" type="file" accept="image/*" multiple>
+      <div class="small">Optional: Bilder direkt mitschicken.</div>
+      <div class="zone-row" style="margin-bottom:10px">
+        <button type="button" class="btn-secondary" onclick="saveDamage()">Schaden speichern</button>
+        <button type="button" class="btn-secondary" onclick="location.href='history.html?id=' + vehicleId">Historie öffnen</button>
+      </div>
+      <div id="message"></div>
 
-<h1 id="vehicleTitle">Fahrzeug wird geladen...</h1>
-<p id="vehicleSub" class="small"></p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
+      <h3>Fahrzeugstatus</h3>
+      <select id="vehicleStatus">
+        <option value="einsatzbereit">einsatzbereit</option>
+        <option value="abruf">Abruf / Reserve</option>
+        <option value="werkstatt">Werkstatt</option>
+        <option value="nicht_einsatzbereit">nicht einsatzbereit</option>
+        <option value="nicht_im_einsatz">nicht im Einsatz</option>
+      </select>
+      <textarea id="statusNote" placeholder="Notiz optional"></textarea>
+      <button type="button" onclick="saveStatus()">Status speichern</button>
+      <div id="statusMessage"></div>
+    </section>
 
-<div class="card">
-  <h3>Zonen auswählen</h3>
-  <div class="zone" onclick="setArea('vorne')">vorne</div>
-  <div class="zone" onclick="setArea('hinten')">hinten</div>
-  <div class="zone" onclick="setArea('Seite')">Seite</div>
-  <div class="zone" onclick="setArea('Dach')">Dach</div>
-  <div class="zone" onclick="setArea('Innenraum')">Innenraum</div>
-</div>
+    <section class="card viewer-card">
+      <div class="viewer-top">
+        <div>
+          <div class="viewer-title">360°-Ansicht Transporter</div>
+          <div class="viewer-sub">Aktueller Bereich: <span id="currentViewLabel">vorne</span></div>
+        </div>
+      </div>
+      <div class="viewer">
+        <button type="button" class="nav-btn nav-left" onclick="prevView()">‹</button>
+        <img id="vanImage" src="assets/sprinter/front.jpg" alt="Transporter Ansicht" onerror="this.src='https://placehold.co/1200x720/0b1220/bfd7ff?text=Sprinter+Ansicht'">
+        <button type="button" class="nav-btn nav-right" onclick="nextView()">›</button>
+      </div>
+      <div id="zoneChips" class="zone-row"></div>
+      <div class="small" style="margin-top:8px">Tipp: Klick auf Bereich übernimmt automatisch das Feld „area“.</div>
+    </section>
 
-<div class="grid">
-
-  <div class="card">
-    <h2>Schaden hinzufügen</h2>
-
-    <input id="type" placeholder="z.B. Kratzer">
-    <input id="area" placeholder="z.B. vorne">
-
-    <select id="severity">
-      <option value="leicht">leicht</option>
-      <option value="mittel">mittel</option>
-      <option value="schwer">schwer</option>
-    </select>
-
-    <textarea id="description" placeholder="Beschreibung"></textarea>
-
-    <button onclick="saveDamage()">Schaden speichern</button>
-
-    <div id="message"></div>
+    <section class="card">
+      <h2 id="damageTitle">Aktive Schäden (0)</h2>
+      <div id="damageList" class="damage-list">Schäden werden geladen...</div>
+      <button type="button" class="btn-secondary" style="width:100%;margin-top:12px" onclick="location.href='history.html?id=' + vehicleId">Alle Schäden anzeigen</button>
+    </section>
   </div>
-
-  <div class="card">
-    <h2>Fahrzeugstatus</h2>
-
-    <select id="vehicleStatus">
-      <option value="einsatzbereit">einsatzbereit</option>
-      <option value="abruf">Abruf / Reserve</option>
-      <option value="werkstatt">Werkstatt</option>
-      <option value="nicht_einsatzbereit">nicht einsatzbereit</option>
-      <option value="nicht_im_einsatz">nicht im Einsatz</option>
-    </select>
-
-    <textarea id="statusNote" placeholder="Notiz optional"></textarea>
-
-    <button onclick="saveStatus()">Status speichern</button>
-
-    <br><br>
-    <button class="btn-secondary" onclick="location.href='history.html?id=' + vehicleId">
-      Historie öffnen
-    </button>
-
-    <div id="statusMessage"></div>
-  </div>
-
-</div>
-
-<div class="card">
-  <h2>Aktive Schäden</h2>
-  <div id="damageList">Schäden werden geladen...</div>
-</div>
-
 </main>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const vehicleId = new URLSearchParams(window.location.search).get("id");
-
+const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 let currentUser = null;
 let currentEmployee = null;
 let employeesMap = {};
 
-function setArea(area) {
-  document.getElementById("area").value = area;
+const views = [
+  { key: "vorne", path: "assets/sprinter/front.jpg" },
+  { key: "vorne-links", path: "assets/sprinter/front-left.jpg" },
+  { key: "linke seite", path: "assets/sprinter/left.jpg" },
+  { key: "hinten-links", path: "assets/sprinter/rear-left.jpg" },
+  { key: "hinten", path: "assets/sprinter/rear.jpg" },
+  { key: "hinten-rechts", path: "assets/sprinter/rear-right.jpg" },
+  { key: "rechte seite", path: "assets/sprinter/right.jpg" },
+  { key: "vorne-rechts", path: "assets/sprinter/front-right.jpg" }
+];
+let currentViewIndex = 0;
+
+function esc(value){return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));}
+function formatDate(v){return v ? new Date(v).toLocaleString("de-DE") : "-";}
+function showMessage(id,text,type="success"){const safe=type==="error"?"error":"success";document.getElementById(id).innerHTML=`<div class="${safe}">${esc(text)}</div>`;}
+function setArea(area){document.getElementById("area").value = area;}
+
+function renderViewer(){
+  const v = views[currentViewIndex];
+  document.getElementById("vanImage").src = v.path;
+  document.getElementById("currentViewLabel").textContent = v.key;
+  document.getElementById("zoneChips").innerHTML = views.map((item, idx) => `<button type="button" class="zone-chip ${idx===currentViewIndex?"active":""}" onclick="selectView(${idx})">${esc(item.key)}</button>`).join("");
 }
+function selectView(index){currentViewIndex=(index+views.length)%views.length; renderViewer(); setArea(views[currentViewIndex].key);}
+function prevView(){selectView(currentViewIndex-1)}
+function nextView(){selectView(currentViewIndex+1)}
 
-function showMessage(id, text, type = "success") {
-  document.getElementById(id).innerHTML = `<div class="${type}">${text}</div>`;
-}
-
-function formatDate(value) {
-  return value ? new Date(value).toLocaleString("de-DE") : "-";
-}
-
-async function init() {
-  const { data: sessionData } = await db.auth.getSession();
-  currentUser = sessionData.session?.user;
-
-  if (!currentUser) {
-    location.href = "index.html";
+async function init(){
+  if (!Number.isInteger(vehicleId) || vehicleId <= 0) {
+    document.getElementById("vehicleTitle").textContent = "Ungültige Fahrzeug-ID";
+    document.getElementById("damageList").innerHTML = `<div class="error">Bitte ein gültiges Fahrzeug öffnen.</div>`;
     return;
   }
 
-  const { data: employee } = await db
-    .from("employees")
-    .select("*")
-    .eq("email", currentUser.email)
-    .maybeSingle();
+  const { data: sessionData } = await db.auth.getSession();
+  currentUser = sessionData.session?.user;
+  if (!currentUser) { location.href = "index.html"; return; }
 
+  const { data: employee } = await db.from("employees").select("*").eq("email", currentUser.email).maybeSingle();
   currentEmployee = employee;
-
-  if (!currentEmployee) {
-    document.getElementById("userInfo").innerHTML = "⚠ Kein Mitarbeiter gefunden";
-  } else {
-    document.getElementById("userInfo").innerHTML = "👤 " + currentEmployee.name;
-  }
+  document.getElementById("userInfo").textContent = currentEmployee?.name ? `👤 ${currentEmployee.name}` : `👤 ${currentUser.email}`;
 
   await loadEmployees();
   await loadVehicle();
   await loadDamages();
+  renderViewer();
 }
 
-async function loadEmployees() {
-  const { data } = await db.from("employees").select("*");
-
+async function loadEmployees(){
+  const { data, error } = await db.from("employees").select("*");
+  if (error) return;
   employeesMap = {};
-  (data || []).forEach(emp => {
-    employeesMap[emp.id] = emp.name || emp.email || "Mitarbeiter " + emp.id;
-  });
+  (data || []).forEach(emp => { employeesMap[emp.id] = emp.name || emp.email || `Mitarbeiter ${emp.id}`; });
 }
+function employeeName(id){ return esc(employeesMap[id] || "Unbekannt"); }
 
-function employeeName(id) {
-  return employeesMap[id] || "Unbekannt";
-}
-
-async function loadVehicle() {
-  const { data, error } = await db
-    .from("vehicles")
-    .select("*")
-    .eq("id", Number(vehicleId))
-    .maybeSingle();
-
+async function loadVehicle(){
+  const { data, error } = await db.from("vehicles").select("*").eq("id", vehicleId).maybeSingle();
   if (error || !data) {
-    document.getElementById("vehicleTitle").innerText = "Fahrzeug nicht gefunden";
+    document.getElementById("vehicleTitle").textContent = "Fahrzeug nicht gefunden";
+    document.getElementById("vehicleSub").textContent = error?.message || "Bitte über die Übersicht öffnen.";
     return;
   }
-
-  document.getElementById("vehicleTitle").innerText =
-    (data.name || "Fahrzeug") + (data.kennzeichen ? " (" + data.kennzeichen + ")" : "");
-
-  document.getElementById("vehicleSub").innerText = "Fahrzeug-ID: " + data.id;
-
+  document.getElementById("vehicleTitle").textContent = `${data.name || "Fahrzeug"}${data.kennzeichen ? ` (${data.kennzeichen})` : ""}`;
+  document.getElementById("vehicleSub").textContent = `Fahrzeug-ID: ${data.id} · Kennzeichen: ${data.kennzeichen || "-"}`;
   document.getElementById("vehicleStatus").value = data.status || "einsatzbereit";
 }
 
-async function loadDamages() {
-  const { data, error } = await db
-    .from("damages")
-    .select("*")
-    .eq("vehicle_id", Number(vehicleId))
-    .order("created_at", { ascending: false });
+async function loadDamages(){
+  const { data, error } = await db.from("damages").select("*").eq("vehicle_id", vehicleId).order("created_at", { ascending: false });
+  if (error) { document.getElementById("damageList").innerHTML = `<div class="error">${esc(error.message)}</div>`; return; }
 
-  if (error) {
-    document.getElementById("damageList").innerHTML =
-      `<div class="error">${error.message}</div>`;
-    return;
-  }
+  const active = (data || []).filter(d => d.status !== "repariert" && d.status !== "irrtuemlich");
+  document.getElementById("damageTitle").textContent = `Aktive Schäden (${active.length})`;
+  if (active.length === 0) { document.getElementById("damageList").innerHTML = "Keine aktiven Schäden."; return; }
 
-  const active = (data || []).filter(d =>
-    d.status !== "repariert" && d.status !== "irrtuemlich"
-  );
+  const { data: imageRows } = await db.from("damage_images").select("*").in("damage_id", active.map(d => d.id));
+  const imagesByDamage = {};
+  (imageRows || []).forEach(img => { if (!imagesByDamage[img.damage_id]) imagesByDamage[img.damage_id] = []; imagesByDamage[img.damage_id].push(img); });
 
-  if (active.length === 0) {
-    document.getElementById("damageList").innerHTML = "Keine aktiven Schäden.";
-    return;
-  }
-
+  const sevClass = s => s === "schwer" ? "schwer" : s === "mittel" ? "mittel" : "leicht";
   document.getElementById("damageList").innerHTML = active.map(d => `
     <div class="damage">
-      <strong>${d.damage_type || "-"}</strong><br>
-      ${d.area || "-"} · ${d.severity || "-"}<br>
+      <div><span class="dot ${sevClass(d.severity)}"></span><strong>${esc(d.damage_type || "-")}</strong><span class="sev ${sevClass(d.severity)}">${esc(d.severity || "-")}</span></div>
+      <div class="small" style="margin-top:4px">${esc(d.area || "-")}</div>
       <div class="employee">👤 Gemeldet von: ${employeeName(d.employee_id)}</div>
-      <div class="small">${formatDate(d.created_at)}</div>
-      <p>${d.description || ""}</p>
-
-      <button onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
-      <button onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
+      <div class="small">${esc(formatDate(d.created_at))}</div>
+      <p>${esc(d.description || "")}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+        ${(imagesByDamage[d.id] || []).map(img => `<a href="${esc(img.public_url || "#")}" target="_blank" rel="noopener"><img src="${esc(img.public_url || "")}" alt="Schadensbild" style="width:96px;height:74px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1"></a>`).join("")}
+      </div>
+      <button type="button" onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
+      <button type="button" onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
     </div>
   `).join("");
 }
 
-async function saveDamage() {
+async function saveDamage(){
   const type = document.getElementById("type").value.trim();
   const area = document.getElementById("area").value.trim();
   const severity = document.getElementById("severity").value;
   const description = document.getElementById("description").value.trim();
+  const files = Array.from(document.getElementById("damageImages").files || []);
 
-  if (!type || !area) {
-    showMessage("message", "Bitte Schadensart und Bereich eingeben.", "error");
-    return;
+  if (!type || !area) return showMessage("message", "Bitte Schadensart und Bereich eingeben.", "error");
+  if (!currentUser) return showMessage("message", "Nicht eingeloggt.", "error");
+  if (!currentEmployee) return showMessage("message", "Kein Mitarbeiter zu deinem Login gefunden.", "error");
+
+  const { data: damage, error } = await db.from("damages").insert([{
+    vehicle_id: vehicleId,
+    damage_type: type,
+    area,
+    severity,
+    description,
+    status: "offen",
+    user_id: currentUser.id,
+    employee_id: currentEmployee.id
+  }]).select().single();
+
+  if (error) return showMessage("message", `Fehler: ${error.message || "Unbekannter Fehler"}`, "error");
+
+  const { error: histErr } = await db.from("damage_history").insert([{
+    damage_id: damage.id,
+    action: "angelegt",
+    details: `Schaden angelegt: ${type} / ${area}`,
+    user_id: currentEmployee.id,
+    auth_user_id: currentUser.id
+  }]);
+  if (histErr) return showMessage("message", `Schaden gespeichert, aber Historie Fehler: ${histErr.message}`, "error");
+
+  if (files.length > 0) {
+    const uploaded = [];
+    for (const file of files) {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const filePath = `${vehicleId}/${damage.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await db.storage.from("damage-images").upload(filePath, file, { upsert: false });
+      if (uploadError) { showMessage("message", `Schaden gespeichert, aber Bild-Upload fehlgeschlagen: ${uploadError.message}`, "error"); continue; }
+      const { data: pub } = db.storage.from("damage-images").getPublicUrl(filePath);
+      uploaded.push({ damage_id: damage.id, file_path: filePath, public_url: pub?.publicUrl || "", uploaded_by: currentEmployee.id });
+    }
+
+    if (uploaded.length > 0) {
+      const { error: imgErr } = await db.from("damage_images").insert(uploaded);
+      if (imgErr) {
+        showMessage("message", `Bilder hochgeladen, aber Referenzspeicherung fehlgeschlagen: ${imgErr.message}`, "error");
+      } else {
+        await db.from("damage_history").insert([{ damage_id: damage.id, action: "bilder_hochgeladen", details: `${uploaded.length} Bild(er) hochgeladen`, user_id: currentEmployee.id, auth_user_id: currentUser.id }]);
+      }
+    }
   }
 
-  if (!currentUser) {
-    showMessage("message", "Nicht eingeloggt.", "error");
-    return;
-  }
-
-  if (!currentEmployee) {
-    showMessage(
-      "message",
-      "Kein Mitarbeiter zu deinem Login gefunden. Prüfe employees.email.",
-      "error"
-    );
-    return;
-  }
-
-  const { data: damage, error } = await db
-    .from("damages")
-    .insert([{
-      vehicle_id: Number(vehicleId),
-      damage_type: type,
-      area: area,
-      severity: severity,
-      description: description,
-      status: "offen",
-      user_id: currentUser.id,
-      employee_id: currentEmployee.id
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error(error);
-    showMessage("message", "Fehler: " + error.message, "error");
-    return;
-  }
-
-  const { error: historyError } = await db
-    .from("damage_history")
-    .insert([{
-      damage_id: damage.id,
-      action: "angelegt",
-      details: "Schaden angelegt: " + type + " / " + area,
-      user_id: currentEmployee.id,
-      auth_user_id: currentUser.id
-    }]);
-
-  if (historyError) {
-    console.error(historyError);
-    showMessage("message", "Schaden gespeichert, aber Historie Fehler: " + historyError.message, "error");
-    return;
-  }
-
-  showMessage("message", "✅ Schaden gespeichert. Gemeldet von: " + currentEmployee.name);
-
+  showMessage("message", `✅ Schaden gespeichert. Gemeldet von: ${currentEmployee.name || currentEmployee.email}`);
   document.getElementById("type").value = "";
   document.getElementById("area").value = "";
   document.getElementById("description").value = "";
-
+  document.getElementById("damageImages").value = "";
   await loadDamages();
 }
 
-async function saveStatus() {
+async function saveStatus(){
   const status = document.getElementById("vehicleStatus").value;
   const note = document.getElementById("statusNote").value.trim();
+  const { error } = await db.from("vehicles").update({ status }).eq("id", vehicleId);
+  if (error) return showMessage("statusMessage", `Fehler: ${error.message || "Unbekannter Fehler"}`, "error");
 
-  const { error } = await db
-    .from("vehicles")
-    .update({ status: status })
-    .eq("id", Number(vehicleId));
-
-  if (error) {
-    showMessage("statusMessage", "Fehler: " + error.message, "error");
-    return;
-  }
-
-  await db.from("vehicle_history").insert([{
-    vehicle_id: Number(vehicleId),
-    action: "fahrzeugstatus_geaendert",
-    details: note || status,
-    user_id: currentEmployee?.id || null,
-    auth_user_id: currentUser?.id || null
-  }]);
-
+  await db.from("vehicle_history").insert([{ vehicle_id: vehicleId, action: "fahrzeugstatus_geaendert", details: note || status, user_id: currentEmployee?.id || null, auth_user_id: currentUser?.id || null }]);
   showMessage("statusMessage", "✅ Status gespeichert.");
 }
 
-async function markDamage(id, status) {
-  const note = prompt(
-    status === "repariert"
-      ? "Notiz zur Reparatur:"
-      : "Warum irrtümlich?"
-  ) || status;
-
-  const { error } = await db
-    .from("damages")
-    .update({ status: status })
-    .eq("id", id);
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  await db.from("damage_history").insert([{
-    damage_id: id,
-    action: status,
-    details: note,
-    user_id: currentEmployee?.id || null,
-    auth_user_id: currentUser?.id || null
-  }]);
-
+async function markDamage(id, status){
+  const note = prompt(status === "repariert" ? "Notiz zur Reparatur:" : "Warum irrtümlich?") || status;
+  const { error } = await db.from("damages").update({ status }).eq("id", id);
+  if (error) return alert(error.message);
+  await db.from("damage_history").insert([{ damage_id: id, action: status, details: note, user_id: currentEmployee?.id || null, auth_user_id: currentUser?.id || null }]);
   await loadDamages();
 }
 
-async function logout() {
-  await db.auth.signOut();
-  location.href = "index.html";
-}
+async function logout(){ await db.auth.signOut(); location.href = "index.html"; }
 
 init();
 </script>
-
 </body>
 </html>
