@@ -209,7 +209,7 @@ async function loadDamages(){
 
   const active = (data || []).filter(d => d.status !== "repariert" && d.status !== "irrtuemlich");
   document.getElementById("damageTitle").textContent = `Aktive Schäden (${active.length})`;
-  if (active.length === 0) { document.getElementById("damageList").innerHTML = "Keine aktiven Schäden."; return; }
+  if (active.length === 0) { document.getElementById("damageList").innerHTML = `<div class="small" style="padding:18px;border:1px dashed #334155;border-radius:12px;text-align:center">✨ Keine aktiven Schäden vorhanden</div>`; return; }
 
   const { data: imageRows } = await db.from("damage_images").select("*").in("damage_id", active.map(d => d.id));
   const imagesByDamage = {};
@@ -226,6 +226,7 @@ async function loadDamages(){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
         ${(imagesByDamage[d.id] || []).map(img => `<a href="${esc(img.public_url || "#")}" target="_blank" rel="noopener"><img src="${esc(img.public_url || "")}" alt="Schadensbild" style="width:96px;height:74px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1"></a>`).join("")}
       </div>
+      <button type="button" onclick="showDetail(${d.id})">Details</button>
       <button type="button" onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
       <button type="button" onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
     </div>
@@ -305,12 +306,15 @@ async function saveStatus(){
 }
 
 async function markDamage(id, status){
-  const note = prompt(status === "repariert" ? "Notiz zur Reparatur:" : "Warum irrtümlich?") || status;
+  const note = status === "repariert" ? "Als repariert markiert" : "Als irrtümlich markiert";
   const { error } = await db.from("damages").update({ status }).eq("id", id);
-  if (error) return alert(error.message);
+  if (error) return showMessage("message", error.message || "Fehler", "error");
   await db.from("damage_history").insert([{ damage_id: id, action: status, details: note, user_id: currentEmployee?.id || null, auth_user_id: currentUser?.id || null }]);
+  showMessage("message", `Schaden wurde als ${status} markiert.`);
   await loadDamages();
 }
+
+function showDetail(id){ location.href = "history.html?id=" + vehicleId + "&damage_id=" + id; }
 
 async function logout(){ await db.auth.signOut(); location.href = "index.html"; }
 

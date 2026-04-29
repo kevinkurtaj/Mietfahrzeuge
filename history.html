@@ -30,31 +30,36 @@ input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 </header>
 <main>
   <div class="toolbar">
-    <input id="search" placeholder="Suche in Aktion, Details, User...">
-    <select id="filter">
-      <option value="all">Alle Aktionen</option>
-      <option value="angelegt">Schaden erstellt</option>
-      <option value="repariert">Repariert</option>
-      <option value="irrtuemlich">Irrtümlich</option>
-    </select>
+    <input id="search" placeholder="Suche in Aktion, Details, Fahrzeug, Mitarbeiter...">
+    <select id="typeFilter"><option value="all">Typ: Alle</option><option value="vehicle">Fahrzeugstatus</option><option value="damage">Schäden</option></select>
+    <select id="employeeFilter"><option value="all">Mitarbeiter: Alle</option></select>
   </div>
   <div id="historyList"></div>
+  <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,.55);padding:20px;z-index:60" onclick="if(event.target===this)this.style.display='none'">
+    <div style="max-width:700px;margin:8vh auto;background:#fff;border-radius:16px;padding:18px">
+      <h3>Eintrag-Details</h3><div id="modalBody"></div><button onclick="document.getElementById('detailModal').style.display='none'">Schließen</button>
+    </div></div>
 </main>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const list = document.getElementById("historyList");
 const search = document.getElementById("search");
-const filter = document.getElementById("filter");
+const typeFilter = document.getElementById("typeFilter");
+const employeeFilter = document.getElementById("employeeFilter");
 const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
 
 let entries = [];
+let employeeMap = {};
 const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 let imagesByDamage = {};
 
+function fmtDate(v){return v ? new Date(v).toLocaleString("de-DE") : "-";}
+function statusLabel(s){return s||"-";}
+function actionLabel(a){return label(a);}
 function label(action){
   switch(action){
     case "angelegt": return "Schaden angelegt";
@@ -70,6 +75,8 @@ async function loadHistory(){
     list.innerHTML = '<div class="card">Bitte zuerst einloggen. <a href="index.html">Zur Anmeldung</a></div>';
     return;
   }
+
+  const { data: employees } = await db.from("employees").select("id,name,email"); employeeMap={}; (employees||[]).forEach(e=>employeeMap[e.id]=e.name||e.email||`Mitarbeiter ${e.id}`); employeeFilter.innerHTML = `<option value="all">Mitarbeiter: Alle</option>` + Object.entries(employeeMap).map(([id,n])=>`<option value="${id}">${esc(n)}</option>`).join("");
 
   const { data, error } = await db
     .from("damage_history")
@@ -115,14 +122,18 @@ async function loadHistory(){
 
 function render(){
   const s = search.value.toLowerCase();
-  const f = filter.value;
+  const t = typeFilter.value;
+  const eFilter = employeeFilter.value;
 
   const filtered = entries.filter(item => {
     const haystack = [item.action, item.details, item.user_id, item.damages?.damage_type, item.damages?.area]
       .map(v => String(v ?? "").toLowerCase())
       .join(" ");
 
-    return haystack.includes(s) && (f === "all" || item.action === f);
+    const isDamage = !!item.damages;
+    const typeOk = t === "all" || (t === "damage" && isDamage) || (t === "vehicle" && !isDamage);
+    const empOk = eFilter === "all" || String(item.user_id) === eFilter;
+    return haystack.includes(s) && typeOk && empOk;
   });
 
   if (filtered.length === 0) {
@@ -133,18 +144,20 @@ function render(){
   list.innerHTML = filtered.map(item => `
     <div class="card">
       <div><strong>${esc(label(item.action))}</strong><span class="tag">${esc(item.damages?.damage_type || "-")}</span></div>
-      <div class="small" style="margin-top:6px">📍 ${esc(item.damages?.area || "-")} · 👤 User ID: ${esc(item.user_id || "-")}</div>
-      <div style="margin-top:8px">📝 ${esc(item.details || "-")}</div>
+      <div class="small" style="margin-top:6px">📍 ${esc(item.damages?.area || "-")} · 👤 Aktion von: ${esc(employeeMap[item.user_id] || item.user_id || "-")}</div>
+      <div style="margin-top:8px">📝 ${esc(item.details || "-")}</div><button style="margin-top:8px" onclick="openDetail(${item.id})">Details</button>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         ${(imagesByDamage[item?.damages?.id] || []).map(img => `<a href="${esc(img.public_url || "#")}" target="_blank" rel="noopener"><img src="${esc(img.public_url || "")}" alt="Bild" style="width:92px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1"></a>`).join("")}
       </div>
-      <div class="small" style="margin-top:8px">🕒 ${esc(new Date(item.created_at).toLocaleString("de-DE"))}</div>
+      <div class="small" style="margin-top:8px">🕒 ${esc(fmtDate(item.created_at))}</div>
     </div>
   `).join("");
 }
 
 search.addEventListener("input", render);
-filter.addEventListener("change", render);
+typeFilter.addEventListener("change", render);
+employeeFilter.addEventListener("change", render);
+function openDetail(id){const it=entries.find(x=>x.id===id);if(!it)return;document.getElementById("modalBody").innerHTML=`<p><strong>${esc(actionLabel(it.action))}</strong></p><p>${esc(it.details||"-")}</p><p>${esc(fmtDate(it.created_at))}</p>`;document.getElementById("detailModal").style.display="block";}
 loadHistory();
 </script>
 </body>
