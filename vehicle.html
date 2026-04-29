@@ -9,13 +9,13 @@
 :root{--bg1:#050c18;--bg2:#0b1730;--ink:#e5e7eb;--muted:#94a3b8;--line:#243045;--card:#0c1526;--blue:#3b82f6;--purple:#7c3aed;--green:#16a34a;--amber:#f59e0b;--red:#ef4444;--dark:#050b16}
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{margin:0;color:var(--ink);background:radial-gradient(circle at top right,rgba(59,130,246,.22),transparent 40%),linear-gradient(140deg,var(--bg1),var(--bg2))}
-header{position:sticky;top:0;z-index:20;background:rgba(6,13,26,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header{position:sticky;top:0;z-index:20;background:rgba(6,13,26,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:12px}
 main{max-width:1680px;margin:auto;padding:28px 30px}
 .hero h1{margin:0 0 4px 0;font-size:32px;letter-spacing:-.4px}
 .hero p{margin:0;color:var(--muted)}
 .user{font-size:13px;background:rgba(37,99,235,.2);color:#dbeafe;padding:8px 12px;border-radius:999px;border:1px solid rgba(59,130,246,.35)}
-.layout{display:grid;grid-template-columns:minmax(380px,460px) minmax(620px,1fr) minmax(360px,460px);gap:20px;align-items:start}
-.card{background:linear-gradient(180deg,#0d172b,#0b1324);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 26px rgba(2,6,23,.45)}
+.layout{display:grid;grid-template-columns:minmax(360px,420px) minmax(700px,1fr) minmax(360px,420px);gap:14px;align-items:start}
+.card{background:linear-gradient(180deg,#0d172b,#0b1324);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 26px rgba(2,6,23,.45)}
 input,select,textarea{width:100%;padding:12px;border:1px solid #334155;border-radius:12px;margin-bottom:10px;background:#0b1426;color:#e5e7eb}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.2)}
 textarea{min-height:84px;resize:vertical}
@@ -48,6 +48,7 @@ button:hover,.btn:hover{opacity:.95}
 .dot.leicht{background:#22c55e}.dot.mittel{background:#f59e0b}.dot.schwer{background:#ef4444}
 
 @media(max-width:1460px){
+  header{grid-template-columns:1fr;justify-items:start}
   .layout{grid-template-columns:1fr 1fr}
   .layout > section:last-child{grid-column:1 / -1}
 }
@@ -117,8 +118,9 @@ button:hover,.btn:hover{opacity:.95}
     </section>
 
     <section class="card">
-      <h2>Aktive Schäden</h2>
+      <h2 id="damageTitle">Aktive Schäden (0)</h2>
       <div id="damageList" class="damage-list">Schäden werden geladen...</div>
+      <button type="button" class="btn-secondary" style="width:100%;margin-top:12px" onclick="location.href='history.html?id=' + vehicleId">Alle Schäden anzeigen</button>
     </section>
   </div>
 </main>
@@ -206,6 +208,7 @@ async function loadDamages(){
   if (error) { document.getElementById("damageList").innerHTML = `<div class="error">${esc(error.message)}</div>`; return; }
 
   const active = (data || []).filter(d => d.status !== "repariert" && d.status !== "irrtuemlich");
+  document.getElementById("damageTitle").textContent = `Aktive Schäden (${active.length})`;
   if (active.length === 0) { document.getElementById("damageList").innerHTML = "Keine aktiven Schäden."; return; }
 
   const { data: imageRows } = await db.from("damage_images").select("*").in("damage_id", active.map(d => d.id));
