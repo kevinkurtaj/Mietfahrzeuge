@@ -88,7 +88,7 @@ function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case
 async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
 async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
 async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
-async function logout(){await db.auth.signOut(); location.href="index.html";}
+async function logout(){await db.auth.signOut(); location.href="login.html";}
 async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const adminBtn=document.getElementById("adminBtn"); if(adminBtn) adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
 function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
 
