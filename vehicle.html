@@ -21,14 +21,9 @@ body{
   background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 32%),linear-gradient(135deg,#f8fafc,#eef2f7);
 }
 .app-shell{
-  width:100vw;
-  min-height:100vh;
-  margin:0;
-  background:rgba(255,255,255,.82);
-  border:none;
-  border-radius:0;
-  box-shadow:none;
-  overflow:hidden;
+  max-width:1540px;margin:14px auto;min-height:calc(100vh - 28px);
+  background:rgba(255,255,255,.82);border:1px solid rgba(148,163,184,.35);
+  border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
 }
 .topbar{
   height:80px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;
@@ -77,7 +72,37 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0
 @media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-.main-grid{display:grid;grid-template-columns:265px minmax(430px,1fr) 390px;gap:18px;align-items:stretch}.upload-box{border:1.5px dashed #cbd5e1;border-radius:14px;padding:20px 14px;text-align:center;color:#64748b;background:#fbfdff;cursor:pointer;margin-top:8px}.viewer-card{padding:18px}.viewer-title{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:950;margin-bottom:18px}.viewer{position:relative;min-height:345px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:center;overflow:hidden}.vehicle-img{max-width:92%;max-height:305px;object-fit:contain;filter:drop-shadow(0 18px 20px rgba(15,23,42,.12))}.placeholder{font-size:48px;font-weight:950;color:#cbd5e1;text-align:center}.arrow{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:999px;border:1px solid #dbeafe;background:white;color:var(--blue);font-size:26px;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.08)}.arrow.left{left:14px}.arrow.right{right:14px}.dots{display:flex;gap:12px;justify-content:center;margin-top:-34px;position:relative;z-index:3}.dot{width:8px;height:8px;border-radius:999px;background:#cbd5e1}.dot.active{background:var(--blue)}.view-pills{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.pill{border:1px solid var(--line);background:#fff;color:#334155;border-radius:10px;padding:10px 20px;font-weight:850;cursor:pointer;min-width:104px}.pill.active{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border-color:transparent;box-shadow:0 10px 22px rgba(37,99,235,.18)}.current-area{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;background:#fbfdff}.current-area strong{color:var(--muted)}.current-area span{padding:8px 14px;border-radius:10px;background:#eef2ff;color:#1d4ed8;font-weight:900}.damage-list{display:grid;gap:16px}.damage-card{position:relative;border:1px solid var(--line);border-left:5px solid var(--orange);background:white;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.damage-card.leicht{border-left-color:var(--green)}.damage-card.mittel{border-left-color:var(--orange)}.damage-card.schwer{border-left-color:var(--red)}.damage-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.damage-head h3{margin:0;font-size:18px}.damage-meta{display:grid;gap:8px;margin:16px 0;color:#475569;font-size:14px}.blue-link{color:var(--blue);font-weight:950}.damage-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.info-strip{margin-top:18px;padding:20px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px}.info-item{display:flex;align-items:center;gap:12px;color:#334155}.info-icon{width:34px;height:34px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);display:grid;place-items:center}.info-label{color:var(--muted);font-size:13px}.info-value{font-weight:900;margin-top:3px}@media(max-width:1220px){.main-grid{grid-template-columns:1fr}.info-strip{grid-template-columns:1fr 1fr}}@media(max-width:720px){.info-strip{grid-template-columns:1fr}.damage-actions{grid-template-columns:1fr}}</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div><button class="secondary-btn" onclick="logout()">Logout</button></div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" id="historyNav" href="#">🕘 Historie</a><a class="nav-item" href="admin.html">👥 Admin Panel</a><a class="nav-item" href="#">👤 Profil</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p><span id="vehicleIdText">Fahrzeug-ID: -</span><span id="vehiclePlateText">Kennzeichen: -</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><section class="main-grid"><div class="card panel"><h2 class="panel-title"><span class="icon-badge">📄</span>Schaden hinzufügen</h2><label>Schadenart</label><input id="damageType" placeholder="z. B. Kratzer"><label>Bereich</label><select id="damageArea"><option value="vorne">vorne</option><option value="vorne-links">vorne-links</option><option value="linke Seite">linke Seite</option><option value="hinten-links">hinten-links</option><option value="hinten">hinten</option><option value="hinten-rechts">hinten-rechts</option><option value="rechte Seite">rechte Seite</option><option value="vorne-rechts">vorne-rechts</option><option value="Innenraum">Innenraum</option><option value="Dach">Dach</option></select><label>Schweregrad</label><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><label>Beschreibung</label><textarea id="damageDesc" placeholder="Beschreibung eingeben..."></textarea><label>Bild (optional)</label><label class="upload-box"><input id="imageFile" type="file" accept="image/*" multiple style="display:none"><div style="font-size:28px">☁️</div><strong>Bild auswählen oder hier ablegen</strong><span>PNG, JPG, WebP</span></label><button class="primary-btn" style="width:100%;margin-top:18px" onclick="saveDamage()">👤 Schaden speichern</button></div><div class="card viewer-card"><div class="viewer-title"><span class="icon-badge">⬡</span>360° Ansicht Transporter</div><div class="viewer"><button class="arrow left" onclick="prevView()">‹</button><img id="vehicleImage" class="vehicle-img" alt="Sprinter Ansicht"><div id="placeholder" class="placeholder" style="display:none">Sprinter Ansicht</div><button class="arrow right" onclick="nextView()">›</button></div><div class="dots" id="dots"></div><div class="view-pills" id="viewPills"></div><div class="current-area"><strong>Aktueller Bereich</strong><span id="currentAreaText">vorne</span></div></div><div class="card panel"><h2 class="panel-title"><span class="icon-badge">🛡️</span>Aktive Schäden (<span id="activeDamageCount">0</span>)</h2><div id="damageList" class="damage-list"></div></div></section><section class="card info-strip"><div class="info-item"><div class="info-icon">🚘</div><div><div class="info-label">Modell</div><div class="info-value">Mercedes Sprinter</div></div></div><div class="info-item"><div class="info-icon">📋</div><div><div class="info-label">Kennzeichen</div><div class="info-value" id="plateInfoText">-</div></div></div><div class="info-item"><div class="info-icon">📅</div><div><div class="info-label">Erstzulassung</div><div class="info-value">12.03.2023</div></div></div><div class="info-item"><div class="info-icon">🧭</div><div><div class="info-label">Kilometerstand</div><div class="info-value">24.350 km</div></div></div><div class="info-item"><div class="info-icon">🕘</div><div><div class="info-label">Status</div><div class="badge" id="statusBadge">-</div></div></div></section><section class="card panel" style="margin-top:18px"><h2 class="panel-title"><span class="icon-badge">⚙️</span>Fahrzeugstatus ändern</h2><div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start"><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional..." style="min-height:44px"></textarea><button class="secondary-btn" onclick="saveStatus()">Status speichern</button></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG – Alle Rechte vorbehalten.</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div><script>
+.main-grid{display:grid;grid-template-columns:265px minmax(430px,1fr) 390px;gap:18px;align-items:stretch}.upload-box{border:1.5px dashed #cbd5e1;border-radius:14px;padding:20px 14px;text-align:center;color:#64748b;background:#fbfdff;cursor:pointer;margin-top:8px}.viewer-card{padding:18px}.viewer-title{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:950;margin-bottom:18px}.viewer{position:relative;min-height:345px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:center;overflow:hidden}.vehicle-img{max-width:92%;max-height:305px;object-fit:contain;filter:drop-shadow(0 18px 20px rgba(15,23,42,.12))}.placeholder{font-size:48px;font-weight:950;color:#cbd5e1;text-align:center}.arrow{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:999px;border:1px solid #dbeafe;background:white;color:var(--blue);font-size:26px;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.08)}.arrow.left{left:14px}.arrow.right{right:14px}.dots{display:flex;gap:12px;justify-content:center;margin-top:-34px;position:relative;z-index:3}.dot{width:8px;height:8px;border-radius:999px;background:#cbd5e1}.dot.active{background:var(--blue)}.view-pills{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.pill{border:1px solid var(--line);background:#fff;color:#334155;border-radius:10px;padding:10px 20px;font-weight:850;cursor:pointer;min-width:104px}.pill.active{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border-color:transparent;box-shadow:0 10px 22px rgba(37,99,235,.18)}.current-area{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;background:#fbfdff}.current-area strong{color:var(--muted)}.current-area span{padding:8px 14px;border-radius:10px;background:#eef2ff;color:#1d4ed8;font-weight:900}.damage-list{display:grid;gap:16px}.damage-card{position:relative;border:1px solid var(--line);border-left:5px solid var(--orange);background:white;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.damage-card.leicht{border-left-color:var(--green)}.damage-card.mittel{border-left-color:var(--orange)}.damage-card.schwer{border-left-color:var(--red)}.damage-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.damage-head h3{margin:0;font-size:18px}.damage-meta{display:grid;gap:8px;margin:16px 0;color:#475569;font-size:14px}.blue-link{color:var(--blue);font-weight:950}.damage-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.info-strip{margin-top:18px;padding:20px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px}.info-item{display:flex;align-items:center;gap:12px;color:#334155}.info-icon{width:34px;height:34px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);display:grid;place-items:center}.info-label{color:var(--muted);font-size:13px}.info-value{font-weight:900;margin-top:3px}@media(max-width:1220px){.main-grid{grid-template-columns:1fr}.info-strip{grid-template-columns:1fr 1fr}}@media(max-width:720px){.info-strip{grid-template-columns:1fr}.damage-actions{grid-template-columns:1fr}}
+/* --- PATCH: mehr Platz + editierbare Fahrzeugdaten --- */
+.main-grid{
+  grid-template-columns: 300px minmax(520px, 1.4fr) 360px !important;
+  gap: 24px !important;
+  align-items: start !important;
+}
+.viewer{
+  min-height: 390px !important;
+}
+.vehicle-img{
+  max-height: 350px !important;
+}
+.info-strip{
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 18px !important;
+}
+.edit-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items:end;
+}
+@media(max-width:1300px){
+  .main-grid{grid-template-columns:1fr !important;}
+  .edit-grid{grid-template-columns:1fr;}
+  .info-strip{grid-template-columns:1fr 1fr !important;}
+}
+
+</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div>
+</div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" id="historyNav" href="#">🕘 Historie</a><a id="sidebarAdminLink" class="nav-item" href="admin.html" style="display:none;">👥 Admin Panel</a><a class="nav-item" href="#">👤 Profil</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p><span id="vehicleIdText">Fahrzeug-ID: -</span><span id="vehiclePlateText">Kennzeichen: -</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><section class="main-grid"><div class="card panel"><h2 class="panel-title"><span class="icon-badge">📄</span>Schaden hinzufügen</h2><label>Schadenart</label><input id="damageType" placeholder="z. B. Kratzer"><label>Bereich</label><select id="damageArea"><option value="vorne">vorne</option><option value="vorne-links">vorne-links</option><option value="linke Seite">linke Seite</option><option value="hinten-links">hinten-links</option><option value="hinten">hinten</option><option value="hinten-rechts">hinten-rechts</option><option value="rechte Seite">rechte Seite</option><option value="vorne-rechts">vorne-rechts</option><option value="Innenraum">Innenraum</option><option value="Dach">Dach</option></select><label>Schweregrad</label><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><label>Beschreibung</label><textarea id="damageDesc" placeholder="Beschreibung eingeben..."></textarea><label>Bild (optional)</label><label class="upload-box"><input id="imageFile" type="file" accept="image/*" multiple style="display:none"><div style="font-size:28px">☁️</div><strong>Bild auswählen oder hier ablegen</strong><span>PNG, JPG, WebP</span></label><button class="primary-btn" style="width:100%;margin-top:18px" onclick="saveDamage()">👤 Schaden speichern</button></div><div class="card viewer-card"><div class="viewer-title"><span class="icon-badge">⬡</span>360° Ansicht Transporter</div><div class="viewer"><button class="arrow left" onclick="prevView()">‹</button><img id="vehicleImage" class="vehicle-img" alt="Sprinter Ansicht"><div id="placeholder" class="placeholder" style="display:none">Sprinter Ansicht</div><button class="arrow right" onclick="nextView()">›</button></div><div class="dots" id="dots"></div><div class="view-pills" id="viewPills"></div><div class="current-area"><strong>Aktueller Bereich</strong><span id="currentAreaText">vorne</span></div></div><div class="card panel"><h2 class="panel-title"><span class="icon-badge">🛡️</span>Aktive Schäden (<span id="activeDamageCount">0</span>)</h2><div id="damageList" class="damage-list"></div></div></section><section class="card info-strip"><div class="info-item"><div class="info-icon">🚘</div><div><div class="info-label">Modell</div><div class="info-value">Mercedes Sprinter</div></div></div><div class="info-item"><div class="info-icon">📋</div><div><div class="info-label">Kennzeichen</div><div class="info-value" id="plateInfoText">-</div></div></div><div class="info-item"><div class="info-icon">📅</div><div><div class="info-label">Erstzulassung</div><div class="info-value">12.03.2023</div></div></div><div class="info-item"><div class="info-icon">🧭</div><div><div class="info-label">Kilometerstand</div><div class="info-value">24.350 km</div></div></div><div class="info-item"><div class="info-icon">🕘</div><div><div class="info-label">Status</div><div class="badge" id="statusBadge">-</div></div></div></section><section class="card panel" style="margin-top:18px"><h2 class="panel-title"><span class="icon-badge">⚙️</span>Fahrzeugstatus ändern</h2><div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start"><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional..." style="min-height:44px"></textarea><button class="secondary-btn" onclick="saveStatus()">Status speichern</button></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG – Alle Rechte vorbehalten.</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div><script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -93,12 +118,70 @@ function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case
 async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
 async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
 async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
+
+async function saveVehicleInfo() {
+  if (!vehicle) {
+    showToast("Fahrzeug noch nicht geladen.", "error");
+    return;
+  }
+
+  const mileageCol = existingColumn(vehicle, ["kilometerstand","mileage","km"], "kilometerstand");
+  const regCol = existingColumn(vehicle, ["erstzulassung","first_registration","firstRegistration"], "erstzulassung");
+
+  const update = {};
+  update[mileageCol] = document.getElementById("mileageInput").value
+    ? Number(document.getElementById("mileageInput").value)
+    : null;
+  update[regCol] = document.getElementById("firstRegistrationInput").value || null;
+
+  const { error } = await db
+    .from("vehicles")
+    .update(update)
+    .eq("id", Number(vehicleId));
+
+  if (error) {
+    showToast("Fehler: " + error.message + " – ggf. SQL-Spalten kilometerstand/erstzulassung anlegen.", "error");
+    return;
+  }
+
+  await db.from("vehicle_history").insert([{
+    vehicle_id: Number(vehicleId),
+    action: "fahrzeugdaten_geaendert",
+    details: "Kilometerstand / Erstzulassung aktualisiert",
+    user_id: currentEmployee?.id || null,
+    auth_user_id: currentUser?.id || null
+  }]);
+
+  showToast("Fahrzeugdaten gespeichert.", "success");
+  await loadVehicle();
+}
+
 async function logout(){await db.auth.signOut(); location.href="login.html";}
-async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const adminBtn=document.getElementById("adminBtn"); if(adminBtn) adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
+async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const sidebarAdminLink=document.getElementById("sidebarAdminLink"); if(sidebarAdminLink) sidebarAdminLink.style.display=emp?.role==="admin"?"flex":"none";}
 function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
 
 const vehicleId=new URLSearchParams(location.search).get("id");const views=[{label:"vorne",area:"vorne",src:"assets/sprinter/front.jpg"},{label:"vorne-links",area:"vorne-links",src:"assets/sprinter/front-left.jpg"},{label:"linke Seite",area:"linke Seite",src:"assets/sprinter/left.jpg"},{label:"hinten-links",area:"hinten-links",src:"assets/sprinter/rear-left.jpg"},{label:"hinten",area:"hinten",src:"assets/sprinter/rear.jpg"},{label:"hinten-rechts",area:"hinten-rechts",src:"assets/sprinter/rear-right.jpg"},{label:"rechte Seite",area:"rechte Seite",src:"assets/sprinter/right.jpg"},{label:"vorne-rechts",area:"vorne-rechts",src:"assets/sprinter/front-right.jpg"}];let currentViewIndex=1,currentUser=null,currentEmployee=null,damages=[],employeesMap={};
-async function init(){updateClock();currentUser=await requireLogin();if(!currentUser)return;currentEmployee=await getEmployeeByEmail(currentUser.email);await hydrateTopUser("vehicle");document.getElementById("historyNav").href="history.html?id="+vehicleId;await loadEmployees();await loadVehicle();setupViewer();await loadDamages();}
+
+function valueFromAny(obj, names, fallback=""){
+  for(const n of names){
+    if(obj && Object.prototype.hasOwnProperty.call(obj,n) && obj[n] !== null && obj[n] !== undefined) return obj[n];
+  }
+  return fallback;
+}
+function existingColumn(obj, names, fallback){
+  for(const n of names){
+    if(obj && Object.prototype.hasOwnProperty.call(obj,n)) return n;
+  }
+  return fallback;
+}
+function prettyMileage(v){
+  return v ? Number(v).toLocaleString("de-DE") + " km" : "-";
+}
+function prettyDate(v){
+  return v ? new Date(v).toLocaleDateString("de-DE") : "-";
+}
+
+async function init(){updateClock();currentUser=await requireLogin();if(!currentUser)return;currentEmployee=await getEmployeeByEmail(currentUser.email);currentEmployee = await hydrateTopUser("vehicle");document.getElementById("historyNav").href="history.html?id="+vehicleId;await loadEmployees();await loadVehicle();setupViewer();await loadDamages();}
 async function loadEmployees(){const {data}=await db.from("employees").select("id,name,email");employeesMap={};(data||[]).forEach(e=>employeesMap[e.id]=e.name||e.email||"Mitarbeiter "+e.id);}
 function employeeName(id){return employeesMap[id]||"Unbekannt";}
 async function loadVehicle(){const {data,error}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle(); if(error||!data){showToast("Fahrzeug nicht gefunden.","error");return;} document.getElementById("vehicleTitle").textContent=(data.name||"Inhofer-Sprinter")+(data.kennzeichen?" ("+data.kennzeichen+")":"");document.getElementById("vehicleIdText").textContent="Fahrzeug-ID: "+data.id;document.getElementById("vehiclePlateText").textContent="Kennzeichen: "+(data.kennzeichen||"-");document.getElementById("plateInfoText").textContent=data.kennzeichen||"-";document.getElementById("vehicleStatus").value=data.status||"einsatzbereit";const s=document.getElementById("statusBadge");s.textContent=statusLabel(data.status);s.className="badge "+(data.status||"");}
