@@ -123,7 +123,7 @@ async function startApp(){
 }
 async function loadVehicles(){
   const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
-  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${error.message}</div>`;return;}
+  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return;}
   const list=data||[];
   document.getElementById("vehicleCount").textContent=list.length;
   document.getElementById("readyCount").textContent=list.filter(v=>v.status==="einsatzbereit").length;
