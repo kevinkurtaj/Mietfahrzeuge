@@ -1,164 +1,102 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeughistorie</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{--bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--blue:#2563eb}
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;color:var(--ink);background:#f4f7fb}
-header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
-main{max-width:1080px;margin:auto;padding:20px}
-.title{font-weight:900;font-size:24px;letter-spacing:-.4px}
-.back{color:#1d4ed8;font-weight:700;text-decoration:none}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 28px rgba(15,23,42,.08);margin-bottom:10px}
-input,select{padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
-input{min-width:240px;flex:1}
-input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
-.tag{display:inline-block;background:#dbeafe;color:#1d4ed8;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin-left:6px}
-.small{font-size:13px;color:var(--muted)}
-.empty{text-align:center;color:var(--muted);padding:20px}
-</style>
-</head>
-<body>
-<header>
-  <div class="title">📜 Fahrzeughistorie</div>
-  <a class="back" href="index.html">Zurück</a>
-</header>
-<main>
-  <div class="toolbar">
-    <input id="search" placeholder="Suche in Aktion, Details, Fahrzeug, Mitarbeiter...">
-    <select id="typeFilter"><option value="all">Typ: Alle</option><option value="vehicle">Fahrzeugstatus</option><option value="damage">Schäden</option></select>
-    <select id="employeeFilter"><option value="all">Mitarbeiter: Alle</option></select>
-  </div>
-  <div id="historyList"></div>
-  <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,.55);padding:20px;z-index:60" onclick="if(event.target===this)this.style.display='none'">
-    <div style="max-width:700px;margin:8vh auto;background:#fff;border-radius:16px;padding:18px">
-      <h3>Eintrag-Details</h3><div id="modalBody"></div><button onclick="document.getElementById('detailModal').style.display='none'">Schließen</button>
-    </div></div>
-</main>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Historie</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+:root{
+  --bg:#f6f8fc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --blue:#2563eb;
+  --blue2:#3b82f6;
+  --green:#16a34a;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --gray:#64748b;
+  --shadow:0 18px 50px rgba(15,23,42,.08);
+  --soft-shadow:0 10px 30px rgba(15,23,42,.06);
+  --radius:22px;
+}
+*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 32%),linear-gradient(135deg,#f8fafc,#eef2f7);
+}
+.app-shell{
+  max-width:1540px;margin:14px auto;min-height:calc(100vh - 28px);
+  background:rgba(255,255,255,.82);border:1px solid rgba(148,163,184,.35);
+  border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
+}
+.topbar{
+  height:80px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+}
+.brand{display:flex;align-items:center;gap:14px;font-size:21px;font-weight:900;letter-spacing:-.3px}
+.brand-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--blue);border:1px solid #bfdbfe;background:#eff6ff;font-size:24px}
+.userbox{display:flex;align-items:center;gap:14px}
+.avatar{width:40px;height:40px;border-radius:999px;background:#eef2ff;color:#1d4ed8;font-weight:900;display:grid;place-items:center}
+.user-name{font-weight:900}.user-role{color:var(--muted);font-size:13px;margin-top:2px}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 108px)}
+.sidebar{border-right:1px solid var(--line);padding:28px 14px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55)}
+.nav{display:grid;gap:14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:#334155;text-decoration:none;font-weight:800;cursor:pointer;border:none;background:transparent;font-size:15px;text-align:left}
+.nav-item.active{background:linear-gradient(135deg,var(--blue),#4f46e5);color:white;box-shadow:0 12px 28px rgba(37,99,235,.28)}
+.nav-item:hover:not(.active){background:#f1f5f9}
+.content{padding:28px 26px 20px}
+.page-head{position:relative;min-height:78px;display:flex;align-items:flex-start;justify-content:center;margin-bottom:24px}
+.back-btn{position:absolute;left:0;top:10px;display:inline-flex;align-items:center;gap:8px;border:none;background:transparent;color:#334155;font-weight:800;cursor:pointer;font-size:15px}
+.title-wrap{text-align:center}.title-wrap h1{margin:0;font-size:30px;letter-spacing:-.8px}.title-wrap p{margin:8px 0 0;color:var(--muted);font-size:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.date-box{position:absolute;right:0;top:4px;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;color:#475569;font-size:14px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-shadow)}
+.panel{padding:18px}
+.panel-title{display:flex;align-items:center;gap:10px;margin:0 0 22px;font-size:19px;font-weight:950}
+.icon-badge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line)}
+label{display:block;font-size:13px;font-weight:900;margin:14px 0 8px}
+input,select,textarea{
+  width:100%;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:10px;padding:12px 13px;outline:none;font-size:14px;transition:.16s;
+}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+.primary-btn{border:none;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(37,99,235,.24)}
+.primary-btn:hover{transform:translateY(-1px)}
+.secondary-btn{border:1px solid #bfdbfe;background:#fff;color:var(--blue);border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}
+.success-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.danger-btn{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{padding:22px}.stat .label{font-size:13px;color:var(--muted);font-weight:900}.stat strong{display:block;margin-top:8px;font-size:32px}
+.badge{display:inline-flex;align-items:center;width:max-content;padding:7px 11px;border-radius:9px;font-size:12px;font-weight:950;background:#e5e7eb;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.severity{padding:7px 12px;border-radius:9px;font-size:12px;font-weight:950}.severity.leicht{background:#dcfce7;color:#166534}.severity.mittel{background:#fef3c7;color:#92400e}.severity.schwer{background:#fee2e2;color:#991b1b}
+.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,.24);display:none;z-index:50;max-width:420px}.toast.success{background:#166534}.toast.error{background:#991b1b}
+.empty-state{padding:28px;text-align:center;color:#64748b;background:#fbfdff;border:1px dashed #cbd5e1;border-radius:16px}
+.footer{text-align:center;color:#64748b;font-size:13px;padding:18px 0 10px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:40}
+.modal-box{width:100%;max-width:560px;background:white;border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(15,23,42,.28)}
+@media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-<script>
+.timeline{display:grid;gap:14px}.timeline-card{padding:18px;border-left:5px solid var(--blue)}.timeline-card.damage{border-left-color:var(--orange)}.filters{display:grid;grid-template-columns:1fr 220px 240px;gap:12px;margin-bottom:18px}@media(max-width:900px){.filters{grid-template-columns:1fr}}</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div><button class="secondary-btn" onclick="logout()">Logout</button></div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item" href="index.html">🚘 Fahrzeuge</a><a class="nav-item active" href="history.html">🕘 Historie</a><a class="nav-item" href="admin.html">👥 Admin Panel</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" id="backBtn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="title">Historie</h1><p><span>Fahrzeugstatus-Änderungen und Schadensereignisse</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><div class="card panel"><div class="filters"><input id="search" placeholder="Suche nach Details, Aktion, Mitarbeiter ..."><select id="typeFilter"><option value="all">Alle Einträge</option><option value="vehicle">Fahrzeugstatus</option><option value="damage">Schäden</option></select><select id="employeeFilter"><option value="all">Alle Mitarbeiter</option></select></div><div id="historyList" class="timeline"></div></div><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div><script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const list = document.getElementById("historyList");
-const search = document.getElementById("search");
-const typeFilter = document.getElementById("typeFilter");
-const employeeFilter = document.getElementById("employeeFilter");
-const vehicleId = Number(new URLSearchParams(window.location.search).get("id"));
+function esc(value){return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function fmtDate(value){return value ? new Date(value).toLocaleDateString("de-DE") : "-";}
+function fmtTime(value){return value ? new Date(value).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : "-";}
+function fullDateTime(value){return value ? new Date(value).toLocaleString("de-DE") : "-";}
+function initials(name){const p=String(name||"").trim().split(/\s+/); if(p.length>=2)return (p[0][0]+p[1][0]).toUpperCase(); return String(name||"U").slice(0,2).toUpperCase();}
+function showToast(message,type="success"){const t=document.getElementById("toast"); if(!t) return alert(message); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
+function statusLabel(status){switch(status){case "einsatzbereit":return "einsatzbereit";case "abruf":return "Abruf / Reserve";case "werkstatt":return "Werkstatt";case "nicht_einsatzbereit":return "nicht einsatzbereit";case "nicht_im_einsatz":return "nicht im Einsatz";default:return status||"unbekannt";}}
+function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case "bilder_hochgeladen":return "Bilder hochgeladen";case "repariert":return "Schaden repariert";case "irrtuemlich":return "Schaden irrtümlich";case "bearbeitet":return "Schaden bearbeitet";case "fahrzeugstatus_geaendert":return "Fahrzeugstatus geändert";case "status_geaendert":return "Fahrzeugstatus geändert";default:return a||"-";}}
+async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
+async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
+async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
+async function logout(){await db.auth.signOut(); location.href="index.html";}
+async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const adminBtn=document.getElementById("adminBtn"); if(adminBtn) adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
+function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
 
-let entries = [];
-let employeeMap = {};
-const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
-let imagesByDamage = {};
-
-function fmtDate(v){return v ? new Date(v).toLocaleString("de-DE") : "-";}
-function statusLabel(s){return s||"-";}
-function actionLabel(a){return label(a);}
-function label(action){
-  switch(action){
-    case "angelegt": return "Schaden angelegt";
-    case "repariert": return "Repariert";
-    case "irrtuemlich": return "Irrtümlich";
-    default: return action || "-";
-  }
-}
-
-async function loadHistory(){
-  const { data: session } = await db.auth.getSession();
-  if (!session.session?.user) {
-    list.innerHTML = '<div class="card">Bitte zuerst einloggen. <a href="index.html">Zur Anmeldung</a></div>';
-    return;
-  }
-
-  const { data: employees } = await db.from("employees").select("id,name,email"); employeeMap={}; (employees||[]).forEach(e=>employeeMap[e.id]=e.name||e.email||`Mitarbeiter ${e.id}`); employeeFilter.innerHTML = `<option value="all">Mitarbeiter: Alle</option>` + Object.entries(employeeMap).map(([id,n])=>`<option value="${id}">${esc(n)}</option>`).join("");
-
-  const { data, error } = await db
-    .from("damage_history")
-    .select(`
-      id,
-      action,
-      created_at,
-      details,
-      user_id,
-      damages (
-        id,
-        damage_type,
-        area,
-        vehicle_id
-      )
-    `)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.innerHTML = `<div class="card">❌ ${esc(error.message)}</div>`;
-    return;
-  }
-
-  entries = (data || []).filter(item => {
-    if (!Number.isInteger(vehicleId) || vehicleId <= 0) return true;
-    return Number(item?.damages?.vehicle_id) === vehicleId;
-  });
-
-  const ids = entries.map(e => e?.damages?.id).filter(Boolean);
-  if (ids.length > 0) {
-    const { data: imgs } = await db.from("damage_images").select("*").in("damage_id", ids);
-    imagesByDamage = {};
-    (imgs || []).forEach(img => {
-      if (!imagesByDamage[img.damage_id]) imagesByDamage[img.damage_id] = [];
-      imagesByDamage[img.damage_id].push(img);
-    });
-  } else {
-    imagesByDamage = {};
-  }
-
-  render();
-}
-
-function render(){
-  const s = search.value.toLowerCase();
-  const t = typeFilter.value;
-  const eFilter = employeeFilter.value;
-
-  const filtered = entries.filter(item => {
-    const haystack = [item.action, item.details, item.user_id, item.damages?.damage_type, item.damages?.area]
-      .map(v => String(v ?? "").toLowerCase())
-      .join(" ");
-
-    const isDamage = !!item.damages;
-    const typeOk = t === "all" || (t === "damage" && isDamage) || (t === "vehicle" && !isDamage);
-    const empOk = eFilter === "all" || String(item.user_id) === eFilter;
-    return haystack.includes(s) && typeOk && empOk;
-  });
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="card empty">Keine Einträge gefunden.</div>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(item => `
-    <div class="card">
-      <div><strong>${esc(label(item.action))}</strong><span class="tag">${esc(item.damages?.damage_type || "-")}</span></div>
-      <div class="small" style="margin-top:6px">📍 ${esc(item.damages?.area || "-")} · 👤 Aktion von: ${esc(employeeMap[item.user_id] || item.user_id || "-")}</div>
-      <div style="margin-top:8px">📝 ${esc(item.details || "-")}</div><button style="margin-top:8px" onclick="openDetail(${item.id})">Details</button>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        ${(imagesByDamage[item?.damages?.id] || []).map(img => `<a href="${esc(img.public_url || "#")}" target="_blank" rel="noopener"><img src="${esc(img.public_url || "")}" alt="Bild" style="width:92px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1"></a>`).join("")}
-      </div>
-      <div class="small" style="margin-top:8px">🕒 ${esc(fmtDate(item.created_at))}</div>
-    </div>
-  `).join("");
-}
-
-search.addEventListener("input", render);
-typeFilter.addEventListener("change", render);
-employeeFilter.addEventListener("change", render);
-function openDetail(id){const it=entries.find(x=>x.id===id);if(!it)return;document.getElementById("modalBody").innerHTML=`<p><strong>${esc(actionLabel(it.action))}</strong></p><p>${esc(it.details||"-")}</p><p>${esc(fmtDate(it.created_at))}</p>`;document.getElementById("detailModal").style.display="block";}
-loadHistory();
-</script>
-</body>
-</html>
+const vehicleId=new URLSearchParams(location.search).get("id");let allData=[],employeesMap={},employees=[],damagesMap={},vehicleName="";
+async function init(){updateClock();const user=await requireLogin();if(!user)return;await hydrateTopUser("history");if(vehicleId)document.getElementById("backBtn").onclick=()=>location.href="vehicle.html?id="+vehicleId;await loadEmployees();await loadHistory();}
+async function loadEmployees(){const {data}=await db.from("employees").select("id,name,email").order("name");employees=data||[];employeesMap={};employees.forEach(e=>employeesMap[e.id]=e.name||e.email||"Mitarbeiter "+e.id);document.getElementById("employeeFilter").innerHTML='<option value="all">Alle Mitarbeiter</option>'+employees.map(e=>`<option value="${e.id}">${esc(e.name||e.email||("Mitarbeiter "+e.id))}</option>`).join("");}
+function emp(id){return employeesMap[id]||"Unbekannt";}
+async function loadHistory(){let vehicleIds=[]; if(vehicleId){const {data:v}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle(); if(v){vehicleName=(v.name||"Fahrzeug")+(v.kennzeichen?" ("+v.kennzeichen+")":"");document.getElementById("title").textContent="Historie – "+vehicleName;}vehicleIds=[Number(vehicleId)];} const vhq=db.from("vehicle_history").select("*").order("created_at",{ascending:false}); if(vehicleId) vhq.eq("vehicle_id",Number(vehicleId)); const {data:vh,error:e1}=await vhq; if(e1){showToast(e1.message,"error");return;} const dq=db.from("damages").select("*"); if(vehicleId) dq.eq("vehicle_id",Number(vehicleId)); const {data:damages,error:e2}=await dq; if(e2){showToast(e2.message,"error");return;} damagesMap={};(damages||[]).forEach(d=>damagesMap[d.id]=d);const ids=(damages||[]).map(d=>d.id); let dh=[]; if(ids.length){const {data,error}=await db.from("damage_history").select("*").in("damage_id",ids).order("created_at",{ascending:false}); if(error){showToast(error.message,"error");return;} dh=data||[];} allData=[...(vh||[]).map(i=>({...i,type:"vehicle",title:"Fahrzeugstatus",employee_id:i.user_id,employee:emp(i.user_id)})),...dh.map(i=>{const d=damagesMap[i.damage_id]||{};const eid=i.user_id||d.employee_id;return {...i,type:"damage",title:[d.damage_type||"Schaden",d.area||"",d.severity||""].filter(Boolean).join(" / "),employee_id:eid,employee:emp(eid),reported_employee_id:d.employee_id,reported_employee:emp(d.employee_id)};})];allData.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));render();}
+function render(){const s=document.getElementById("search").value.toLowerCase(),t=document.getElementById("typeFilter").value,e=document.getElementById("employeeFilter").value;const data=allData.filter(i=>(t==="all"||i.type===t)&&(e==="all"||String(i.employee_id)===e||String(i.reported_employee_id)===e)&&JSON.stringify(i).toLowerCase().includes(s));document.getElementById("historyList").innerHTML=data.map((i,idx)=>`<article class="card panel timeline-card ${i.type}"><span class="badge ${i.type==='damage'?'abruf':'einsatzbereit'}">${i.type==='damage'?'⚠️ Schaden':'🚘 Fahrzeug'} · ${actionLabel(i.action)}</span><h3>${esc(i.title||"-")}</h3><p style="color:var(--muted)">${fullDateTime(i.created_at)} · Aktion von <strong>${esc(i.employee)}</strong></p>${i.type==='damage'?`<p>📝 Schaden gemeldet von: <strong>${esc(i.reported_employee)}</strong></p>`:""}<p>${esc(i.details||"-")}</p><button class="secondary-btn" onclick="openModal(${allData.indexOf(i)})">Details anzeigen</button></article>`).join("")||'<div class="empty-state">Keine Einträge gefunden.</div>';}
+function openModal(i){const item=allData[i];document.getElementById("modalContent").innerHTML=`<h2 style="margin-top:0">Detailansicht</h2><p><strong>Typ:</strong> ${item.type==='damage'?'Schaden':'Fahrzeug'}</p><p><strong>Aktion:</strong> ${actionLabel(item.action)}</p><p><strong>Aktion von:</strong> ${esc(item.employee)}</p>${item.type==='damage'?`<p><strong>Gemeldet von:</strong> ${esc(item.reported_employee)}</p>`:""}<p><strong>Zeitpunkt:</strong> ${fullDateTime(item.created_at)}</p><p><strong>Details:</strong><br>${esc(item.details||"-")}</p>`;document.getElementById("modal").style.display="flex";}function closeModal(){document.getElementById("modal").style.display="none";}search.addEventListener("input",render);typeFilter.addEventListener("change",render);employeeFilter.addEventListener("change",render);init();
+</script></body></html>
