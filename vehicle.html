@@ -6,25 +6,36 @@
 <title>Fahrzeug</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#f4f7fb;--surface:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;--shadow:0 10px 30px rgba(15,23,42,.08)}
-*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
-body{margin:0;color:var(--ink);background:var(--bg)}
-header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);padding:14px 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:12px;box-shadow:var(--shadow)}
-main{max-width:1680px;margin:auto;padding:28px 30px}.hero h1{margin:0 0 4px;font-size:32px}.hero p{margin:0;color:var(--muted)}
-.user{font-size:13px;background:#eff6ff;color:#1d4ed8;padding:8px 12px;border-radius:999px;border:1px solid #bfdbfe}
-.layout{display:grid;grid-template-columns:minmax(320px,390px) minmax(650px,1fr) minmax(320px,390px);gap:16px;align-items:start}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
-input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:10px;background:#fff;color:var(--ink)}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.16)}
-button,.btn{border:none;background:var(--blue);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}.btn-secondary{background:#f8fafc;color:#334155;border:1px solid #cbd5e1}
-.error{background:#fef2f2;color:#991b1b;border-radius:10px;padding:12px;border:1px solid #fecaca}.success{background:#ecfdf5;color:#166534;border-radius:10px;padding:12px;border:1px solid #bbf7d0}
-.damage{border:1px solid var(--line);background:#fff;border-left:4px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:10px}.small{font-size:13px;color:var(--muted)}.employee{display:inline-block;background:#eff6ff;color:#1d4ed8;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-top:6px}
-.damage-list{min-height:500px;max-height:70vh;overflow:auto;padding-right:4px}.viewer-card{background:#fff}.viewer{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f8fafc;min-height:500px;display:flex;align-items:center;justify-content:center}
-.viewer img{width:100%;height:500px;object-fit:contain}.nav-btn{position:absolute;top:50%;transform:translateY(-50%);background:#fff;border:1px solid #cbd5e1;width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#1d4ed8}
-.nav-left{left:10px}.nav-right{right:10px}.zone-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.zone-chip{background:#f8fafc;color:#1e293b;border:1px solid #cbd5e1;padding:8px 10px;border-radius:999px;font-size:12px;cursor:pointer}.zone-chip.active{background:#2563eb;color:#fff;border-color:#2563eb}
-.sev{float:right;font-size:12px;font-weight:800;padding:4px 8px;border-radius:999px}.sev.leicht{background:#dcfce7;color:#166534}.sev.mittel{background:#ffedd5;color:#9a3412}.sev.schwer{background:#fee2e2;color:#991b1b}
-.dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:8px;vertical-align:middle}.dot.leicht{background:#22c55e}.dot.mittel{background:#f59e0b}.dot.schwer{background:#ef4444}
-@media(max-width:1460px){header{grid-template-columns:1fr;justify-items:start}.layout{grid-template-columns:1fr 1fr}.layout>section:last-child{grid-column:1 / -1}}@media(max-width:1100px){main{padding:16px}.layout{grid-template-columns:1fr}.viewer,.viewer img{min-height:320px;height:320px}}
+:root{--bg:#f4f7fb;--surface:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--shadow:0 10px 30px rgba(0,0,0,0.1);--radius:16px}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink)}
+header{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:16px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.hero h1{margin:0;font-size:28px}.hero p{margin:4px 0 0;color:var(--muted)}
+.user{font-size:13px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:8px 12px}
+.layout {display:grid;grid-template-columns:350px 1fr 350px;gap:20px;padding:20px;}
+.left-panel, .center-panel, .right-panel {background:white;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;margin:0 0 10px;background:#fff}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+button {background:#2563eb;color:white;border-radius:10px;padding:10px;border:none;cursor:pointer;font-weight:700}
+button:hover{opacity:.94}
+.btn-secondary{background:#f8fafc;color:#334155;border:1px solid #cbd5e1}
+.viewer-wrap{min-height:420px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:#f8fafc;position:relative;overflow:hidden}
+.viewer-wrap img{max-width:100%;max-height:420px;object-fit:contain}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:999px;padding:0;display:flex;align-items:center;justify-content:center;background:#fff;color:#2563eb;border:1px solid #cbd5e1}
+.nav.left{left:12px}.nav.right{right:12px}
+.zone-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.zone-chip{background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;padding:8px 10px;border-radius:10px;font-size:13px}
+.zone-chip.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.small{font-size:13px;color:var(--muted)}
+.success{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:10px;margin-top:10px}
+.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:10px;padding:10px;margin-top:10px}
+.damage-card{border:1px solid var(--line);border-left:5px solid #bfdbfe;border-radius:12px;padding:15px;margin-bottom:10px;background:#fff}
+.damage-card.leicht{border-left-color:#22c55e}.damage-card.mittel{border-left-color:#f59e0b}.damage-card.schwer{border-left-color:#ef4444}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.leicht{background:#dcfce7;color:#166534}.badge.mittel{background:#ffedd5;color:#9a3412}.badge.schwer{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+@media(max-width:1200px){.layout{grid-template-columns:1fr}.right-panel,.left-panel,.center-panel{min-width:0}}
 </style>
 </head>
 <body>
@@ -35,63 +46,54 @@ button,.btn{border:none;background:var(--blue);color:#fff;padding:10px 14px;bord
   <button onclick="logout()">Logout</button>
 </header>
 
-<main>
-  <div class="layout">
-    <section class="card">
-      <h2>Schaden hinzufügen</h2>
-      <input id="type" placeholder="z.B. Kratzer">
-      <input id="area" placeholder="z.B. vorne-links">
-      <select id="severity">
-        <option value="leicht">leicht</option>
-        <option value="mittel">mittel</option>
-        <option value="schwer">schwer</option>
-      </select>
-      <textarea id="description" placeholder="Beschreibung"></textarea>
-      <input id="damageImages" type="file" accept="image/*" multiple>
-      <div class="small">Optional: Bilder direkt mitschicken.</div>
-      <div class="zone-row" style="margin-bottom:10px">
-        <button type="button" class="btn-secondary" onclick="saveDamage()">Schaden speichern</button>
-        <button type="button" class="btn-secondary" onclick="location.href='history.html?id=' + vehicleId">Historie öffnen</button>
-      </div>
-      <div id="message"></div>
-
-      <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
-      <h3>Fahrzeugstatus</h3>
-      <select id="vehicleStatus">
-        <option value="einsatzbereit">einsatzbereit</option>
-        <option value="abruf">Abruf / Reserve</option>
-        <option value="werkstatt">Werkstatt</option>
-        <option value="nicht_einsatzbereit">nicht einsatzbereit</option>
-        <option value="nicht_im_einsatz">nicht im Einsatz</option>
-      </select>
-      <textarea id="statusNote" placeholder="Notiz optional"></textarea>
-      <button type="button" onclick="saveStatus()">Status speichern</button>
-      <div id="statusMessage"></div>
-    </section>
-
-    <section class="card viewer-card">
-      <div class="viewer-top">
-        <div>
-          <div class="viewer-title">360°-Ansicht Transporter</div>
-          <div class="viewer-sub">Aktueller Bereich: <span id="currentViewLabel">vorne</span></div>
-        </div>
-      </div>
-      <div class="viewer">
-        <button type="button" class="nav-btn nav-left" onclick="prevView()">‹</button>
-        <img id="vanImage" src="assets/sprinter/front.jpg" alt="Transporter Ansicht" onerror="this.src='https://placehold.co/1200x720/0b1220/bfd7ff?text=Sprinter+Ansicht'">
-        <button type="button" class="nav-btn nav-right" onclick="nextView()">›</button>
-      </div>
-      <div id="zoneChips" class="zone-row"></div>
-      <div class="small" style="margin-top:8px">Tipp: Klick auf Bereich übernimmt automatisch das Feld „area“.</div>
-    </section>
-
-    <section class="card">
-      <h2 id="damageTitle">Aktive Schäden (0)</h2>
-      <div id="damageList" class="damage-list">Schäden werden geladen...</div>
-      <button type="button" class="btn-secondary" style="width:100%;margin-top:12px" onclick="location.href='history.html?id=' + vehicleId">Alle Schäden anzeigen</button>
-    </section>
+<div class="layout">
+  <div class="left-panel">
+    <h2>Schaden hinzufügen</h2>
+    <input id="type" placeholder="z.B. Kratzer">
+    <input id="area" placeholder="z.B. vorne-links">
+    <select id="severity">
+      <option value="leicht">leicht</option>
+      <option value="mittel">mittel</option>
+      <option value="schwer">schwer</option>
+    </select>
+    <textarea id="description" placeholder="Beschreibung"></textarea>
+    <input id="damageImages" type="file" accept="image/*" multiple>
+    <div class="actions">
+      <button type="button" onclick="saveDamage()">Schaden speichern</button>
+      <button type="button" class="btn-secondary" onclick="location.href='history.html?id=' + vehicleId">Historie öffnen</button>
+    </div>
+    <div id="message"></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+    <h3>Fahrzeugstatus</h3>
+    <select id="vehicleStatus">
+      <option value="einsatzbereit">einsatzbereit</option>
+      <option value="abruf">Abruf / Reserve</option>
+      <option value="werkstatt">Werkstatt</option>
+      <option value="nicht_einsatzbereit">nicht einsatzbereit</option>
+      <option value="nicht_im_einsatz">nicht im Einsatz</option>
+    </select>
+    <textarea id="statusNote" placeholder="Notiz optional"></textarea>
+    <button type="button" onclick="saveStatus()">Status speichern</button>
+    <div id="statusMessage"></div>
   </div>
-</main>
+
+  <div class="center-panel">
+    <h2>360° Ansicht Transporter</h2>
+    <div class="small">Aktueller Bereich: <strong id="currentViewLabel">vorne</strong></div>
+    <div class="viewer-wrap">
+      <button class="nav left" type="button" onclick="prevView()">‹</button>
+      <img id="vanImage" src="assets/sprinter/front.jpg" alt="Transporter Ansicht" onerror="this.src='https://placehold.co/1200x720/e5e7eb/64748b?text=Sprinter+Ansicht'">
+      <button class="nav right" type="button" onclick="nextView()">›</button>
+    </div>
+    <div id="zoneChips" class="zone-row"></div>
+  </div>
+
+  <div class="right-panel">
+    <h2 id="damageTitle">Aktive Schäden (0)</h2>
+    <div id="damageList">Schäden werden geladen...</div>
+    <button type="button" class="btn-secondary" style="width:100%" onclick="location.href='history.html?id=' + vehicleId">Alle Schäden anzeigen</button>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
@@ -106,11 +108,11 @@ let employeesMap = {};
 const views = [
   { key: "vorne", path: "assets/sprinter/front.jpg" },
   { key: "vorne-links", path: "assets/sprinter/front-left.jpg" },
-  { key: "linke seite", path: "assets/sprinter/left.jpg" },
+  { key: "links", path: "assets/sprinter/left.jpg" },
   { key: "hinten-links", path: "assets/sprinter/rear-left.jpg" },
   { key: "hinten", path: "assets/sprinter/rear.jpg" },
   { key: "hinten-rechts", path: "assets/sprinter/rear-right.jpg" },
-  { key: "rechte seite", path: "assets/sprinter/right.jpg" },
+  { key: "rechts", path: "assets/sprinter/right.jpg" },
   { key: "vorne-rechts", path: "assets/sprinter/front-right.jpg" }
 ];
 let currentViewIndex = 0;
@@ -177,7 +179,7 @@ async function loadDamages(){
 
   const active = (data || []).filter(d => d.status !== "repariert" && d.status !== "irrtuemlich");
   document.getElementById("damageTitle").textContent = `Aktive Schäden (${active.length})`;
-  if (active.length === 0) { document.getElementById("damageList").innerHTML = `<div class="small" style="padding:18px;border:1px dashed #334155;border-radius:12px;text-align:center">✨ Keine aktiven Schäden vorhanden</div>`; return; }
+  if (active.length === 0) { document.getElementById("damageList").innerHTML = `<div class="small">Keine aktiven Schäden vorhanden.</div>`; return; }
 
   const { data: imageRows } = await db.from("damage_images").select("*").in("damage_id", active.map(d => d.id));
   const imagesByDamage = {};
@@ -185,18 +187,17 @@ async function loadDamages(){
 
   const sevClass = s => s === "schwer" ? "schwer" : s === "mittel" ? "mittel" : "leicht";
   document.getElementById("damageList").innerHTML = active.map(d => `
-    <div class="damage">
-      <div><span class="dot ${sevClass(d.severity)}"></span><strong>${esc(d.damage_type || "-")}</strong><span class="sev ${sevClass(d.severity)}">${esc(d.severity || "-")}</span></div>
-      <div class="small" style="margin-top:4px">${esc(d.area || "-")}</div>
-      <div class="employee">👤 Gemeldet von: ${employeeName(d.employee_id)}</div>
+    <div class="damage-card ${sevClass(d.severity)}">
+      <div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(d.damage_type || "-")}</strong><span class="badge ${sevClass(d.severity)}">${esc(d.severity || "-")}</span></div>
+      <div class="small" style="margin-top:4px">Bereich: ${esc(d.area || "-")}</div>
+      <div class="small">Gemeldet von: ${employeeName(d.employee_id)}</div>
       <div class="small">${esc(formatDate(d.created_at))}</div>
       <p>${esc(d.description || "")}</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
-        ${(imagesByDamage[d.id] || []).map(img => `<a href="${esc(img.public_url || "#")}" target="_blank" rel="noopener"><img src="${esc(img.public_url || "")}" alt="Schadensbild" style="width:96px;height:74px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1"></a>`).join("")}
+      <div class="actions">
+        <button type="button" class="btn-secondary" onclick="showDetail(${d.id})">Details</button>
+        <button type="button" onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
+        <button type="button" class="btn-secondary" onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
       </div>
-      <button type="button" onclick="showDetail(${d.id})">Details</button>
-      <button type="button" onclick="markDamage(${d.id}, 'repariert')">Repariert</button>
-      <button type="button" onclick="markDamage(${d.id}, 'irrtuemlich')">Irrtümlich</button>
     </div>
   `).join("");
 }
@@ -283,7 +284,6 @@ async function markDamage(id, status){
 }
 
 function showDetail(id){ location.href = "history.html?id=" + vehicleId + "&damage_id=" + id; }
-
 async function logout(){ await db.auth.signOut(); location.href = "index.html"; }
 
 init();
