@@ -143,10 +143,6 @@ const el = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 const fmtDate = value => value ? new Date(value).toLocaleString("de-DE") : "-";
 
-const el = id => document.getElementById(id);
-const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
-const fmtDate = value => value ? new Date(value).toLocaleString("de-DE") : "-";
-
 let employees = [];
 let employeesMap = {};
 let damagesMap = {};
@@ -193,11 +189,21 @@ async function checkAdmin() {
       return false;
     }
 
-    const { data: employee, error } = await db
+    let employee = null; let error = null;
+    const normalizedEmail = String(user.email || '').trim().toLowerCase();
+    ({ data: employee, error } = await db
       .from('employees')
       .select('*')
-      .eq('email', user.email)
-      .maybeSingle();
+      .ilike('email', normalizedEmail)
+      .maybeSingle());
+
+    if (!employee && !error) {
+      ({ data: employee, error } = await db
+        .from('employees')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .maybeSingle());
+    }
 
     if (error) {
       setMsg(el('authBox'), `Fehler beim Laden des Mitarbeiters: ${error.message}`, false);
@@ -457,6 +463,14 @@ function renderStats() {
   el('statResetLogs').textContent = logs.length;
 }
 
+
+let bootTimer = setTimeout(() => {
+  const box = el('authBox');
+  if (box && /Prüfe Anmeldung/.test(box.textContent || '')) {
+    setMsg(box, 'Anmeldung dauert ungewöhnlich lange. Bitte Seite neu laden oder erneut einloggen.', false);
+  }
+}, 7000);
+
 async function init() {
   try {
     // Tab-Navigation immer aktivieren (auch wenn Auth fehlschlägt),
@@ -464,6 +478,7 @@ async function init() {
     document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
     const ok = await checkAdmin();
+    clearTimeout(bootTimer);
     if (!ok) return;
 
     el('employeeSearch').addEventListener('input', renderEmployees);
@@ -480,7 +495,7 @@ async function init() {
   }
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
