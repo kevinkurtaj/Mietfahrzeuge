@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login – Schadendokumentation Mietfahrzeuge</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" href="data:,">
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Inter, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.16), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(59,130,246,.10), transparent 35%),
+    linear-gradient(135deg, #f8fafc, #eef2ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  padding: 24px;
+}
+
+.login-page {
+  width: 100%;
+  max-width: 1180px;
+  min-height: 680px;
+  background: rgba(255,255,255,.86);
+  border: 1px solid #e2e8f0;
+  border-radius: 32px;
+  box-shadow: 0 30px 90px rgba(15,23,42,.12);
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  overflow: hidden;
+}
+
+.brand-side {
+  padding: 56px;
+  background:
+    linear-gradient(135deg, rgba(37,99,235,.97), rgba(30,64,175,.94));
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.16);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+.brand-text h1 {
+  font-size: 46px;
+  line-height: 1.05;
+  margin: 0 0 18px;
+  letter-spacing: -1.4px;
+}
+
+.brand-text p {
+  font-size: 17px;
+  opacity: .88;
+  max-width: 470px;
+  line-height: 1.6;
+}
+
+.brand-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.brand-stat {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.13);
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+.brand-stat strong {
+  display: block;
+  font-size: 24px;
+}
+
+.brand-stat span {
+  font-size: 12px;
+  opacity: .82;
+}
+
+.brand-footer {
+  font-size: 13px;
+  opacity: .8;
+}
+
+.form-side {
+  padding: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 390px;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 32px;
+  letter-spacing: -0.8px;
+}
+
+.sub {
+  color: #64748b;
+  margin: 10px 0 26px;
+  line-height: 1.5;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 16px 0 8px;
+}
+
+input {
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-size: 15px;
+  background: white;
+}
+
+input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(37,99,235,.25);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.helper {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.helper a {
+  color: #2563eb;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.msg {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  display: none;
+  font-size: 14px;
+}
+
+.msg.error {
+  display: block;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.msg.success {
+  display: block;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.role-info {
+  margin-top: 18px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media(max-width: 850px) {
+  body { padding: 0; }
+  .login-page {
+    min-height: 100vh;
+    border-radius: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .brand-side {
+    padding: 34px;
+    min-height: 330px;
+  }
+
+  .brand-text h1 {
+    font-size: 34px;
+  }
+
+  .brand-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .form-side {
+    padding: 34px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-page">
+
+  <section class="brand-side">
+    <div class="logo">
+      <div class="logo-icon">🚐</div>
+      <div>Schadendokumentation Mietfahrzeuge</div>
+    </div>
+
+    <div class="brand-text">
+      <h1>Mietfahrzeuge sauber dokumentieren.</h1>
+      <p>
+        Schäden erfassen, Fahrzeugstatus prüfen und Mitarbeiter-Aktivitäten zentral nachvollziehen.
+      </p>
+
+      <div class="brand-stats">
+        <div class="brand-stat">
+          <strong>360°</strong>
+          <span>Fahrzeugansicht</span>
+        </div>
+        <div class="brand-stat">
+          <strong>Live</strong>
+          <span>Schadenslog</span>
+        </div>
+        <div class="brand-stat">
+          <strong>Admin</strong>
+          <span>Benutzerverwaltung</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      Möbel Inhofer GmbH & Co. KG · Interne Anwendung
+    </div>
+  </section>
+
+  <section class="form-side">
+    <div class="login-card">
+      <div class="badge">Interner Zugang</div>
+
+      <h2>Anmelden</h2>
+      <p class="sub">
+        Bitte melde dich mit deinem Mitarbeiter-Zugang an.
+      </p>
+
+      <label>E-Mail</label>
+      <input id="email" type="email" placeholder="name@moebel-inhofer.de" autocomplete="email">
+
+      <label>Passwort</label>
+      <input id="password" type="password" placeholder="Passwort eingeben" autocomplete="current-password">
+
+      <button onclick="login()">Einloggen</button>
+
+      <div class="helper">
+        <a onclick="sendReset()">Passwort vergessen?</a>
+        <span>Rolle wird automatisch erkannt</span>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <div class="role-info">
+        Admins werden nach dem Login automatisch ins Admin Panel weitergeleitet.
+        Mitarbeiter gelangen zur Fahrzeugübersicht.
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "DEIN_KEY_HIER";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const msg = document.getElementById("msg");
+
+emailInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") passwordInput.focus();
+});
+
+passwordInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") login();
+});
+
+function showMsg(text, type = "error") {
+  msg.className = "msg " + type;
+  msg.textContent = text;
+}
+
+async function getEmployeeByEmail(email) {
+  const { data } = await db
+    .from("employees")
+    .select("*")
+    .eq("email", email)
+    .maybeSingle();
+
+  return data || null;
+}
+
+async function autoLoginCheck() {
+  const { data } = await db.auth.getSession();
+
+  if (!data.session?.user) return;
+
+  const user = data.session.user;
+  const employee = await getEmployeeByEmail(user.email);
+
+  if (employee?.role === "admin") {
+    window.location.href = "admin.html";
+  } else {
+    window.location.href = "index.html";
+  }
+}
+
+async function login() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    showMsg("Bitte E-Mail und Passwort eingeben.");
+    return;
+  }
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    showMsg("Login fehlgeschlagen. Bitte Zugangsdaten prüfen.");
+    return;
+  }
+
+  const user = data.user;
+  const employee = await getEmployeeByEmail(user.email);
+
+  if (!employee) {
+    showMsg("Login erfolgreich, aber kein Mitarbeiterprofil gefunden. employees.email prüfen.");
+    return;
+  }
+
+  showMsg("Login erfolgreich. Weiterleitung...", "success");
+
+  setTimeout(() => {
+    if (employee.role === "admin") {
+      window.location.href = "admin.html";
+    } else {
+      window.location.href = "index.html";
+    }
+  }, 700);
+}
+
+async function sendReset() {
+  const email = emailInput.value.trim();
+
+  if (!email) {
+    showMsg("Bitte zuerst deine E-Mail-Adresse eingeben.");
+    return;
+  }
+
+  const { error } = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html"
+  });
+
+  if (error) {
+    showMsg(error.message);
+    return;
+  }
+
+  await db.from("password_reset_activity").insert({
+    email,
+    status: "reset_mail_sent",
+    details: "Reset-Link über Login-Seite angefordert"
+  });
+
+  showMsg("Reset-Link wurde gesendet.", "success");
+}
+
+autoLoginCheck();
+</script>
+
+</body>
+</html>
