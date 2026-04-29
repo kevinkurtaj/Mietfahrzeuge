@@ -1,131 +1,100 @@
-<!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schadendokumentation Mietfahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,">
-<style>
-:root{--bg:#f4f7fb;--surface:#fff;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;--shadow:0 10px 28px rgba(15,23,42,.08);}
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink)}
-header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
-.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
-.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-main{max-width:1220px;margin:auto;padding:30px}
-.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
-.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
-.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
-.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
-.card,.stat,.auth-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
-.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
-.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
-textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
-.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
-.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
-.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
-.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
-.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
-.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Fahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+:root{
+  --bg:#f6f8fc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --blue:#2563eb;
+  --blue2:#3b82f6;
+  --green:#16a34a;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --gray:#64748b;
+  --shadow:0 18px 50px rgba(15,23,42,.08);
+  --soft-shadow:0 10px 30px rgba(15,23,42,.06);
+  --radius:22px;
+}
+*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 32%),linear-gradient(135deg,#f8fafc,#eef2f7);
+}
+.app-shell{
+  max-width:1540px;margin:14px auto;min-height:calc(100vh - 28px);
+  background:rgba(255,255,255,.82);border:1px solid rgba(148,163,184,.35);
+  border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
+}
+.topbar{
+  height:80px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+}
+.brand{display:flex;align-items:center;gap:14px;font-size:21px;font-weight:900;letter-spacing:-.3px}
+.brand-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--blue);border:1px solid #bfdbfe;background:#eff6ff;font-size:24px}
+.userbox{display:flex;align-items:center;gap:14px}
+.avatar{width:40px;height:40px;border-radius:999px;background:#eef2ff;color:#1d4ed8;font-weight:900;display:grid;place-items:center}
+.user-name{font-weight:900}.user-role{color:var(--muted);font-size:13px;margin-top:2px}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 108px)}
+.sidebar{border-right:1px solid var(--line);padding:28px 14px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55)}
+.nav{display:grid;gap:14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:#334155;text-decoration:none;font-weight:800;cursor:pointer;border:none;background:transparent;font-size:15px;text-align:left}
+.nav-item.active{background:linear-gradient(135deg,var(--blue),#4f46e5);color:white;box-shadow:0 12px 28px rgba(37,99,235,.28)}
+.nav-item:hover:not(.active){background:#f1f5f9}
+.content{padding:28px 26px 20px}
+.page-head{position:relative;min-height:78px;display:flex;align-items:flex-start;justify-content:center;margin-bottom:24px}
+.back-btn{position:absolute;left:0;top:10px;display:inline-flex;align-items:center;gap:8px;border:none;background:transparent;color:#334155;font-weight:800;cursor:pointer;font-size:15px}
+.title-wrap{text-align:center}.title-wrap h1{margin:0;font-size:30px;letter-spacing:-.8px}.title-wrap p{margin:8px 0 0;color:var(--muted);font-size:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.date-box{position:absolute;right:0;top:4px;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;color:#475569;font-size:14px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-shadow)}
+.panel{padding:18px}
+.panel-title{display:flex;align-items:center;gap:10px;margin:0 0 22px;font-size:19px;font-weight:950}
+.icon-badge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line)}
+label{display:block;font-size:13px;font-weight:900;margin:14px 0 8px}
+input,select,textarea{
+  width:100%;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:10px;padding:12px 13px;outline:none;font-size:14px;transition:.16s;
+}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+.primary-btn{border:none;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(37,99,235,.24)}
+.primary-btn:hover{transform:translateY(-1px)}
+.secondary-btn{border:1px solid #bfdbfe;background:#fff;color:var(--blue);border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}
+.success-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.danger-btn{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{padding:22px}.stat .label{font-size:13px;color:var(--muted);font-weight:900}.stat strong{display:block;margin-top:8px;font-size:32px}
+.badge{display:inline-flex;align-items:center;width:max-content;padding:7px 11px;border-radius:9px;font-size:12px;font-weight:950;background:#e5e7eb;color:#475569}
 .badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
-.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
-@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
+.severity{padding:7px 12px;border-radius:9px;font-size:12px;font-weight:950}.severity.leicht{background:#dcfce7;color:#166534}.severity.mittel{background:#fef3c7;color:#92400e}.severity.schwer{background:#fee2e2;color:#991b1b}
+.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,.24);display:none;z-index:50;max-width:420px}.toast.success{background:#166534}.toast.error{background:#991b1b}
+.empty-state{padding:28px;text-align:center;color:#64748b;background:#fbfdff;border:1px dashed #cbd5e1;border-radius:16px}
+.footer{text-align:center;color:#64748b;font-size:13px;padding:18px 0 10px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:40}
+.modal-box{width:100%;max-width:560px;background:white;border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(15,23,42,.28)}
+@media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-#loginBox{width:100%;max-width:430px;margin:90px auto 0}.login-icon{width:58px;height:58px;border-radius:18px;background:#111827;color:white;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
-#loginBox h2{margin:0;font-size:31px}#loginMessage{margin-top:12px;color:#991b1b;font-size:14px}
-</style></head><body>
-<header><div class="brand">🚐 Schadendokumentation Mietfahrzeuge</div><div class="header-actions"><div id="userInfo" class="user-info"></div><a id="adminBtn" class="btn secondary" href="admin.html" style="display:none">Admin Panel</a><button id="logoutBtn" class="btn" onclick="logout()" style="display:none">Logout</button></div></header>
-<main>
-<section id="loginBox" class="card">
-<div class="login-icon">🔐</div><h2>Anmeldung</h2><p class="small-text" style="font-size:14px;margin:8px 0 24px">Bitte mit deinem Zugang anmelden. Enter funktioniert auch.</p>
-<input id="email" type="email" placeholder="E-Mail-Adresse" autocomplete="email">
-<input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
-<button class="btn" style="width:100%" onclick="login()">Einloggen</button><div id="loginMessage"></div>
-</section>
-<section id="app" style="display:none">
-<div class="hero"><h1>Fahrzeugübersicht</h1><p>Übersicht aller Mietfahrzeuge, Status und Schäden.</p></div>
-<div class="stats"><div class="stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div><div class="stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div></div>
-<div id="vehicleList" class="grid3">Fahrzeuge werden geladen ...</div>
-</section>
-</main>
-<script>
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.vehicle-card{padding:20px;cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(15,23,42,.10)}.vehicle-card h3{font-size:20px;margin:12px 0 6px}.login-card{max-width:430px;margin:70px auto;padding:26px}</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox" id="userArea" style="display:none"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div><a id="adminBtn" class="secondary-btn" href="admin.html" style="display:none">Admin Panel</a><button class="secondary-btn" onclick="logout()">Logout</button></div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" href="history.html">🕘 Historie</a><a class="nav-item" href="admin.html">👥 Admin Panel</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section id="loginBox" class="card login-card"><h1 style="margin-top:0">Anmeldung</h1><p style="color:var(--muted)">Bitte mit deinem Zugang anmelden.</p><label>E-Mail</label><input id="email" type="email" autocomplete="email"><label>Passwort</label><input id="password" type="password" autocomplete="current-password"><button class="primary-btn" style="width:100%;margin-top:10px" onclick="login()">Einloggen</button><div id="loginMsg"></div></section><section id="app" style="display:none"><div class="page-head"><div class="title-wrap"><h1>Fahrzeugübersicht</h1><p><span>Übersicht aller Mietfahrzeuge, Status und Schäden.</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></div><div class="stats"><div class="card stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="card stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div><div class="card stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div><div class="card stat"><div class="label">Aktive Schäden</div><strong id="damageCount">-</strong></div></div><div id="vehicleList" class="vehicle-grid"></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div></main></div></div><div class="toast" id="toast"></div><script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
-function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function statusLabel(s){
-  switch(s){
-    case "einsatzbereit": return "einsatzbereit";
-    case "schaeden_vorhanden": return "Schäden vorhanden";
-    case "werkstatt": return "Werkstatt";
-    case "nicht_einsatzbereit": return "nicht einsatzbereit";
-    case "nicht_im_einsatz": return "nicht im Einsatz";
-    case "abruf": return "Abruf / Reserve";
-    default: return s || "unbekannt";
-  }
-}
-function actionLabel(a){
-  switch(a){
-    case "angelegt": return "Schaden angelegt";
-    case "bilder_hochgeladen": return "Bilder hochgeladen";
-    case "repariert": return "Schaden repariert";
-    case "irrtuemlich": return "Schaden irrtümlich";
-    case "bearbeitet": return "Schaden bearbeitet";
-    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
-    case "status_geaendert": return "Fahrzeugstatus geändert";
-    default: return a || "-";
-  }
-}
-async function getSessionUser(){
-  const { data } = await db.auth.getSession();
-  return data.session?.user || null;
-}
-async function getEmployeeByEmail(email){
-  if(!email) return null;
-  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
-  return data || null;
-}
-async function requireLogin(){
-  const user = await getSessionUser();
-  if(!user) window.location.href = "index.html";
-  return user;
-}
-async function logout(){
-  await db.auth.signOut();
-  window.location.href = "index.html";
-}
+function esc(value){return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function fmtDate(value){return value ? new Date(value).toLocaleDateString("de-DE") : "-";}
+function fmtTime(value){return value ? new Date(value).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : "-";}
+function fullDateTime(value){return value ? new Date(value).toLocaleString("de-DE") : "-";}
+function initials(name){const p=String(name||"").trim().split(/\s+/); if(p.length>=2)return (p[0][0]+p[1][0]).toUpperCase(); return String(name||"U").slice(0,2).toUpperCase();}
+function showToast(message,type="success"){const t=document.getElementById("toast"); if(!t) return alert(message); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
+function statusLabel(status){switch(status){case "einsatzbereit":return "einsatzbereit";case "abruf":return "Abruf / Reserve";case "werkstatt":return "Werkstatt";case "nicht_einsatzbereit":return "nicht einsatzbereit";case "nicht_im_einsatz":return "nicht im Einsatz";default:return status||"unbekannt";}}
+function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case "bilder_hochgeladen":return "Bilder hochgeladen";case "repariert":return "Schaden repariert";case "irrtuemlich":return "Schaden irrtümlich";case "bearbeitet":return "Schaden bearbeitet";case "fahrzeugstatus_geaendert":return "Fahrzeugstatus geändert";case "status_geaendert":return "Fahrzeugstatus geändert";default:return a||"-";}}
+async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
+async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
+async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
+async function logout(){await db.auth.signOut(); location.href="index.html";}
+async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const adminBtn=document.getElementById("adminBtn"); if(adminBtn) adminBtn.style.display=emp?.role==="admin"?"inline-flex":"none";}
+function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
 
-const loginBox=document.getElementById("loginBox"), app=document.getElementById("app"), loginMessage=document.getElementById("loginMessage");
-document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
-document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
-async function login(){
-  loginMessage.textContent="";
-  const email=document.getElementById("email").value.trim(); const password=document.getElementById("password").value;
-  if(!email||!password){loginMessage.textContent="Bitte E-Mail und Passwort eingeben.";return;}
-  const {error}=await db.auth.signInWithPassword({email,password});
-  if(error){loginMessage.textContent="Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";return;}
-  startApp();
-}
-async function checkUser(){ const user=await getSessionUser(); if(user) startApp(); }
-async function startApp(){
-  const user=await getSessionUser(); if(!user) return;
-  loginBox.style.display="none"; app.style.display="block";
-  document.getElementById("logoutBtn").style.display="inline-block";
-  document.getElementById("userInfo").style.display="block"; document.getElementById("userInfo").textContent=user.email;
-  const emp=await getEmployeeByEmail(user.email);
-  document.getElementById("adminBtn").style.display = emp?.role==="admin" ? "inline-block" : "none";
-  loadVehicles();
-}
-async function loadVehicles(){
-  const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
-  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return;}
-  const list=data||[];
-  document.getElementById("vehicleCount").textContent=list.length;
-  document.getElementById("readyCount").textContent=list.filter(v=>v.status==="einsatzbereit").length;
-  document.getElementById("blockedCount").textContent=list.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length;
-  document.getElementById("vehicleList").innerHTML=list.map(v=>`<div class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><div class="tag">Fahrzeug</div><h2 style="margin:0 0 6px">${esc(v.name||"Fahrzeug")}</h2><div class="small-text" style="font-size:15px;margin-bottom:12px">${esc(v.kennzeichen||"-")}</div><div class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</div>${v.is_reserve?'<div class="small-text" style="margin-top:10px">Reservefahrzeug</div>':''}<div style="margin-top:16px;color:#2563eb;font-weight:900">Öffnen →</div></div>`).join("") || '<div class="error">Keine Fahrzeuge gefunden.</div>';
-}
-checkUser();
+document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+async function login(){const email=document.getElementById("email").value.trim();const password=document.getElementById("password").value;const {error}=await db.auth.signInWithPassword({email,password});if(error){document.getElementById("loginMsg").innerHTML='<div class="empty-state" style="margin-top:10px;color:#991b1b">'+esc(error.message)+'</div>';return;}start();}
+async function start(){updateClock();const user=await getSessionUser();if(!user)return;document.getElementById("loginBox").style.display="none";document.getElementById("app").style.display="block";document.getElementById("userArea").style.display="flex";await hydrateTopUser("index");await loadVehicles();}
+async function loadVehicles(){const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true}); if(error){showToast(error.message,"error");return;} const vehicles=data||[]; const {count:damageCount}=await db.from("damages").select("id",{count:"exact",head:true}).not("status","in",`(repariert,irrtuemlich)`); document.getElementById("vehicleCount").textContent=vehicles.length; document.getElementById("readyCount").textContent=vehicles.filter(v=>v.status==="einsatzbereit").length; document.getElementById("blockedCount").textContent=vehicles.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length; document.getElementById("damageCount").textContent=damageCount??0; document.getElementById("vehicleList").innerHTML=vehicles.map(v=>`<article class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><span class="badge">Fahrzeug</span><h3>${esc(v.name||"Inhofer-Sprinter")}</h3><div style="color:var(--muted);font-weight:800;margin-bottom:14px">${esc(v.kennzeichen||"-")}</div><span class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</span><div style="margin-top:18px;color:var(--blue);font-weight:950">Öffnen →</div></article>`).join("")||'<div class="empty-state">Keine Fahrzeuge gefunden.</div>';}
+start();
 </script></body></html>
