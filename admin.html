@@ -143,6 +143,10 @@ const el = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 const fmtDate = value => value ? new Date(value).toLocaleString("de-DE") : "-";
 
+const el = id => document.getElementById(id);
+const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+const fmtDate = value => value ? new Date(value).toLocaleString("de-DE") : "-";
+
 let employees = [];
 let employeesMap = {};
 let damagesMap = {};
