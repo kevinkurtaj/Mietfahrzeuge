@@ -1,115 +1,245 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeugdetails – Mietfahrzeuge</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="icon" href="data:,">
-<style>
-:root{--bg:#f6f8fc;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--blue2:#3b82f6;--green:#16a34a;--red:#dc2626;--orange:#f59e0b;--shadow:0 14px 38px rgba(15,23,42,.07);--radius:22px}
-*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}html,body{width:100%;min-height:100vh;margin:0;padding:0;overflow-x:hidden}body{background:radial-gradient(circle at top left,rgba(37,99,235,.09),transparent 34%),linear-gradient(135deg,#f8fafc,#eef2f7);color:var(--text)}
-.app-shell{width:100%;min-height:100vh;margin:0;border:none;border-radius:0;box-shadow:none;background:rgba(255,255,255,.78)}.topbar{width:100%;height:82px;padding:0 38px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9);backdrop-filter:blur(16px)}
-.brand{display:flex;align-items:center;gap:14px;font-size:22px;font-weight:950;letter-spacing:-.4px}.brand-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:#eff6ff;border:1px solid #bfdbfe;color:var(--blue);font-size:23px}.userbox{display:flex;align-items:center;gap:12px}.avatar{width:40px;height:40px;border-radius:999px;background:#eef2ff;color:#1d4ed8;font-weight:950;display:grid;place-items:center}.user-name{font-weight:950}.user-role{font-size:13px;color:var(--muted);margin-top:2px}
-.layout{width:100%;display:grid;grid-template-columns:245px minmax(0,1fr);min-height:calc(100vh - 82px)}.sidebar{border-right:1px solid var(--line);padding:26px 16px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.72);backdrop-filter:blur(14px)}.nav{display:grid;gap:12px}.nav-item{display:flex;align-items:center;gap:12px;padding:14px 15px;border-radius:15px;color:#334155;text-decoration:none;font-weight:900;cursor:pointer;border:none;background:transparent;font-size:15px;text-align:left}.nav-item.active{background:linear-gradient(135deg,var(--blue),#4f46e5);color:white;box-shadow:0 14px 28px rgba(37,99,235,.24)}.nav-item:hover:not(.active){background:#f1f5f9}
-.content{width:100%;max-width:none;padding:34px 48px}.page-head{position:relative;display:flex;justify-content:center;align-items:flex-start;margin-bottom:28px}.back-btn{position:absolute;left:0;top:8px;border:none;background:transparent;color:#334155;font-weight:900;cursor:pointer;font-size:15px}.title-wrap{text-align:center}.title-wrap h1{margin:0;font-size:32px;letter-spacing:-.9px;font-weight:950}.title-wrap p{margin:8px 0 0;color:var(--muted);display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px}.date-box{position:absolute;right:0;top:2px;display:grid;grid-template-columns:auto 1fr;gap:7px 10px;color:#475569;font-size:14px}
-.card{background:rgba(255,255,255,.9);border:1px solid rgba(148,163,184,.32);border-radius:var(--radius);box-shadow:var(--shadow)}.panel{padding:22px}.panel-title{margin:0 0 20px;display:flex;align-items:center;gap:10px;font-size:19px;font-weight:950}.icon-badge{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line)}label{display:block;font-size:13px;font-weight:950;margin:14px 0 8px}input,select,textarea{width:100%;border:1px solid #cbd5e1;background:white;border-radius:13px;padding:12px 13px;font-size:14px;outline:none;color:#0f172a}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.1)}textarea{min-height:78px;resize:vertical}
-.primary-btn{border:none;border-radius:13px;padding:13px 16px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(37,99,235,.22)}.secondary-btn{border:1px solid #bfdbfe;background:white;color:var(--blue);border-radius:13px;padding:10px 14px;font-weight:950;cursor:pointer}.success-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;border-radius:13px;padding:10px 14px;font-weight:950;cursor:pointer}.danger-btn{border:1px solid #fecaca;background:white;color:#dc2626;border-radius:13px;padding:10px 14px;font-weight:950;cursor:pointer}
-.vehicle-grid{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:24px;align-items:start}.left-panel,.center-panel,.right-panel{min-width:0}.right-panel{position:sticky;top:22px}.upload-box{border:1.5px dashed #cbd5e1;border-radius:16px;padding:18px 12px;text-align:center;color:#64748b;background:#fbfdff;cursor:pointer;margin-top:8px}.upload-box strong{display:block;margin:8px 0 3px;color:#475569}
-.viewer{position:relative;width:100%;min-width:0;height:420px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:center;overflow:hidden}.vehicle-img{max-width:90%;max-height:360px;object-fit:contain;filter:drop-shadow(0 18px 20px rgba(15,23,42,.12))}.placeholder{font-size:48px;font-weight:950;color:#cbd5e1;text-align:center;letter-spacing:-.8px}.arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:999px;border:1px solid #dbeafe;background:rgba(255,255,255,.92);color:var(--blue);font-size:26px;display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 30px rgba(15,23,42,.1)}.arrow.left{left:16px}.arrow.right{right:16px}.dots{display:flex;justify-content:center;gap:10px;margin-top:-30px;position:relative;z-index:2}.dot{width:8px;height:8px;border-radius:999px;background:#cbd5e1}.dot.active{background:var(--blue)}.view-pills{margin-top:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}.pill{border:1px solid var(--line);background:white;color:#334155;border-radius:12px;padding:10px 16px;font-weight:900;cursor:pointer;min-width:auto}.pill.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border-color:transparent;box-shadow:0 10px 22px rgba(37,99,235,.18)}.current-area{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:14px;background:#fbfdff}.current-area strong{color:var(--muted)}.current-area span{background:#eef2ff;color:#1d4ed8;padding:8px 14px;border-radius:10px;font-weight:950}
-.damage-list{display:grid;gap:14px}.damage-card{border:1px solid var(--line);border-left:5px solid var(--orange);background:white;border-radius:16px;padding:16px}.damage-card.leicht{border-left-color:var(--green)}.damage-card.mittel{border-left-color:var(--orange)}.damage-card.schwer{border-left-color:var(--red)}.damage-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.damage-head h3{margin:0;font-size:17px}.severity{padding:7px 12px;border-radius:999px;font-size:12px;font-weight:950}.severity.leicht{background:#dcfce7;color:#166534}.severity.mittel{background:#fef3c7;color:#92400e}.severity.schwer{background:#fee2e2;color:#991b1b}.damage-meta{display:grid;gap:7px;margin:14px 0;color:#475569;font-size:14px}.blue-link{color:var(--blue);font-weight:950}.damage-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.info-strip{margin-top:24px;padding:20px;display:grid;grid-template-columns:repeat(5,1fr);gap:18px}.info-item{display:flex;align-items:center;gap:12px;min-width:0}.info-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line);flex:0 0 auto}.info-label{color:var(--muted);font-size:13px}.info-value{margin-top:3px;font-weight:950}.badge{display:inline-flex;align-items:center;width:max-content;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:950;background:#e5e7eb;color:#475569}.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}.edit-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}.empty-state{padding:28px;text-align:center;color:#64748b;background:#fbfdff;border:1px dashed #cbd5e1;border-radius:16px}.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:16px;box-shadow:0 20px 45px rgba(15,23,42,.24);display:none;z-index:50;max-width:420px}.toast.success{background:#166534}.toast.error{background:#991b1b}.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:40}.modal-box{width:100%;max-width:560px;background:white;border-radius:24px;padding:24px;box-shadow:0 25px 70px rgba(15,23,42,.28)}.footer{text-align:center;color:#64748b;font-size:13px;padding:24px 0 0}
-@media(max-width:1350px){.vehicle-grid{grid-template-columns:280px minmax(0,1fr) 320px;gap:20px}.viewer{height:380px}}@media(max-width:1150px){.layout{grid-template-columns:1fr}.sidebar{display:none}.content{padding:24px}.vehicle-grid{grid-template-columns:1fr}.right-panel{position:static}.info-strip{grid-template-columns:1fr 1fr}.edit-grid{grid-template-columns:1fr}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:18px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}}@media(max-width:650px){.topbar{height:auto;padding:16px;flex-direction:column;align-items:flex-start}.content{padding:16px}.viewer{height:320px}.placeholder{font-size:34px}.info-strip{grid-template-columns:1fr}.damage-actions{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8">
+  <title>Fahrzeug</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f6f7fb;
+      display: flex;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: #fff;
+      height: 100vh;
+      padding: 20px;
+      border-right: 1px solid #eee;
+    }
+
+    .sidebar button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #f0f2f7;
+      cursor: pointer;
+    }
+
+    /* MAIN */
+    .main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 1fr 300px;
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .viewer {
+      height: 300px;
+      background: #f2f4f9;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 20px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    button.primary {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .vehicle-info {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .info-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      flex: 1;
+    }
+  </style>
 </head>
+
 <body>
-<div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div></div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" id="historyNav" href="history.html">🕘 Historie</a><a id="sidebarAdminLink" class="nav-item" href="admin.html" style="display:none;">👥 Admin Panel</a><a class="nav-item" href="#">👤 Profil</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p><span id="vehicleIdText">Fahrzeug-ID: -</span><span id="vehiclePlateText">Kennzeichen: -</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><section class="vehicle-grid"><div class="left-panel card panel"><h2 class="panel-title"><span class="icon-badge">📄</span>Schaden hinzufügen</h2><label>Schadenart</label><input id="damageType" placeholder="z. B. Kratzer"><label>Bereich</label><select id="damageArea"><option value="vorne">vorne</option><option value="vorne-links">vorne-links</option><option value="linke Seite">linke Seite</option><option value="hinten-links">hinten-links</option><option value="hinten">hinten</option><option value="hinten-rechts">hinten-rechts</option><option value="rechte Seite">rechte Seite</option><option value="vorne-rechts">vorne-rechts</option><option value="Innenraum">Innenraum</option><option value="Dach">Dach</option></select><label>Schweregrad</label><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><label>Beschreibung</label><textarea id="damageDesc" placeholder="Beschreibung eingeben..."></textarea><label>Bild (optional)</label><label class="upload-box"><input id="imageFile" type="file" accept="image/*" multiple style="display:none;"><div style="font-size:27px;">☁️</div><strong>Bild auswählen oder hier ablegen</strong><span>PNG, JPG, WebP</span></label><button class="primary-btn" style="width:100%;margin-top:18px;" onclick="saveDamage()">👤 Schaden speichern</button></div><div class="center-panel"><section class="card panel"><h2 class="panel-title"><span class="icon-badge">⬡</span>360° Ansicht Transporter</h2><div class="viewer"><button class="arrow left" onclick="prevView()">‹</button><img id="vehicleImage" class="vehicle-img" alt="Sprinter Ansicht"><div id="placeholder" class="placeholder" style="display:none;">Sprinter Ansicht</div><button class="arrow right" onclick="nextView()">›</button></div><div class="dots" id="dots"></div><div class="view-pills" id="viewPills"></div><div class="current-area"><strong>Aktueller Bereich</strong><span id="currentAreaText">vorne</span></div></section><section class="card info-strip"><div class="info-item"><div class="info-icon">🚘</div><div><div class="info-label">Modell</div><div class="info-value">Mercedes Sprinter</div></div></div><div class="info-item"><div class="info-icon">📋</div><div><div class="info-label">Kennzeichen</div><div class="info-value" id="plateInfoText">-</div></div></div><div class="info-item"><div class="info-icon">📅</div><div><div class="info-label">Erstzulassung</div><div class="info-value" id="firstRegText">-</div></div></div><div class="info-item"><div class="info-icon">🧭</div><div><div class="info-label">Kilometerstand</div><div class="info-value" id="mileageText">-</div></div></div><div class="info-item"><div class="info-icon">🟢</div><div><div class="info-label">Status</div><div class="badge" id="statusBadge">-</div></div></div></section><section class="card panel" style="margin-top:24px;"><h2 class="panel-title"><span class="icon-badge">✏️</span>Fahrzeugdaten bearbeiten</h2><div class="edit-grid"><div><label>Kilometerstand</label><input id="mileageInput" type="number" placeholder="z. B. 24350"></div><div><label>Erstzulassung</label><input id="firstRegistrationInput" type="date"></div><button class="secondary-btn" onclick="saveVehicleInfo()">Daten speichern</button></div></section><section class="card panel" style="margin-top:24px;"><h2 class="panel-title"><span class="icon-badge">⚙️</span>Fahrzeugstatus ändern</h2><div class="edit-grid"><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional..." style="min-height:44px;"></textarea><button class="secondary-btn" onclick="saveStatus()">Status speichern</button></div></section></div><div class="right-panel card panel"><h2 class="panel-title"><span class="icon-badge">🛡️</span>Aktive Schäden (<span id="activeDamageCount">0</span>)</h2><div id="damageList" class="damage-list"></div></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px;" onclick="closeModal()">Schließen</button></div></div>
+
+<div class="sidebar">
+  <button onclick="location.href='index.html'">Fahrzeuge</button>
+  <button onclick="location.href='history.html'">Historie</button>
+  <button id="adminBtn" style="display:none;">Admin Panel</button>
+</div>
+
+<div class="main">
+
+  <h2 id="vehicleTitle">Fahrzeug</h2>
+
+  <div class="grid">
+
+    <!-- LEFT -->
+    <div class="card">
+      <h3>Schaden hinzufügen</h3>
+
+      <input id="damageType" placeholder="z.B. Kratzer">
+      <input id="damageArea" placeholder="Bereich">
+      
+      <select id="damageSeverity">
+        <option value="leicht">leicht</option>
+        <option value="mittel">mittel</option>
+        <option value="schwer">schwer</option>
+      </select>
+
+      <textarea id="damageDesc" placeholder="Beschreibung"></textarea>
+
+      <button class="primary" onclick="saveDamage()">Speichern</button>
+    </div>
+
+    <!-- CENTER -->
+    <div class="card">
+      <h3>360° Ansicht</h3>
+      <div class="viewer">Sprinter Ansicht</div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <h3>Aktive Schäden</h3>
+      <div id="damageList">Keine Schäden</div>
+    </div>
+
+  </div>
+
+  <!-- INFOS -->
+  <div class="vehicle-info">
+
+    <div class="info-box">
+      <label>Kilometerstand</label>
+      <input id="kmInput">
+    </div>
+
+    <div class="info-box">
+      <label>Erstzulassung</label>
+      <input type="date" id="dateInput">
+    </div>
+
+    <div class="info-box">
+      <button class="primary" onclick="saveVehicleData()">Speichern</button>
+    </div>
+
+  </div>
+
+</div>
+
 <script>
-const SUPABASE_URL="https://iufkwovepjljycdulnwa.supabase.co";const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const vehicleId=new URLSearchParams(location.search).get("id");const views=[{label:"vorne",area:"vorne",src:"assets/sprinter/front.jpg"},{label:"vorne-links",area:"vorne-links",src:"assets/sprinter/front-left.jpg"},{label:"linke Seite",area:"linke Seite",src:"assets/sprinter/left.jpg"},{label:"hinten-links",area:"hinten-links",src:"assets/sprinter/rear-left.jpg"},{label:"hinten",area:"hinten",src:"assets/sprinter/rear.jpg"},{label:"hinten-rechts",area:"hinten-rechts",src:"assets/sprinter/rear-right.jpg"},{label:"rechte Seite",area:"rechte Seite",src:"assets/sprinter/right.jpg"},{label:"vorne-rechts",area:"vorne-rechts",src:"assets/sprinter/front-right.jpg"}];let currentViewIndex=1,currentUser=null,currentEmployee=null,vehicle=null,damages=[],employeesMap={};
-function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}function initials(n){const p=String(n||"").trim().split(/\s+/);return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():String(n||"U").slice(0,2).toUpperCase()}function fmtDate(v){return v?new Date(v).toLocaleDateString("de-DE"):"-"}function fmtTime(v){return v?new Date(v).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"-"}function fullDateTime(v){return v?new Date(v).toLocaleString("de-DE"):"-"}function showToast(m,t="success"){const e=document.getElementById("toast");e.className="toast "+t;e.textContent=m;e.style.display="block";setTimeout(()=>e.style.display="none",3500)}function statusLabel(s){switch(s){case"einsatzbereit":return"einsatzbereit";case"abruf":return"Abruf / Reserve";case"werkstatt":return"Werkstatt";case"nicht_einsatzbereit":return"nicht einsatzbereit";case"nicht_im_einsatz":return"nicht im Einsatz";default:return s||"unbekannt"}}function valueFromAny(o,names,f=""){for(const n of names){if(o&&Object.prototype.hasOwnProperty.call(o,n)&&o[n]!=null)return o[n]}return f}function existingColumn(o,names,f){for(const n of names){if(o&&Object.prototype.hasOwnProperty.call(o,n))return n}return f}function prettyMileage(v){return v?Number(v).toLocaleString("de-DE")+" km":"-"}function prettyDate(v){return v?new Date(v).toLocaleDateString("de-DE"):"-"}
-async function getSessionUser(){const{data}=await db.auth.getSession();return data.session?.user||null}async function getEmployeeByEmail(email){if(!email)return null;const{data}=await db.from("employees").select("*").eq("email",email).maybeSingle();return data||null}async function logout(){await db.auth.signOut();location.href="login.html"}function updateClock(){const n=new Date();dateText.textContent=n.toLocaleDateString("de-DE");timeText.textContent=n.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr"}
-async function hydrateTopUser(){const emp=await getEmployeeByEmail(currentUser.email);currentEmployee=emp;const name=emp?.name||currentUser.email;topUserName.textContent=name;topUserRole.textContent=emp?.role==="admin"?"Admin":"Mitarbeiter";avatar.textContent=initials(name);const l=document.getElementById("sidebarAdminLink");if(l)l.style.display=emp?.role==="admin"?"flex":"none"}
-async function init(){updateClock();currentUser=await getSessionUser();if(!currentUser){location.href="login.html";return}await hydrateTopUser();historyNav.href="history.html?id="+vehicleId;await loadEmployees();await loadVehicle();setupViewer();await loadDamages()}
-async function loadEmployees(){const{data}=await db.from("employees").select("id,name,email");employeesMap={};(data||[]).forEach(e=>employeesMap[e.id]=e.name||e.email||"Mitarbeiter "+e.id)}function employeeName(id){return employeesMap[id]||"Unbekannt"}
-async function loadVehicle(){const{data,error}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle();if(error||!data){showToast("Fahrzeug nicht gefunden.","error");return}vehicle=data;vehicleTitle.textContent=(data.name||"Inhofer-Sprinter")+(data.kennzeichen?" ("+data.kennzeichen+")":"");vehicleIdText.textContent="Fahrzeug-ID: "+data.id;vehiclePlateText.textContent="Kennzeichen: "+(data.kennzeichen||"-");plateInfoText.textContent=data.kennzeichen||"-";const mileage=valueFromAny(data,["kilometerstand","mileage","km"],"");const firstReg=valueFromAny(data,["erstzulassung","first_registration","firstRegistration"],"");mileageText.textContent=prettyMileage(mileage);firstRegText.textContent=prettyDate(firstReg);mileageInput.value=mileage||"";firstRegistrationInput.value=firstReg?String(firstReg).slice(0,10):"";vehicleStatus.value=data.status||"einsatzbereit";statusBadge.textContent=statusLabel(data.status);statusBadge.className="badge "+(data.status||"")}
-function setupViewer(){renderViewer();viewPills.innerHTML=views.map((v,i)=>`<button class="pill ${i===currentViewIndex?"active":""}" onclick="setView(${i})">${esc(v.label)}</button>`).join("");dots.innerHTML=views.map((v,i)=>`<span class="dot ${i===currentViewIndex?"active":""}"></span>`).join("")}function setView(i){currentViewIndex=i;damageArea.value=views[i].area;renderViewer();setupViewer()}function prevView(){setView((currentViewIndex-1+views.length)%views.length)}function nextView(){setView((currentViewIndex+1)%views.length)}function renderViewer(){const v=views[currentViewIndex];vehicleImage.style.display="block";placeholder.style.display="none";vehicleImage.src=v.src;vehicleImage.onerror=()=>{vehicleImage.style.display="none";placeholder.style.display="block"};currentAreaText.textContent=v.area}
-async function loadDamages(){const{data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false});if(error){damageList.innerHTML=`<div class="empty-state">${esc(error.message)}</div>`;return}damages=data||[];const active=damages.filter(d=>d.status!=="repariert"&&d.status!=="irrtuemlich");activeDamageCount.textContent=active.length;if(!active.length){damageList.innerHTML=`<div class="empty-state"><strong>Keine aktiven Schäden vorhanden.</strong><br>Das Fahrzeug hat aktuell keine offenen Schäden.</div>`;return}damageList.innerHTML=active.map(d=>`<article class="damage-card ${esc(d.severity||"leicht")}"><div class="damage-head"><h3>${esc(d.damage_type||"Schaden")}</h3><span class="severity ${esc(d.severity||"leicht")}">${esc(d.severity||"leicht")}</span></div><div class="damage-meta"><div>Bereich<br><span class="blue-link">${esc(d.area||"-")}</span></div><div>Gemeldet von<br><strong>${esc(employeeName(d.employee_id))}</strong></div><div>📅 ${fmtDate(d.created_at)} &nbsp; 🕙 ${fmtTime(d.created_at)} Uhr</div></div><div class="damage-actions"><button class="secondary-btn" onclick="openDamage(${d.id})">Details</button><button class="success-btn" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="danger-btn" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></article>`).join("")}
-async function saveDamage() {
-  const damage_type = document.getElementById("damageType").value.trim();
-  const area = document.getElementById("damageArea").value.trim();
-  const severity = document.getElementById("damageSeverity").value;
-  const description = document.getElementById("damageDesc").value.trim();
+const db = supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
-  if (!damage_type || !area) {
-    showToast("Bitte Schadenart und Bereich ausfüllen.", "error");
-    return;
-  }
+const urlParams = new URLSearchParams(window.location.search);
+const vehicleId = urlParams.get("id");
 
-  const { data: authData, error: authError } = await db.auth.getUser();
+async function init() {
+  const { data } = await db.auth.getUser();
+  if (!data.user) location.href = "login.html";
 
-  if (authError || !authData.user) {
-    showToast("Du bist nicht eingeloggt.", "error");
-    location.href = "login.html";
-    return;
-  }
-
-  const authUser = authData.user;
-
-  const { data: employee, error: employeeError } = await db
-    .from("employees")
+  const { data: vehicle } = await db
+    .from("vehicles")
     .select("*")
-    .eq("email", authUser.email)
-    .maybeSingle();
-
-  if (employeeError || !employee) {
-    showToast("Kein Mitarbeiterprofil zu deinem Login gefunden.", "error");
-    return;
-  }
-
-  const insertData = {
-    vehicle_id: Number(vehicleId),
-    damage_type: damage_type,
-    area: area,
-    severity: severity,
-    description: description,
-    status: "offen",
-
-    // wichtig für deine Datenbank:
-    created_by: authUser.id,
-
-    // falls deine Tabelle diese Spalten auch hat:
-    user_id: authUser.id,
-    employee_id: employee.id
-  };
-
-  const { data: damage, error } = await db
-    .from("damages")
-    .insert([insertData])
-    .select()
+    .eq("id", vehicleId)
     .single();
 
+  document.getElementById("vehicleTitle").innerText = vehicle.name;
+  document.getElementById("kmInput").value = vehicle.km || "";
+  document.getElementById("dateInput").value = vehicle.first_registration || "";
+
+  loadDamages();
+}
+
+async function saveDamage() {
+  const { data } = await db.auth.getUser();
+  const user = data.user;
+
+  const { error } = await db.from("damages").insert({
+    vehicle_id: Number(vehicleId),
+    damage_type: document.getElementById("damageType").value,
+    area: document.getElementById("damageArea").value,
+    severity: document.getElementById("damageSeverity").value,
+    description: document.getElementById("damageDesc").value,
+
+    // 🔥 WICHTIG (dein Fehler FIX)
+    created_by: user.id
+  });
+
   if (error) {
-    showToast("Fehler beim Speichern: " + error.message, "error");
-    console.error(error);
+    alert(error.message);
     return;
   }
 
-  await db.from("damage_history").insert([{
-    damage_id: damage.id,
-    action: "angelegt",
-    details: "Schaden angelegt: " + damage_type + " / " + area,
-    user_id: employee.id,
-    auth_user_id: authUser.id
-  }]);
-
-  document.getElementById("damageType").value = "";
-  document.getElementById("damageDesc").value = "";
-  document.getElementById("imageFile").value = "";
-
-  showToast("Schaden gespeichert.", "success");
-  await loadDamages();
+  alert("Gespeichert");
+  loadDamages();
 }
-async function saveVehicleInfo(){if(!vehicle){showToast("Fahrzeug noch nicht geladen.","error");return}const mileageCol=existingColumn(vehicle,["kilometerstand","mileage","km"],"kilometerstand");const regCol=existingColumn(vehicle,["erstzulassung","first_registration","firstRegistration"],"erstzulassung");const update={};update[mileageCol]=mileageInput.value?Number(mileageInput.value):null;update[regCol]=firstRegistrationInput.value||null;const{error}=await db.from("vehicles").update(update).eq("id",Number(vehicleId));if(error){showToast("Fehler: "+error.message+" – ggf. SQL-Spalten kilometerstand/erstzulassung anlegen.","error");return}await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugdaten_geaendert",details:"Kilometerstand / Erstzulassung aktualisiert",user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);showToast("Fahrzeugdaten gespeichert.","success");await loadVehicle()}
-async function saveStatus(){const status=vehicleStatus.value,note=statusNote.value.trim();const{error}=await db.from("vehicles").update({status}).eq("id",Number(vehicleId));if(error){showToast(error.message,"error");return}await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugstatus_geaendert",details:note||status,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);statusNote.value="";showToast("Status gespeichert.","success");await loadVehicle()}
-async function markDamage(id,status){const note=prompt(status==="repariert"?"Notiz zur Reparatur:":"Warum irrtümlich?")||status;const{error}=await db.from("damages").update({status}).eq("id",id);if(error){showToast(error.message,"error");return}await db.from("damage_history").insert([{damage_id:id,action:status,details:note,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);showToast("Schaden aktualisiert.","success");await loadDamages()}function openDamage(id){const d=damages.find(x=>x.id===id);if(!d)return;modalContent.innerHTML=`<h2 style="margin-top:0;">${esc(d.damage_type||"Schaden")}</h2><p><strong>Bereich:</strong> ${esc(d.area||"-")}</p><p><strong>Schweregrad:</strong> ${esc(d.severity||"-")}</p><p><strong>Status:</strong> ${esc(d.status||"-")}</p><p><strong>Gemeldet von:</strong> ${esc(employeeName(d.employee_id))}</p><p><strong>Datum:</strong> ${fullDateTime(d.created_at)}</p><p><strong>Beschreibung:</strong><br>${esc(d.description||"-")}</p>`;modal.style.display="flex"}function closeModal(){modal.style.display="none"}init();
-</script></body></html>
+
+async function loadDamages() {
+  const { data } = await db
+    .from("damages")
+    .select("*")
+    .eq("vehicle_id", vehicleId);
+
+  const list = document.getElementById("damageList");
+  list.innerHTML = "";
+
+  if (!data.length) {
+    list.innerHTML = "Keine Schäden";
+    return;
+  }
+
+  data.forEach(d => {
+    list.innerHTML += `<div>${d.damage_type} (${d.area})</div>`;
+  });
+}
+
+async function saveVehicleData() {
+  await db.from("vehicles").update({
+    km: document.getElementById("kmInput").value,
+    first_registration: document.getElementById("dateInput").value
+  }).eq("id", vehicleId);
+
+  alert("Fahrzeug gespeichert");
+}
+
+init();
+</script>
+
+</body>
+</html>
