@@ -1,5 +1,19 @@
 <!DOCTYPE html><html lang="de"><head>
 <!--
+FINAL Supabase Struktur für damages:
+alter table public.damages drop column if exists created_by cascade;
+alter table public.damages add column created_by uuid default auth.uid();
+
+alter table public.damages drop column if exists user_id cascade;
+alter table public.damages add column user_id uuid;
+
+alter table public.damages add column if not exists employee_id bigint;
+alter table public.damages add column if not exists kilometerstand integer;
+alter table public.vehicles add column if not exists kilometerstand integer;
+alter table public.vehicles add column if not exists erstzulassung date;
+-->
+
+<!--
 DB-Fix für Supabase:
 alter table public.damages drop column if exists created_by cascade;
 alter table public.damages add column created_by uuid default auth.uid();
@@ -517,7 +531,7 @@ async function saveDamage() {
     description: description,
     status: "offen",
     created_by: authUser.id,
-    user_id: employee.id,
+    user_id: authUser.id,
     employee_id: employee.id
   };
 
