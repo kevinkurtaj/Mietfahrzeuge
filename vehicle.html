@@ -1,13 +1,9 @@
 <!DOCTYPE html><html lang="de"><head>
 <!--
-FINAL Storage SQL für Bild-Upload:
+Storage SQL:
+alter table public.damages add column if not exists image_urls text[];
 
-alter table public.damages
-add column if not exists image_urls text[];
-
--- Bucket in Supabase Storage muss exakt heißen:
--- damage-images
--- Public: aktiviert
+Bucket: damage-images, Public = true
 
 drop policy if exists "damage images insert" on storage.objects;
 drop policy if exists "damage images select" on storage.objects;
@@ -594,13 +590,7 @@ async function saveDamage() {
   const imageUrls = [];
 
   for (const file of files) {
-    const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/heic",
-        "image/heif"
-      ];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
       showToast("Nur JPG, PNG oder WebP erlaubt.", "error");
@@ -744,15 +734,12 @@ async function saveDamage() {
     const imageUrls = [];
 
     for (const file of files) {
-      console.log("Uploading:", file.name, file.type || "kein MIME-Type", file.size);
+      console.log("Uploading:", file.name, file.type, file.size);
 
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
-      const fileExt = file.name.split(".").pop().toLowerCase();
-      const allowedExts = ["jpg", "jpeg", "png", "webp", "heic", "heif"];
-
-      if (!allowedTypes.includes(file.type) && !allowedExts.includes(fileExt)) {
-        showToast("Nur JPG, PNG, WebP, HEIC oder HEIF erlaubt.", "error");
+      if (!allowedTypes.includes(file.type)) {
+        showToast("Nur JPG, PNG oder WebP erlaubt.", "error");
         return;
       }
 
