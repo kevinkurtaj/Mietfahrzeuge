@@ -1,5 +1,37 @@
 <!DOCTYPE html><html lang="de"><head>
 <!--
+FINAL SQL für Bilder:
+alter table public.damages add column if not exists image_urls text[];
+
+Storage Bucket:
+Name: damage-images
+Public: true
+
+Storage Policies:
+drop policy if exists "allow authenticated uploads" on storage.objects;
+drop policy if exists "allow authenticated read" on storage.objects;
+drop policy if exists "allow public read" on storage.objects;
+
+create policy "allow authenticated uploads"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'damage-images');
+
+create policy "allow authenticated read"
+on storage.objects
+for select
+to authenticated
+using (bucket_id = 'damage-images');
+
+create policy "allow public read"
+on storage.objects
+for select
+to public
+using (bucket_id = 'damage-images');
+-->
+
+<!--
 FINAL Supabase SQL für Schadensbilder:
 create policy "allow authenticated uploads"
 on storage.objects
@@ -583,6 +615,169 @@ async function saveDamage() {
   await loadDamages();
 }
 
+
+async function saveDamage() {
+  try {
+    console.log("START saveDamage");
+
+    const damage_type = document.getElementById("damageType").value.trim();
+    const area = document.getElementById("damageArea").value.trim();
+    const severity = document.getElementById("damageSeverity").value;
+    const description = document.getElementById("damageDesc").value.trim();
+    const imageInput = document.getElementById("imageFile");
+    const files = imageInput ? Array.from(imageInput.files || []) : [];
+
+    console.log("Damage data:", { damage_type, area, severity, description });
+    console.log("Files:", files);
+
+    if (!damage_type || !area) {
+      showToast("Bitte Schadenart und Bereich ausfüllen.", "error");
+      return;
+    }
+
+    const { data: userData, error: userError } = await db.auth.getUser();
+
+    if (userError) {
+      console.error("AUTH ERROR:", userError);
+      showToast("Auth-Fehler: " + userError.message, "error");
+      return;
+    }
+
+    const authUser = userData?.user;
+    console.log("User:", authUser);
+
+    if (!authUser) {
+      showToast("Du bist nicht eingeloggt.", "error");
+      location.href = "login.html";
+      return;
+    }
+
+    const { data: employee, error: employeeError } = await db
+      .from("employees")
+      .select("*")
+      .eq("email", authUser.email)
+      .maybeSingle();
+
+    if (employeeError) {
+      console.error("EMPLOYEE ERROR:", employeeError);
+      showToast("Mitarbeiter-Fehler: " + employeeError.message, "error");
+      return;
+    }
+
+    console.log("Employee:", employee);
+
+    if (!employee) {
+      showToast("Kein Mitarbeiterprofil gefunden.", "error");
+      return;
+    }
+
+    const imageUrls = [];
+
+    for (const file of files) {
+      console.log("Uploading:", file.name, file.type, file.size);
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+      if (!allowedTypes.includes(file.type)) {
+        showToast("Nur JPG, PNG oder WebP erlaubt.", "error");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Ein Bild ist größer als 5 MB.", "error");
+        return;
+      }
+
+      const fileExt = file.name.split(".").pop().toLowerCase();
+      const safeName = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[^a-zA-Z0-9-_]/g, "-")
+        .slice(0, 40);
+
+      const fileName = `${Date.now()}-${crypto.randomUUID()}-${safeName}.${fileExt}`;
+      const filePath = `vehicle-${vehicleId}/${fileName}`;
+
+      const { error: uploadError } = await db.storage
+        .from("damage-images")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("UPLOAD ERROR:", uploadError);
+        showToast("Bild-Upload fehlgeschlagen: " + uploadError.message, "error");
+        return;
+      }
+
+      const { data: publicUrlData } = db.storage
+        .from("damage-images")
+        .getPublicUrl(filePath);
+
+      imageUrls.push(publicUrlData.publicUrl);
+    }
+
+    console.log("Image URLs:", imageUrls);
+
+    const insertData = {
+      vehicle_id: Number(vehicleId),
+      damage_type,
+      area,
+      severity,
+      description,
+      status: "offen",
+      created_by: authUser.id,
+      user_id: authUser.id,
+      employee_id: employee.id,
+      image_urls: imageUrls
+    };
+
+    console.log("Insert data:", insertData);
+
+    const { data: damage, error } = await db
+      .from("damages")
+      .insert([insertData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("DB ERROR:", error);
+      showToast("Fehler beim Speichern: " + error.message, "error");
+      return;
+    }
+
+    console.log("Saved damage:", damage);
+
+    await db.from("damage_history").insert([{
+      damage_id: damage.id,
+      action: imageUrls.length ? "bilder_hochgeladen" : "angelegt",
+      details: imageUrls.length
+        ? `${imageUrls.length} Bild(er) hochgeladen: ${damage_type} / ${area}`
+        : "Schaden angelegt: " + damage_type + " / " + area,
+      user_id: employee.id,
+      auth_user_id: authUser.id
+    }]);
+
+    document.getElementById("damageType").value = "";
+    document.getElementById("damageDesc").value = "";
+
+    if (imageInput) imageInput.value = "";
+
+    showToast(
+      imageUrls.length
+        ? "Schaden inklusive Bilder gespeichert."
+        : "Schaden gespeichert.",
+      "success"
+    );
+
+    await loadDamages();
+
+  } catch (err) {
+    console.error("FATAL ERROR:", err);
+    showToast("Unerwarteter Fehler: " + err.message, "error");
+  }
+}
+
 async function saveVehicleInfo() {
   if (!vehicle) {
     showToast("Fahrzeug noch nicht geladen.", "error");
@@ -665,7 +860,9 @@ function renderDamageImages(imageUrls) {
   `;
 }
 
-async function loadDamages(){const {data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false}); if(error){document.getElementById("damageList").innerHTML=`<div class="empty-state">${esc(error.message)}</div>`;return;} damages=data||[];const active=damages.filter(d=>d.status!=="repariert"&&d.status!=="irrtuemlich");document.getElementById("activeDamageCount").textContent=active.length;if(!active.length){document.getElementById("damageList").innerHTML='<div class="empty-state"><strong>Keine aktiven Schäden vorhanden.</strong><br>Das Fahrzeug hat aktuell keine offenen Schäden.</div>';return;}document.getElementById("damageList").innerHTML=active.map(d=>`<article class="damage-card ${esc(d.severity||"leicht")}"><div class="damage-head"><h3>${esc(d.damage_type||"Schaden")}</h3><span class="severity ${esc(d.severity||"leicht")}">${esc(d.severity||"leicht")}</span></div><div class="damage-meta"><div>Bereich<br><span class="blue-link">${esc(d.area||"-")}</span></div><div>Gemeldet von<br><strong>${esc(employeeName(d.employee_id))}</strong></div><div>📅 ${fmtDate(d.created_at)} &nbsp;&nbsp; 🕙 ${fmtTime(d.created_at)} Uhr</div></div><div class="damage-actions"><button class="secondary-btn" onclick="openDamage(${d.id})">Details</button><button class="success-btn" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="danger-btn" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></article>`).join("");}
+async function loadDamages(){const {data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false}); if(error){document.getElementById("damageList").innerHTML=`<div class="empty-state">${esc(error.message)}</div>`;return;} damages=data||[];const active=damages.filter(d=>d.status!=="repariert"&&d.status!=="irrtuemlich");document.getElementById("activeDamageCount").textContent=active.length;if(!active.length){document.getElementById("damageList").innerHTML='<div class="empty-state"><strong>Keine aktiven Schäden vorhanden.</strong><br>Das Fahrzeug hat aktuell keine offenen Schäden.</div>';return;}document.getElementById("damageList").innerHTML=active.map(d=>`<article class="damage-card ${esc(d.severity||"leicht")}"><div class="damage-head"><h3>${esc(d.damage_type||"Schaden")}</h3><span class="severity ${esc(d.severity||"leicht")}">${esc(d.severity||"leicht")}</span></div><div class="damage-meta"><div>Bereich<br><span class="blue-link">${esc(d.area||"-")}</span></div><div>Gemeldet von<br><strong>${esc(employeeName(d.employee_id))}</strong></div><div>📅 ${fmtDate(d.created_at)} &nbsp;&nbsp; 🕙 ${fmtTime(d.created_at)} Uhr</div></div>${renderDamageImages(damage.image_urls)}
+
+      <div class="damage-actions"><button class="secondary-btn" onclick="openDamage(${d.id})">Details</button><button class="success-btn" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="danger-btn" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></article>`).join("");}
 async function saveDamage(){const damage_type=document.getElementById("damageType").value.trim(),area=document.getElementById("damageArea").value.trim(),severity=document.getElementById("damageSeverity").value,description=document.getElementById("damageDesc").value.trim(); if(!damage_type||!area){showToast("Bitte Schadenart und Bereich ausfüllen.","error");return;} if(!currentEmployee){showToast("Kein Mitarbeiter zu deinem Login gefunden. employees.email prüfen.","error");return;} const {data:damage,error}=await db.from("damages").insert([{vehicle_id:Number(vehicleId),damage_type,area,severity,description,status:"offen",user_id:currentUser.id,employee_id:currentEmployee.id}]).select().single(); if(error){showToast("Fehler beim Speichern: "+error.message,"error");return;} const {error:historyError}=await db.from("damage_history").insert([{damage_id:damage.id,action:"angelegt",details:"Schaden angelegt: "+damage_type+" / "+area,user_id:currentEmployee.id,auth_user_id:currentUser.id}]); if(historyError){showToast("Schaden gespeichert, aber Historie-Fehler: "+historyError.message,"error");return;} document.getElementById("damageType").value="";document.getElementById("damageDesc").value="";document.getElementById("imageFile").value="";showToast("Schaden gespeichert.","success");await loadDamages();}
 
 async function saveDamage() {
