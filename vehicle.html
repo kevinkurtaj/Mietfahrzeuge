@@ -34,7 +34,81 @@ async function loadEmployees(){const{data}=await db.from("employees").select("id
 async function loadVehicle(){const{data,error}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle();if(error||!data){showToast("Fahrzeug nicht gefunden.","error");return}vehicle=data;vehicleTitle.textContent=(data.name||"Inhofer-Sprinter")+(data.kennzeichen?" ("+data.kennzeichen+")":"");vehicleIdText.textContent="Fahrzeug-ID: "+data.id;vehiclePlateText.textContent="Kennzeichen: "+(data.kennzeichen||"-");plateInfoText.textContent=data.kennzeichen||"-";const mileage=valueFromAny(data,["kilometerstand","mileage","km"],"");const firstReg=valueFromAny(data,["erstzulassung","first_registration","firstRegistration"],"");mileageText.textContent=prettyMileage(mileage);firstRegText.textContent=prettyDate(firstReg);mileageInput.value=mileage||"";firstRegistrationInput.value=firstReg?String(firstReg).slice(0,10):"";vehicleStatus.value=data.status||"einsatzbereit";statusBadge.textContent=statusLabel(data.status);statusBadge.className="badge "+(data.status||"")}
 function setupViewer(){renderViewer();viewPills.innerHTML=views.map((v,i)=>`<button class="pill ${i===currentViewIndex?"active":""}" onclick="setView(${i})">${esc(v.label)}</button>`).join("");dots.innerHTML=views.map((v,i)=>`<span class="dot ${i===currentViewIndex?"active":""}"></span>`).join("")}function setView(i){currentViewIndex=i;damageArea.value=views[i].area;renderViewer();setupViewer()}function prevView(){setView((currentViewIndex-1+views.length)%views.length)}function nextView(){setView((currentViewIndex+1)%views.length)}function renderViewer(){const v=views[currentViewIndex];vehicleImage.style.display="block";placeholder.style.display="none";vehicleImage.src=v.src;vehicleImage.onerror=()=>{vehicleImage.style.display="none";placeholder.style.display="block"};currentAreaText.textContent=v.area}
 async function loadDamages(){const{data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false});if(error){damageList.innerHTML=`<div class="empty-state">${esc(error.message)}</div>`;return}damages=data||[];const active=damages.filter(d=>d.status!=="repariert"&&d.status!=="irrtuemlich");activeDamageCount.textContent=active.length;if(!active.length){damageList.innerHTML=`<div class="empty-state"><strong>Keine aktiven Schäden vorhanden.</strong><br>Das Fahrzeug hat aktuell keine offenen Schäden.</div>`;return}damageList.innerHTML=active.map(d=>`<article class="damage-card ${esc(d.severity||"leicht")}"><div class="damage-head"><h3>${esc(d.damage_type||"Schaden")}</h3><span class="severity ${esc(d.severity||"leicht")}">${esc(d.severity||"leicht")}</span></div><div class="damage-meta"><div>Bereich<br><span class="blue-link">${esc(d.area||"-")}</span></div><div>Gemeldet von<br><strong>${esc(employeeName(d.employee_id))}</strong></div><div>📅 ${fmtDate(d.created_at)} &nbsp; 🕙 ${fmtTime(d.created_at)} Uhr</div></div><div class="damage-actions"><button class="secondary-btn" onclick="openDamage(${d.id})">Details</button><button class="success-btn" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="danger-btn" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></article>`).join("")}
-async function saveDamage(){const damage_type=damageType.value.trim(),area=damageArea.value.trim(),severity=damageSeverity.value,description=damageDesc.value.trim();if(!damage_type||!area){showToast("Bitte Schadenart und Bereich ausfüllen.","error");return}if(!currentEmployee){showToast("Kein Mitarbeiterprofil gefunden.","error");return}const{data:damage,error}=await db.from("damages").insert([{vehicle_id:Number(vehicleId),damage_type,area,severity,description,status:"offen",user_id:currentUser.id,employee_id:currentEmployee.id}]).select().single();if(error){showToast("Fehler beim Speichern: "+error.message,"error");return}await db.from("damage_history").insert([{damage_id:damage.id,action:"angelegt",details:"Schaden angelegt: "+damage_type+" / "+area,user_id:currentEmployee.id,auth_user_id:currentUser.id}]);damageType.value="";damageDesc.value="";imageFile.value="";showToast("Schaden gespeichert.","success");await loadDamages()}
+async function saveDamage() {
+  const damage_type = document.getElementById("damageType").value.trim();
+  const area = document.getElementById("damageArea").value.trim();
+  const severity = document.getElementById("damageSeverity").value;
+  const description = document.getElementById("damageDesc").value.trim();
+
+  if (!damage_type || !area) {
+    showToast("Bitte Schadenart und Bereich ausfüllen.", "error");
+    return;
+  }
+
+  const { data: authData, error: authError } = await db.auth.getUser();
+
+  if (authError || !authData.user) {
+    showToast("Du bist nicht eingeloggt.", "error");
+    location.href = "login.html";
+    return;
+  }
+
+  const authUser = authData.user;
+
+  const { data: employee, error: employeeError } = await db
+    .from("employees")
+    .select("*")
+    .eq("email", authUser.email)
+    .maybeSingle();
+
+  if (employeeError || !employee) {
+    showToast("Kein Mitarbeiterprofil zu deinem Login gefunden.", "error");
+    return;
+  }
+
+  const insertData = {
+    vehicle_id: Number(vehicleId),
+    damage_type: damage_type,
+    area: area,
+    severity: severity,
+    description: description,
+    status: "offen",
+
+    // wichtig für deine Datenbank:
+    created_by: authUser.id,
+
+    // falls deine Tabelle diese Spalten auch hat:
+    user_id: authUser.id,
+    employee_id: employee.id
+  };
+
+  const { data: damage, error } = await db
+    .from("damages")
+    .insert([insertData])
+    .select()
+    .single();
+
+  if (error) {
+    showToast("Fehler beim Speichern: " + error.message, "error");
+    console.error(error);
+    return;
+  }
+
+  await db.from("damage_history").insert([{
+    damage_id: damage.id,
+    action: "angelegt",
+    details: "Schaden angelegt: " + damage_type + " / " + area,
+    user_id: employee.id,
+    auth_user_id: authUser.id
+  }]);
+
+  document.getElementById("damageType").value = "";
+  document.getElementById("damageDesc").value = "";
+  document.getElementById("imageFile").value = "";
+
+  showToast("Schaden gespeichert.", "success");
+  await loadDamages();
+}
 async function saveVehicleInfo(){if(!vehicle){showToast("Fahrzeug noch nicht geladen.","error");return}const mileageCol=existingColumn(vehicle,["kilometerstand","mileage","km"],"kilometerstand");const regCol=existingColumn(vehicle,["erstzulassung","first_registration","firstRegistration"],"erstzulassung");const update={};update[mileageCol]=mileageInput.value?Number(mileageInput.value):null;update[regCol]=firstRegistrationInput.value||null;const{error}=await db.from("vehicles").update(update).eq("id",Number(vehicleId));if(error){showToast("Fehler: "+error.message+" – ggf. SQL-Spalten kilometerstand/erstzulassung anlegen.","error");return}await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugdaten_geaendert",details:"Kilometerstand / Erstzulassung aktualisiert",user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);showToast("Fahrzeugdaten gespeichert.","success");await loadVehicle()}
 async function saveStatus(){const status=vehicleStatus.value,note=statusNote.value.trim();const{error}=await db.from("vehicles").update({status}).eq("id",Number(vehicleId));if(error){showToast(error.message,"error");return}await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugstatus_geaendert",details:note||status,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);statusNote.value="";showToast("Status gespeichert.","success");await loadVehicle()}
 async function markDamage(id,status){const note=prompt(status==="repariert"?"Notiz zur Reparatur:":"Warum irrtümlich?")||status;const{error}=await db.from("damages").update({status}).eq("id",id);if(error){showToast(error.message,"error");return}await db.from("damage_history").insert([{damage_id:id,action:status,details:note,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);showToast("Schaden aktualisiert.","success");await loadDamages()}function openDamage(id){const d=damages.find(x=>x.id===id);if(!d)return;modalContent.innerHTML=`<h2 style="margin-top:0;">${esc(d.damage_type||"Schaden")}</h2><p><strong>Bereich:</strong> ${esc(d.area||"-")}</p><p><strong>Schweregrad:</strong> ${esc(d.severity||"-")}</p><p><strong>Status:</strong> ${esc(d.status||"-")}</p><p><strong>Gemeldet von:</strong> ${esc(employeeName(d.employee_id))}</p><p><strong>Datum:</strong> ${fullDateTime(d.created_at)}</p><p><strong>Beschreibung:</strong><br>${esc(d.description||"-")}</p>`;modal.style.display="flex"}function closeModal(){modal.style.display="none"}init();
