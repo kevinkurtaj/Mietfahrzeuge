@@ -1,245 +1,551 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Fahrzeug</title>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Fahrzeugdetails</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,"><style>
+:root{
+  --bg:#f6f8fc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --blue:#2563eb;
+  --blue2:#3b82f6;
+  --green:#16a34a;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --gray:#64748b;
+  --shadow:0 18px 50px rgba(15,23,42,.08);
+  --soft-shadow:0 10px 30px rgba(15,23,42,.06);
+  --radius:22px;
+}
+*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 32%),linear-gradient(135deg,#f8fafc,#eef2f7);
+}
+.app-shell{
+  max-width:1540px;margin:14px auto;min-height:calc(100vh - 28px);
+  background:rgba(255,255,255,.82);border:1px solid rgba(148,163,184,.35);
+  border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
+}
+.topbar{
+  height:80px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+}
+.brand{display:flex;align-items:center;gap:14px;font-size:21px;font-weight:900;letter-spacing:-.3px}
+.brand-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--blue);border:1px solid #bfdbfe;background:#eff6ff;font-size:24px}
+.userbox{display:flex;align-items:center;gap:14px}
+.avatar{width:40px;height:40px;border-radius:999px;background:#eef2ff;color:#1d4ed8;font-weight:900;display:grid;place-items:center}
+.user-name{font-weight:900}.user-role{color:var(--muted);font-size:13px;margin-top:2px}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 108px)}
+.sidebar{border-right:1px solid var(--line);padding:28px 14px;display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.55)}
+.nav{display:grid;gap:14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;color:#334155;text-decoration:none;font-weight:800;cursor:pointer;border:none;background:transparent;font-size:15px;text-align:left}
+.nav-item.active{background:linear-gradient(135deg,var(--blue),#4f46e5);color:white;box-shadow:0 12px 28px rgba(37,99,235,.28)}
+.nav-item:hover:not(.active){background:#f1f5f9}
+.content{padding:28px 26px 20px}
+.page-head{position:relative;min-height:78px;display:flex;align-items:flex-start;justify-content:center;margin-bottom:24px}
+.back-btn{position:absolute;left:0;top:10px;display:inline-flex;align-items:center;gap:8px;border:none;background:transparent;color:#334155;font-weight:800;cursor:pointer;font-size:15px}
+.title-wrap{text-align:center}.title-wrap h1{margin:0;font-size:30px;letter-spacing:-.8px}.title-wrap p{margin:8px 0 0;color:var(--muted);font-size:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.date-box{position:absolute;right:0;top:4px;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;color:#475569;font-size:14px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-shadow)}
+.panel{padding:18px}
+.panel-title{display:flex;align-items:center;gap:10px;margin:0 0 22px;font-size:19px;font-weight:950}
+.icon-badge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#f8fafc;border:1px solid var(--line)}
+label{display:block;font-size:13px;font-weight:900;margin:14px 0 8px}
+input,select,textarea{
+  width:100%;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:10px;padding:12px 13px;outline:none;font-size:14px;transition:.16s;
+}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+.primary-btn{border:none;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(37,99,235,.24)}
+.primary-btn:hover{transform:translateY(-1px)}
+.secondary-btn{border:1px solid #bfdbfe;background:#fff;color:var(--blue);border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}
+.success-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:#15803d;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.danger-btn{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:10px;padding:10px 16px;font-weight:900;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{padding:22px}.stat .label{font-size:13px;color:var(--muted);font-weight:900}.stat strong{display:block;margin-top:8px;font-size:32px}
+.badge{display:inline-flex;align-items:center;width:max-content;padding:7px 11px;border-radius:9px;font-size:12px;font-weight:950;background:#e5e7eb;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.severity{padding:7px 12px;border-radius:9px;font-size:12px;font-weight:950}.severity.leicht{background:#dcfce7;color:#166534}.severity.mittel{background:#fef3c7;color:#92400e}.severity.schwer{background:#fee2e2;color:#991b1b}
+.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,.24);display:none;z-index:50;max-width:420px}.toast.success{background:#166534}.toast.error{background:#991b1b}
+.empty-state{padding:28px;text-align:center;color:#64748b;background:#fbfdff;border:1px dashed #cbd5e1;border-radius:16px}
+.footer{text-align:center;color:#64748b;font-size:13px;padding:18px 0 10px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:40}
+.modal-box{width:100%;max-width:560px;background:white;border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(15,23,42,.28)}
+@media(max-width:1220px){.layout{grid-template-columns:1fr}.sidebar{display:none}.date-box{display:none}.page-head{justify-content:flex-start}.back-btn{position:static;margin-right:20px}.title-wrap{text-align:left}.title-wrap p{justify-content:flex-start}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.app-shell{margin:0;border-radius:0}.topbar{height:auto;padding:16px;align-items:flex-start;gap:14px;flex-direction:column}.content{padding:16px}.stats{grid-template-columns:1fr}}
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f6f7fb;
-      display: flex;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 240px;
-      background: #fff;
-      height: 100vh;
-      padding: 20px;
-      border-right: 1px solid #eee;
-    }
-
-    .sidebar button {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: #f0f2f7;
-      cursor: pointer;
-    }
-
-    /* MAIN */
-    .main {
-      flex: 1;
-      padding: 30px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 320px 1fr 300px;
-      gap: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-
-    .viewer {
-      height: 300px;
-      background: #f2f4f9;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #aaa;
-      font-size: 20px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      margin-top: 8px;
-      margin-bottom: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-
-    button.primary {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .vehicle-info {
-      margin-top: 20px;
-      display: flex;
-      gap: 20px;
-    }
-
-    .info-box {
-      background: #fff;
-      padding: 15px;
-      border-radius: 12px;
-      flex: 1;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="sidebar">
-  <button onclick="location.href='index.html'">Fahrzeuge</button>
-  <button onclick="location.href='history.html'">Historie</button>
-  <button id="adminBtn" style="display:none;">Admin Panel</button>
-</div>
-
-<div class="main">
-
-  <h2 id="vehicleTitle">Fahrzeug</h2>
-
-  <div class="grid">
-
-    <!-- LEFT -->
-    <div class="card">
-      <h3>Schaden hinzufügen</h3>
-
-      <input id="damageType" placeholder="z.B. Kratzer">
-      <input id="damageArea" placeholder="Bereich">
-      
-      <select id="damageSeverity">
-        <option value="leicht">leicht</option>
-        <option value="mittel">mittel</option>
-        <option value="schwer">schwer</option>
-      </select>
-
-      <textarea id="damageDesc" placeholder="Beschreibung"></textarea>
-
-      <button class="primary" onclick="saveDamage()">Speichern</button>
-    </div>
-
-    <!-- CENTER -->
-    <div class="card">
-      <h3>360° Ansicht</h3>
-      <div class="viewer">Sprinter Ansicht</div>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="card">
-      <h3>Aktive Schäden</h3>
-      <div id="damageList">Keine Schäden</div>
-    </div>
-
-  </div>
-
-  <!-- INFOS -->
-  <div class="vehicle-info">
-
-    <div class="info-box">
-      <label>Kilometerstand</label>
-      <input id="kmInput">
-    </div>
-
-    <div class="info-box">
-      <label>Erstzulassung</label>
-      <input type="date" id="dateInput">
-    </div>
-
-    <div class="info-box">
-      <button class="primary" onclick="saveVehicleData()">Speichern</button>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-const db = supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
-
-const urlParams = new URLSearchParams(window.location.search);
-const vehicleId = urlParams.get("id");
-
-async function init() {
-  const { data } = await db.auth.getUser();
-  if (!data.user) location.href = "login.html";
-
-  const { data: vehicle } = await db
-    .from("vehicles")
-    .select("*")
-    .eq("id", vehicleId)
-    .single();
-
-  document.getElementById("vehicleTitle").innerText = vehicle.name;
-  document.getElementById("kmInput").value = vehicle.km || "";
-  document.getElementById("dateInput").value = vehicle.first_registration || "";
-
-  loadDamages();
+.main-grid{display:grid;grid-template-columns:265px minmax(430px,1fr) 390px;gap:18px;align-items:stretch}.upload-box{border:1.5px dashed #cbd5e1;border-radius:14px;padding:20px 14px;text-align:center;color:#64748b;background:#fbfdff;cursor:pointer;margin-top:8px}.viewer-card{padding:18px}.viewer-title{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:950;margin-bottom:18px}.viewer{position:relative;min-height:345px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:center;overflow:hidden}.vehicle-img{max-width:92%;max-height:305px;object-fit:contain;filter:drop-shadow(0 18px 20px rgba(15,23,42,.12))}.placeholder{font-size:48px;font-weight:950;color:#cbd5e1;text-align:center}.arrow{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:999px;border:1px solid #dbeafe;background:white;color:var(--blue);font-size:26px;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.08)}.arrow.left{left:14px}.arrow.right{right:14px}.dots{display:flex;gap:12px;justify-content:center;margin-top:-34px;position:relative;z-index:3}.dot{width:8px;height:8px;border-radius:999px;background:#cbd5e1}.dot.active{background:var(--blue)}.view-pills{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.pill{border:1px solid var(--line);background:#fff;color:#334155;border-radius:10px;padding:10px 20px;font-weight:850;cursor:pointer;min-width:104px}.pill.active{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border-color:transparent;box-shadow:0 10px 22px rgba(37,99,235,.18)}.current-area{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;background:#fbfdff}.current-area strong{color:var(--muted)}.current-area span{padding:8px 14px;border-radius:10px;background:#eef2ff;color:#1d4ed8;font-weight:900}.damage-list{display:grid;gap:16px}.damage-card{position:relative;border:1px solid var(--line);border-left:5px solid var(--orange);background:white;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.damage-card.leicht{border-left-color:var(--green)}.damage-card.mittel{border-left-color:var(--orange)}.damage-card.schwer{border-left-color:var(--red)}.damage-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.damage-head h3{margin:0;font-size:18px}.damage-meta{display:grid;gap:8px;margin:16px 0;color:#475569;font-size:14px}.blue-link{color:var(--blue);font-weight:950}.damage-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.info-strip{margin-top:18px;padding:20px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px}.info-item{display:flex;align-items:center;gap:12px;color:#334155}.info-icon{width:34px;height:34px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);display:grid;place-items:center}.info-label{color:var(--muted);font-size:13px}.info-value{font-weight:900;margin-top:3px}@media(max-width:1220px){.main-grid{grid-template-columns:1fr}.info-strip{grid-template-columns:1fr 1fr}}@media(max-width:720px){.info-strip{grid-template-columns:1fr}.damage-actions{grid-template-columns:1fr}}
+/* --- PATCH: mehr Platz + editierbare Fahrzeugdaten --- */
+.main-grid{
+  grid-template-columns: 300px minmax(520px, 1.4fr) 360px !important;
+  gap: 24px !important;
+  align-items: start !important;
+}
+.viewer{
+  min-height: 390px !important;
+}
+.vehicle-img{
+  max-height: 350px !important;
+}
+.info-strip{
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 18px !important;
+}
+.edit-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items:end;
+}
+@media(max-width:1300px){
+  .main-grid{grid-template-columns:1fr !important;}
+  .edit-grid{grid-template-columns:1fr;}
+  .info-strip{grid-template-columns:1fr 1fr !important;}
 }
 
-async function saveDamage() {
-  const { data } = await db.auth.getUser();
-  const user = data.user;
 
-  const { error } = await db.from("damages").insert({
-    vehicle_id: Number(vehicleId),
-    damage_type: document.getElementById("damageType").value,
-    area: document.getElementById("damageArea").value,
-    severity: document.getElementById("damageSeverity").value,
-    description: document.getElementById("damageDesc").value,
+/* === FINAL FULLSCREEN FIX === */
+html,
+body {
+  width: 100% !important;
+  min-width: 100% !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
 
-    // 🔥 WICHTIG (dein Fehler FIX)
-    created_by: user.id
-  });
+.app-shell {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow-x: hidden !important;
+}
+
+.layout {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.content {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 34px 48px !important;
+}
+
+.topbar {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+@media(max-width: 900px) {
+  .content {
+    padding: 24px !important;
+  }
+}
+
+@media(max-width: 650px) {
+  .content {
+    padding: 16px !important;
+  }
+}
+
+
+/* === APPLE CLEAN PROFESSIONAL POLISH === */
+:root {
+  --bg: #f5f7fb !important;
+  --card: rgba(255,255,255,.86) !important;
+  --text: #0f172a !important;
+  --muted: #64748b !important;
+  --line: rgba(148,163,184,.28) !important;
+  --blue: #2563eb !important;
+  --blue2: #3b82f6 !important;
+  --shadow: 0 18px 55px rgba(15,23,42,.08) !important;
+  --soft-shadow: 0 10px 32px rgba(15,23,42,.055) !important;
+  --radius: 24px !important;
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(37,99,235,.10), transparent 34%),
+    radial-gradient(circle at 85% 18%, rgba(99,102,241,.08), transparent 30%),
+    linear-gradient(135deg,#f8fafc,#eef2f7) !important;
+}
+
+.topbar {
+  height: 84px !important;
+  padding: 0 42px !important;
+  background: rgba(255,255,255,.82) !important;
+  backdrop-filter: blur(18px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  border-bottom: 1px solid rgba(148,163,184,.28) !important;
+}
+
+.brand {
+  font-size: 22px !important;
+  letter-spacing: -.45px !important;
+}
+
+.brand-icon {
+  border-radius: 16px !important;
+  background: linear-gradient(135deg,#eff6ff,#ffffff) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 24px rgba(37,99,235,.10) !important;
+}
+
+.sidebar {
+  background: rgba(255,255,255,.66) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
+  padding: 30px 18px !important;
+}
+
+.nav {
+  gap: 13px !important;
+}
+
+.nav-item {
+  border-radius: 16px !important;
+  padding: 15px 17px !important;
+  transition: transform .16s ease, background .16s ease, box-shadow .16s ease !important;
+}
+
+.nav-item:hover:not(.active) {
+  background: rgba(241,245,249,.85) !important;
+  transform: translateY(-1px) !important;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg,#2563eb,#4f46e5) !important;
+  box-shadow: 0 16px 34px rgba(37,99,235,.24) !important;
+}
+
+.content {
+  padding: 42px 56px !important;
+}
+
+.card,
+.panel,
+.stat,
+.stat-card,
+.vehicle-card,
+.list-card,
+.timeline-card,
+.reset-card,
+.login-card {
+  background: rgba(255,255,255,.88) !important;
+  backdrop-filter: blur(14px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(145%) !important;
+  border: 1px solid rgba(148,163,184,.28) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 18px 55px rgba(15,23,42,.075) !important;
+}
+
+.vehicle-card,
+.list-card,
+.timeline-card {
+  transition: transform .18s ease, box-shadow .18s ease !important;
+}
+
+.vehicle-card:hover,
+.list-card:hover,
+.timeline-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 24px 70px rgba(15,23,42,.10) !important;
+}
+
+input,
+select,
+textarea {
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(148,163,184,.38) !important;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  background: #fff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 5px rgba(37,99,235,.11) !important;
+}
+
+.primary-btn,
+button.primary-btn {
+  border-radius: 14px !important;
+  background: linear-gradient(135deg,#2563eb,#3b82f6) !important;
+  box-shadow: 0 16px 32px rgba(37,99,235,.24) !important;
+  transition: transform .16s ease, box-shadow .16s ease !important;
+}
+
+.primary-btn:hover,
+button.primary-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 20px 42px rgba(37,99,235,.30) !important;
+}
+
+.secondary-btn,
+.success-btn,
+.danger-btn,
+.ghost-btn,
+.tab,
+.pill {
+  border-radius: 14px !important;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+.secondary-btn:hover,
+.success-btn:hover,
+.danger-btn:hover,
+.ghost-btn:hover,
+.tab:hover,
+.pill:hover {
+  transform: translateY(-1px) !important;
+}
+
+.page-head,
+.page-header {
+  margin-bottom: 34px !important;
+}
+
+.title-wrap h1,
+.page-title h1 {
+  font-size: 36px !important;
+  letter-spacing: -1.1px !important;
+  font-weight: 950 !important;
+}
+
+.stats {
+  gap: 24px !important;
+  margin-bottom: 34px !important;
+}
+
+.stat,
+.stat-card {
+  min-height: 132px !important;
+  padding: 28px !important;
+}
+
+.stat strong,
+.stat-value {
+  font-size: 40px !important;
+  font-weight: 950 !important;
+  letter-spacing: -1px !important;
+}
+
+.viewer {
+  border-radius: 22px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(248,250,252,.88)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+
+.arrow {
+  background: rgba(255,255,255,.92) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 12px 30px rgba(15,23,42,.12) !important;
+}
+
+.badge,
+.severity,
+.status-badge {
+  border-radius: 999px !important;
+}
+
+.modal-box {
+  border-radius: 26px !important;
+  background: rgba(255,255,255,.94) !important;
+  backdrop-filter: blur(18px) saturate(150%) !important;
+}
+
+.toast {
+  border-radius: 16px !important;
+  box-shadow: 0 24px 70px rgba(15,23,42,.22) !important;
+}
+
+@media(max-width: 900px) {
+  .content {
+    padding: 26px !important;
+  }
+}
+
+@media(max-width: 650px) {
+  .topbar {
+    padding: 18px !important;
+  }
+
+  .content {
+    padding: 16px !important;
+  }
+}
+
+</style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div>
+</div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" id="historyNav" href="#">🕘 Historie</a><a id="sidebarAdminLink" class="nav-item" href="admin.html" style="display:none;">👥 Admin Panel</a><a class="nav-item" href="#">👤 Profil</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p><span id="vehicleIdText">Fahrzeug-ID: -</span><span id="vehiclePlateText">Kennzeichen: -</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><section class="main-grid"><div class="card panel"><h2 class="panel-title"><span class="icon-badge">📄</span>Schaden hinzufügen</h2><label>Schadenart</label><input id="damageType" placeholder="z. B. Kratzer"><label>Bereich</label><select id="damageArea"><option value="vorne">vorne</option><option value="vorne-links">vorne-links</option><option value="linke Seite">linke Seite</option><option value="hinten-links">hinten-links</option><option value="hinten">hinten</option><option value="hinten-rechts">hinten-rechts</option><option value="rechte Seite">rechte Seite</option><option value="vorne-rechts">vorne-rechts</option><option value="Innenraum">Innenraum</option><option value="Dach">Dach</option></select><label>Schweregrad</label><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><label>Beschreibung</label><textarea id="damageDesc" placeholder="Beschreibung eingeben..."></textarea><label>Bild (optional)</label><label class="upload-box"><input id="imageFile" type="file" accept="image/*" multiple style="display:none"><div style="font-size:28px">☁️</div><strong>Bild auswählen oder hier ablegen</strong><span>PNG, JPG, WebP</span></label><button class="primary-btn" style="width:100%;margin-top:18px" onclick="saveDamage()">👤 Schaden speichern</button></div><div class="card viewer-card"><div class="viewer-title"><span class="icon-badge">⬡</span>360° Ansicht Transporter</div><div class="viewer"><button class="arrow left" onclick="prevView()">‹</button><img id="vehicleImage" class="vehicle-img" alt="Sprinter Ansicht"><div id="placeholder" class="placeholder" style="display:none">Sprinter Ansicht</div><button class="arrow right" onclick="nextView()">›</button></div><div class="dots" id="dots"></div><div class="view-pills" id="viewPills"></div><div class="current-area"><strong>Aktueller Bereich</strong><span id="currentAreaText">vorne</span></div></div><div class="card panel"><h2 class="panel-title"><span class="icon-badge">🛡️</span>Aktive Schäden (<span id="activeDamageCount">0</span>)</h2><div id="damageList" class="damage-list"></div></div></section><section class="card info-strip"><div class="info-item"><div class="info-icon">🚘</div><div><div class="info-label">Modell</div><div class="info-value">Mercedes Sprinter</div></div></div><div class="info-item"><div class="info-icon">📋</div><div><div class="info-label">Kennzeichen</div><div class="info-value" id="plateInfoText">-</div></div></div><div class="info-item"><div class="info-icon">📅</div><div><div class="info-label">Erstzulassung</div><div class="info-value">12.03.2023</div></div></div><div class="info-item"><div class="info-icon">🧭</div><div><div class="info-label">Kilometerstand</div><div class="info-value">24.350 km</div></div></div><div class="info-item"><div class="info-icon">🕘</div><div><div class="info-label">Status</div><div class="badge" id="statusBadge">-</div></div></div></section><section class="card panel" style="margin-top:18px"><h2 class="panel-title"><span class="icon-badge">⚙️</span>Fahrzeugstatus ändern</h2><div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start"><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional..." style="min-height:44px"></textarea><button class="secondary-btn" onclick="saveStatus()">Status speichern</button></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG – Alle Rechte vorbehalten.</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div><script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function esc(value){return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function fmtDate(value){return value ? new Date(value).toLocaleDateString("de-DE") : "-";}
+function fmtTime(value){return value ? new Date(value).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : "-";}
+function fullDateTime(value){return value ? new Date(value).toLocaleString("de-DE") : "-";}
+function initials(name){const p=String(name||"").trim().split(/\s+/); if(p.length>=2)return (p[0][0]+p[1][0]).toUpperCase(); return String(name||"U").slice(0,2).toUpperCase();}
+function showToast(message,type="success"){const t=document.getElementById("toast"); if(!t) return alert(message); t.className="toast "+type; t.textContent=message; t.style.display="block"; setTimeout(()=>t.style.display="none",3500);}
+function statusLabel(status){switch(status){case "einsatzbereit":return "einsatzbereit";case "abruf":return "Abruf / Reserve";case "werkstatt":return "Werkstatt";case "nicht_einsatzbereit":return "nicht einsatzbereit";case "nicht_im_einsatz":return "nicht im Einsatz";default:return status||"unbekannt";}}
+function actionLabel(a){switch(a){case "angelegt":return "Schaden angelegt";case "bilder_hochgeladen":return "Bilder hochgeladen";case "repariert":return "Schaden repariert";case "irrtuemlich":return "Schaden irrtümlich";case "bearbeitet":return "Schaden bearbeitet";case "fahrzeugstatus_geaendert":return "Fahrzeugstatus geändert";case "status_geaendert":return "Fahrzeugstatus geändert";default:return a||"-";}}
+async function getSessionUser(){const {data}=await db.auth.getSession(); return data.session?.user||null;}
+async function getEmployeeByEmail(email){if(!email)return null; const {data}=await db.from("employees").select("*").eq("email",email).maybeSingle(); return data||null;}
+async function requireLogin(){const user=await getSessionUser(); if(!user){location.href="index.html"; return null;} return user;}
+
+async function saveVehicleInfo() {
+  if (!vehicle) {
+    showToast("Fahrzeug noch nicht geladen.", "error");
+    return;
+  }
+
+  const mileageCol = existingColumn(vehicle, ["kilometerstand","mileage","km"], "kilometerstand");
+  const regCol = existingColumn(vehicle, ["erstzulassung","first_registration","firstRegistration"], "erstzulassung");
+
+  const update = {};
+  update[mileageCol] = document.getElementById("mileageInput").value
+    ? Number(document.getElementById("mileageInput").value)
+    : null;
+  update[regCol] = document.getElementById("firstRegistrationInput").value || null;
+
+  const { error } = await db
+    .from("vehicles")
+    .update(update)
+    .eq("id", Number(vehicleId));
 
   if (error) {
-    alert(error.message);
+    showToast("Fehler: " + error.message + " – ggf. SQL-Spalten kilometerstand/erstzulassung anlegen.", "error");
     return;
   }
 
-  alert("Gespeichert");
-  loadDamages();
+  await db.from("vehicle_history").insert([{
+    vehicle_id: Number(vehicleId),
+    action: "fahrzeugdaten_geaendert",
+    details: "Kilometerstand / Erstzulassung aktualisiert",
+    user_id: currentEmployee?.id || null,
+    auth_user_id: currentUser?.id || null
+  }]);
+
+  showToast("Fahrzeugdaten gespeichert.", "success");
+  await loadVehicle();
 }
 
-async function loadDamages() {
-  const { data } = await db
-    .from("damages")
+async function logout(){await db.auth.signOut(); location.href="login.html";}
+async function hydrateTopUser(active){const user=await getSessionUser(); if(!user)return; const emp=await getEmployeeByEmail(user.email); const name=emp?.name||user.email; const role=emp?.role==="admin"?"Admin":"Mitarbeiter"; const n=document.getElementById("topUserName"); const r=document.getElementById("topUserRole"); const a=document.getElementById("avatar"); if(n)n.textContent=name; if(r)r.textContent=role; if(a)a.textContent=initials(name); const sidebarAdminLink=document.getElementById("sidebarAdminLink"); if(sidebarAdminLink) sidebarAdminLink.style.display=emp?.role==="admin"?"flex":"none";}
+function updateClock(){const now=new Date(); const d=document.getElementById("dateText"); const t=document.getElementById("timeText"); if(d)d.textContent=now.toLocaleDateString("de-DE"); if(t)t.textContent=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr";}
+
+const vehicleId=new URLSearchParams(location.search).get("id");const views=[{label:"vorne",area:"vorne",src:"assets/sprinter/front.jpg"},{label:"vorne-links",area:"vorne-links",src:"assets/sprinter/front-left.jpg"},{label:"linke Seite",area:"linke Seite",src:"assets/sprinter/left.jpg"},{label:"hinten-links",area:"hinten-links",src:"assets/sprinter/rear-left.jpg"},{label:"hinten",area:"hinten",src:"assets/sprinter/rear.jpg"},{label:"hinten-rechts",area:"hinten-rechts",src:"assets/sprinter/rear-right.jpg"},{label:"rechte Seite",area:"rechte Seite",src:"assets/sprinter/right.jpg"},{label:"vorne-rechts",area:"vorne-rechts",src:"assets/sprinter/front-right.jpg"}];let currentViewIndex=1,currentUser=null,currentEmployee=null,damages=[],employeesMap={};
+
+function valueFromAny(obj, names, fallback=""){
+  for(const n of names){
+    if(obj && Object.prototype.hasOwnProperty.call(obj,n) && obj[n] !== null && obj[n] !== undefined) return obj[n];
+  }
+  return fallback;
+}
+function existingColumn(obj, names, fallback){
+  for(const n of names){
+    if(obj && Object.prototype.hasOwnProperty.call(obj,n)) return n;
+  }
+  return fallback;
+}
+function prettyMileage(v){
+  return v ? Number(v).toLocaleString("de-DE") + " km" : "-";
+}
+function prettyDate(v){
+  return v ? new Date(v).toLocaleDateString("de-DE") : "-";
+}
+
+async function init(){updateClock();currentUser=await requireLogin();if(!currentUser)return;currentEmployee=await getEmployeeByEmail(currentUser.email);currentEmployee = await hydrateTopUser("vehicle");document.getElementById("historyNav").href="history.html?id="+vehicleId;await loadEmployees();await loadVehicle();setupViewer();await loadDamages();}
+async function loadEmployees(){const {data}=await db.from("employees").select("id,name,email");employeesMap={};(data||[]).forEach(e=>employeesMap[e.id]=e.name||e.email||"Mitarbeiter "+e.id);}
+function employeeName(id){return employeesMap[id]||"Unbekannt";}
+async function loadVehicle(){const {data,error}=await db.from("vehicles").select("*").eq("id",Number(vehicleId)).maybeSingle(); if(error||!data){showToast("Fahrzeug nicht gefunden.","error");return;} document.getElementById("vehicleTitle").textContent=(data.name||"Inhofer-Sprinter")+(data.kennzeichen?" ("+data.kennzeichen+")":"");document.getElementById("vehicleIdText").textContent="Fahrzeug-ID: "+data.id;document.getElementById("vehiclePlateText").textContent="Kennzeichen: "+(data.kennzeichen||"-");document.getElementById("plateInfoText").textContent=data.kennzeichen||"-";document.getElementById("vehicleStatus").value=data.status||"einsatzbereit";const s=document.getElementById("statusBadge");s.textContent=statusLabel(data.status);s.className="badge "+(data.status||"");}
+function setupViewer(){renderViewer();document.getElementById("viewPills").innerHTML=views.map((v,i)=>`<button class="pill ${i===currentViewIndex?"active":""}" onclick="setView(${i})">${esc(v.label)}</button>`).join("");document.getElementById("dots").innerHTML=views.map((v,i)=>`<span class="dot ${i===currentViewIndex?"active":""}"></span>`).join("");}
+function setView(i){currentViewIndex=i;document.getElementById("damageArea").value=views[i].area;renderViewer();setupViewer();}
+function prevView(){setView((currentViewIndex-1+views.length)%views.length);}function nextView(){setView((currentViewIndex+1)%views.length);}
+function renderViewer(){const v=views[currentViewIndex],img=document.getElementById("vehicleImage"),ph=document.getElementById("placeholder");img.style.display="block";ph.style.display="none";img.src=v.src;img.onerror=()=>{img.style.display="none";ph.style.display="block";};document.getElementById("currentAreaText").textContent=v.area;}
+async function loadDamages(){const {data,error}=await db.from("damages").select("*").eq("vehicle_id",Number(vehicleId)).order("created_at",{ascending:false}); if(error){document.getElementById("damageList").innerHTML=`<div class="empty-state">${esc(error.message)}</div>`;return;} damages=data||[];const active=damages.filter(d=>d.status!=="repariert"&&d.status!=="irrtuemlich");document.getElementById("activeDamageCount").textContent=active.length;if(!active.length){document.getElementById("damageList").innerHTML='<div class="empty-state"><strong>Keine aktiven Schäden vorhanden.</strong><br>Das Fahrzeug hat aktuell keine offenen Schäden.</div>';return;}document.getElementById("damageList").innerHTML=active.map(d=>`<article class="damage-card ${esc(d.severity||"leicht")}"><div class="damage-head"><h3>${esc(d.damage_type||"Schaden")}</h3><span class="severity ${esc(d.severity||"leicht")}">${esc(d.severity||"leicht")}</span></div><div class="damage-meta"><div>Bereich<br><span class="blue-link">${esc(d.area||"-")}</span></div><div>Gemeldet von<br><strong>${esc(employeeName(d.employee_id))}</strong></div><div>📅 ${fmtDate(d.created_at)} &nbsp;&nbsp; 🕙 ${fmtTime(d.created_at)} Uhr</div></div><div class="damage-actions"><button class="secondary-btn" onclick="openDamage(${d.id})">Details</button><button class="success-btn" onclick="markDamage(${d.id},'repariert')">Repariert</button><button class="danger-btn" onclick="markDamage(${d.id},'irrtuemlich')">Irrtümlich</button></div></article>`).join("");}
+async function saveDamage(){const damage_type=document.getElementById("damageType").value.trim(),area=document.getElementById("damageArea").value.trim(),severity=document.getElementById("damageSeverity").value,description=document.getElementById("damageDesc").value.trim(); if(!damage_type||!area){showToast("Bitte Schadenart und Bereich ausfüllen.","error");return;} if(!currentEmployee){showToast("Kein Mitarbeiter zu deinem Login gefunden. employees.email prüfen.","error");return;} const {data:damage,error}=await db.from("damages").insert([{vehicle_id:Number(vehicleId),damage_type,area,severity,description,status:"offen",user_id:currentUser.id,employee_id:currentEmployee.id}]).select().single(); if(error){showToast("Fehler beim Speichern: "+error.message,"error");return;} const {error:historyError}=await db.from("damage_history").insert([{damage_id:damage.id,action:"angelegt",details:"Schaden angelegt: "+damage_type+" / "+area,user_id:currentEmployee.id,auth_user_id:currentUser.id}]); if(historyError){showToast("Schaden gespeichert, aber Historie-Fehler: "+historyError.message,"error");return;} document.getElementById("damageType").value="";document.getElementById("damageDesc").value="";document.getElementById("imageFile").value="";showToast("Schaden gespeichert.","success");await loadDamages();}
+
+async function saveDamage() {
+  const damage_type = document.getElementById("damageType").value.trim();
+  const area = document.getElementById("damageArea").value.trim();
+  const severity = document.getElementById("damageSeverity").value;
+  const description = document.getElementById("damageDesc").value.trim();
+
+  if (!damage_type || !area) {
+    showToast("Bitte Schadenart und Bereich ausfüllen.", "error");
+    return;
+  }
+
+  const { data: userData, error: userError } = await db.auth.getUser();
+
+  if (userError || !userData.user) {
+    showToast("Du bist nicht eingeloggt.", "error");
+    location.href = "login.html";
+    return;
+  }
+
+  const authUser = userData.user;
+
+  const { data: employee, error: employeeError } = await db
+    .from("employees")
     .select("*")
-    .eq("vehicle_id", vehicleId);
+    .eq("email", authUser.email)
+    .maybeSingle();
 
-  const list = document.getElementById("damageList");
-  list.innerHTML = "";
-
-  if (!data.length) {
-    list.innerHTML = "Keine Schäden";
+  if (employeeError || !employee) {
+    showToast("Kein Mitarbeiterprofil zu deinem Login gefunden.", "error");
     return;
   }
 
-  data.forEach(d => {
-    list.innerHTML += `<div>${d.damage_type} (${d.area})</div>`;
-  });
+  const insertData = {
+    vehicle_id: Number(vehicleId),
+    damage_type: damage_type,
+    area: area,
+    severity: severity,
+    description: description,
+    status: "offen",
+    created_by: authUser.id,
+    user_id: authUser.id,
+    employee_id: employee.id
+  };
+
+  const { data: damage, error } = await db
+    .from("damages")
+    .insert([insertData])
+    .select()
+    .single();
+
+  if (error) {
+    showToast("Fehler beim Speichern: " + error.message, "error");
+    console.error(error);
+    return;
+  }
+
+  await db.from("damage_history").insert([{
+    damage_id: damage.id,
+    action: "angelegt",
+    details: "Schaden angelegt: " + damage_type + " / " + area,
+    user_id: employee.id,
+    auth_user_id: authUser.id
+  }]);
+
+  document.getElementById("damageType").value = "";
+  document.getElementById("damageDesc").value = "";
+
+  const imageFile = document.getElementById("imageFile");
+  if (imageFile) imageFile.value = "";
+
+  showToast("Schaden gespeichert.", "success");
+  await loadDamages();
 }
 
-async function saveVehicleData() {
-  await db.from("vehicles").update({
-    km: document.getElementById("kmInput").value,
-    first_registration: document.getElementById("dateInput").value
-  }).eq("id", vehicleId);
-
-  alert("Fahrzeug gespeichert");
-}
-
-init();
-</script>
-
-</body>
-</html>
+async function saveStatus(){const status=document.getElementById("vehicleStatus").value,note=document.getElementById("statusNote").value.trim();const {error}=await db.from("vehicles").update({status}).eq("id",Number(vehicleId)); if(error){showToast("Fehler beim Status: "+error.message,"error");return;} await db.from("vehicle_history").insert([{vehicle_id:Number(vehicleId),action:"fahrzeugstatus_geaendert",details:note||status,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);document.getElementById("statusNote").value="";showToast("Status gespeichert.","success");await loadVehicle();}
+async function markDamage(id,status){const note=prompt(status==="repariert"?"Notiz zur Reparatur:":"Warum irrtümlich?")||status;const {error}=await db.from("damages").update({status}).eq("id",id); if(error){showToast(error.message,"error");return;} await db.from("damage_history").insert([{damage_id:id,action:status,details:note,user_id:currentEmployee?.id||null,auth_user_id:currentUser?.id||null}]);showToast("Schaden aktualisiert.","success");await loadDamages();}
+function openDamage(id){const d=damages.find(x=>x.id===id); if(!d)return;document.getElementById("modalContent").innerHTML=`<h2 style="margin-top:0">${esc(d.damage_type||"Schaden")}</h2><p><strong>Bereich:</strong> ${esc(d.area||"-")}</p><p><strong>Schweregrad:</strong> ${esc(d.severity||"-")}</p><p><strong>Status:</strong> ${esc(d.status||"-")}</p><p><strong>Gemeldet von:</strong> ${esc(employeeName(d.employee_id))}</p><p><strong>Datum:</strong> ${fullDateTime(d.created_at)}</p><p><strong>Beschreibung:</strong><br>${esc(d.description||"-")}</p>`;document.getElementById("modal").style.display="flex";}function closeModal(){document.getElementById("modal").style.display="none";}init();
+</script></body></html>
