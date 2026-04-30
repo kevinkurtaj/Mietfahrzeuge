@@ -1,5 +1,46 @@
 <!DOCTYPE html><html lang="de"><head>
 <!--
+FINAL Storage SQL für Bild-Upload:
+
+alter table public.damages
+add column if not exists image_urls text[];
+
+-- Bucket in Supabase Storage muss exakt heißen:
+-- damage-images
+-- Public: aktiviert
+
+drop policy if exists "damage images insert" on storage.objects;
+drop policy if exists "damage images select" on storage.objects;
+drop policy if exists "damage images update" on storage.objects;
+drop policy if exists "damage images delete" on storage.objects;
+
+create policy "damage images insert"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'damage-images');
+
+create policy "damage images select"
+on storage.objects
+for select
+to public
+using (bucket_id = 'damage-images');
+
+create policy "damage images update"
+on storage.objects
+for update
+to authenticated
+using (bucket_id = 'damage-images')
+with check (bucket_id = 'damage-images');
+
+create policy "damage images delete"
+on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'damage-images');
+-->
+
+<!--
 FINAL SQL für Bilder:
 alter table public.damages add column if not exists image_urls text[];
 
@@ -474,6 +515,29 @@ button.primary-btn:hover {
   cursor: pointer;
 }
 
+
+/* FINAL STABLE FIX: Schäden und Fahrzeugdaten sichtbar */
+.right-panel {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.damage-list {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.vehicle-layout,
+.main-grid,
+.vehicle-grid {
+  align-items: start !important;
+}
+
+.card,
+.panel {
+  overflow: visible !important;
+}
+
 </style></head><body><div class="app-shell"><header class="topbar"><div class="brand"><div class="brand-icon">🚐</div><div>Schadendokumentation Mietfahrzeuge</div></div><div class="userbox"><div class="avatar" id="avatar">KK</div><div><div class="user-name" id="topUserName">Benutzer</div><div class="user-role" id="topUserRole">Mitarbeiter</div></div>
 </div></header><div class="layout"><aside class="sidebar"><nav class="nav"><a class="nav-item active" href="index.html">🚘 Fahrzeuge</a><a class="nav-item" id="historyNav" href="#">🕘 Historie</a><a id="sidebarAdminLink" class="nav-item" href="admin.html" style="display:none;">👥 Admin Panel</a><a class="nav-item" href="#">👤 Profil</a></nav><button class="nav-item" onclick="logout()">↩ Logout</button></aside><main class="content"><section class="page-head"><button class="back-btn" onclick="location.href='index.html'">← Zurück</button><div class="title-wrap"><h1 id="vehicleTitle">Fahrzeug wird geladen...</h1><p><span id="vehicleIdText">Fahrzeug-ID: -</span><span id="vehiclePlateText">Kennzeichen: -</span></p></div><div class="date-box"><span>📅</span><span id="dateText">-</span><span>🕙</span><span id="timeText">-</span></div></section><section class="main-grid"><div class="card panel"><h2 class="panel-title"><span class="icon-badge">📄</span>Schaden hinzufügen</h2><label>Schadenart</label><input id="damageType" placeholder="z. B. Kratzer"><label>Bereich</label><select id="damageArea"><option value="vorne">vorne</option><option value="vorne-links">vorne-links</option><option value="linke Seite">linke Seite</option><option value="hinten-links">hinten-links</option><option value="hinten">hinten</option><option value="hinten-rechts">hinten-rechts</option><option value="rechte Seite">rechte Seite</option><option value="vorne-rechts">vorne-rechts</option><option value="Innenraum">Innenraum</option><option value="Dach">Dach</option></select><label>Schweregrad</label><select id="damageSeverity"><option value="leicht">leicht</option><option value="mittel">mittel</option><option value="schwer">schwer</option></select><label>Beschreibung</label><textarea id="damageDesc" placeholder="Beschreibung eingeben..."></textarea><label>Bild (optional)</label><label class="upload-box"><input id="imageFile" type="file" accept="image/*" multiple style="display:none"><div style="font-size:28px">☁️</div><strong>Bild auswählen oder hier ablegen</strong><span>PNG, JPG, WebP</span></label><button class="primary-btn" style="width:100%;margin-top:18px" onclick="saveDamage()">👤 Schaden speichern</button></div><div class="card viewer-card"><div class="viewer-title"><span class="icon-badge">⬡</span>360° Ansicht Transporter</div><div class="viewer"><button class="arrow left" onclick="prevView()">‹</button><img id="vehicleImage" class="vehicle-img" alt="Sprinter Ansicht"><div id="placeholder" class="placeholder" style="display:none">Sprinter Ansicht</div><button class="arrow right" onclick="nextView()">›</button></div><div class="dots" id="dots"></div><div class="view-pills" id="viewPills"></div><div class="current-area"><strong>Aktueller Bereich</strong><span id="currentAreaText">vorne</span></div></div><div class="card panel"><h2 class="panel-title"><span class="icon-badge">🛡️</span>Aktive Schäden (<span id="activeDamageCount">0</span>)</h2><div id="damageList" class="damage-list"></div></div></section><section class="card info-strip"><div class="info-item"><div class="info-icon">🚘</div><div><div class="info-label">Modell</div><div class="info-value">Mercedes Sprinter</div></div></div><div class="info-item"><div class="info-icon">📋</div><div><div class="info-label">Kennzeichen</div><div class="info-value" id="plateInfoText">-</div></div></div><div class="info-item"><div class="info-icon">📅</div><div><div class="info-label">Erstzulassung</div><div class="info-value">12.03.2023</div></div></div><div class="info-item"><div class="info-icon">🧭</div><div><div class="info-label">Kilometerstand</div><div class="info-value">24.350 km</div></div></div><div class="info-item"><div class="info-icon">🕘</div><div><div class="info-label">Status</div><div class="badge" id="statusBadge">-</div></div></div></section><section class="card panel" style="margin-top:18px"><h2 class="panel-title"><span class="icon-badge">⚙️</span>Fahrzeugstatus ändern</h2><div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start"><select id="vehicleStatus"><option value="einsatzbereit">einsatzbereit</option><option value="abruf">Abruf / Reserve</option><option value="werkstatt">Werkstatt</option><option value="nicht_einsatzbereit">nicht einsatzbereit</option><option value="nicht_im_einsatz">nicht im Einsatz</option></select><textarea id="statusNote" placeholder="Notiz optional..." style="min-height:44px"></textarea><button class="secondary-btn" onclick="saveStatus()">Status speichern</button></div></section><div class="footer">© 2025 Möbel Inhofer GmbH & Co. KG – Alle Rechte vorbehalten.</div></main></div></div><div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box"><div id="modalContent"></div><button class="primary-btn" style="width:100%;margin-top:14px" onclick="closeModal()">Schließen</button></div></div><script>
 const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
@@ -530,7 +594,13 @@ async function saveDamage() {
   const imageUrls = [];
 
   for (const file of files) {
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif"
+      ];
 
     if (!allowedTypes.includes(file.type)) {
       showToast("Nur JPG, PNG oder WebP erlaubt.", "error");
@@ -674,12 +744,15 @@ async function saveDamage() {
     const imageUrls = [];
 
     for (const file of files) {
-      console.log("Uploading:", file.name, file.type, file.size);
+      console.log("Uploading:", file.name, file.type || "kein MIME-Type", file.size);
 
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
-      if (!allowedTypes.includes(file.type)) {
-        showToast("Nur JPG, PNG oder WebP erlaubt.", "error");
+      const fileExt = file.name.split(".").pop().toLowerCase();
+      const allowedExts = ["jpg", "jpeg", "png", "webp", "heic", "heif"];
+
+      if (!allowedTypes.includes(file.type) && !allowedExts.includes(fileExt)) {
+        showToast("Nur JPG, PNG, WebP, HEIC oder HEIF erlaubt.", "error");
         return;
       }
 
