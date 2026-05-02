@@ -2,13 +2,10 @@
 <html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Schadendokumentation Mietfahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,">
 <style>
-:root{
-  --bg1:#f8fafc;--bg2:#e2e8f0;--ink:#111827;--muted:#64748b;--line:#e5e7eb;
-  --card:rgba(255,255,255,.94);--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;
-}
+:root{--bg:#f4f7fb;--surface:#fff;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;--shadow:0 10px 28px rgba(15,23,42,.08);}
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(37,99,235,.18),transparent 35%),linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
-header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
 .brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
 .header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 main{max-width:1220px;margin:auto;padding:30px}
@@ -16,7 +13,7 @@ main{max-width:1220px;margin:auto;padding:30px}
 .btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
 .btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
 .btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
-.card,.stat,.auth-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.07)}
+.card,.stat,.auth-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
 .card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
 .stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
@@ -105,11 +102,29 @@ document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Ente
 document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
 async function login(){
   loginMessage.textContent="";
-  const email=document.getElementById("email").value.trim(); const password=document.getElementById("password").value;
+  const btn = document.querySelector("#loginBox button");
+  const email=String(document.getElementById("email").value||"").trim().toLowerCase();
+  const password=document.getElementById("password").value;
   if(!email||!password){loginMessage.textContent="Bitte E-Mail und Passwort eingeben.";return;}
-  const {error}=await db.auth.signInWithPassword({email,password});
-  if(error){loginMessage.textContent="Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";return;}
-  startApp();
+
+  btn.disabled = true;
+  btn.textContent = "Prüfe Anmeldung ...";
+  try {
+    const {error}=await db.auth.signInWithPassword({email,password});
+    if(error){
+      const msg = String(error.message || "").toLowerCase();
+      if(msg.includes("invalid login credentials")) loginMessage.textContent="Login fehlgeschlagen: E-Mail oder Passwort falsch.";
+      else if(msg.includes("email not confirmed")) loginMessage.textContent="E-Mail noch nicht bestätigt. Bitte Postfach prüfen.";
+      else loginMessage.textContent=`Login fehlgeschlagen: ${error.message}`;
+      return;
+    }
+    await startApp();
+  } catch (err) {
+    loginMessage.textContent = `Netzwerk/Server-Fehler: ${err?.message || err}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Einloggen";
+  }
 }
 async function checkUser(){ const user=await getSessionUser(); if(user) startApp(); }
 async function startApp(){
@@ -123,7 +138,7 @@ async function startApp(){
 }
 async function loadVehicles(){
   const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
-  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${error.message}</div>`;return;}
+  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return;}
   const list=data||[];
   document.getElementById("vehicleCount").textContent=list.length;
   document.getElementById("readyCount").textContent=list.filter(v=>v.status==="einsatzbereit").length;
