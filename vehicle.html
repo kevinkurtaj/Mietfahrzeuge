@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeug</title>
+<title>Fahrzeugdetails</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#f4f7fb;--surface:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--shadow:0 10px 30px rgba(0,0,0,0.1);--radius:16px}
@@ -286,7 +286,9 @@ async function markDamage(id, status){
 function showDetail(id){ location.href = "history.html?id=" + vehicleId + "&damage_id=" + id; }
 async function logout(){ await db.auth.signOut(); location.href = "index.html"; }
 
-init();
+loadUser();
+renderViewButtons();
+if (vehicleViews.length > 0) document.getElementById("vehicleImage").src = vehicleViews[0].url;
 </script>
 </body>
 </html>
