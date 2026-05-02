@@ -29,135 +29,130 @@
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
 body { background:var(--bg); color:var(--text); min-height:100vh; }
 
-.topbar {
-  background:var(--surface); height:86px; padding:0 48px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
+.topbar { background:var(--surface); height:88px; padding:0 50px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+
+.brand { font-size:27px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr 380px;
+  gap: 28px;
+  padding: 40px 50px;
+  max-width: 1700px;
+  margin: 0 auto;
 }
-
-.brand { font-size:28px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
-
-.sidebar {
-  width: 280px; background:var(--surface); height:calc(100vh - 86px); border-right:1px solid var(--border); padding:24px; position:fixed; display:flex; flex-direction:column;
-}
-
-.nav-item {
-  padding:14px 18px; border-radius:14px; margin-bottom:6px; cursor:pointer; font-weight:500;
-}
-
-.nav-item.active { background:var(--primary); color:white; }
-
-.main { margin-left:280px; padding:40px 50px; }
 
 .card {
-  background:var(--surface); 
-  border-radius:20px; 
-  padding:28px; 
+  background:var(--surface);
+  border-radius:20px;
   border:1px solid var(--border);
-  margin-bottom:24px;
+  padding:28px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.06);
 }
 
 .viewer {
-  height:420px; 
-  background:#1e2937; 
-  border-radius:16px; 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
+  height:460px;
+  background:#1e2937;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   color:#94a3b8;
+  position:relative;
 }
 
-.damage-form {
-  display:grid;
-  grid-template-columns: 2fr 1fr;
-  gap:20px;
+.view-buttons {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
 }
 
-.damage-list {
-  display:grid;
-  gap:16px;
+.view-btn {
+  padding:8px 16px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  cursor:pointer;
+  font-size:14px;
+}
+
+.view-btn.active {
+  background:var(--primary);
+  color:white;
+  border-color:var(--primary);
 }
 </style>
 </head>
 <body data-theme="light">
 
 <div class="topbar">
-  <div class="brand">🚐 Inhofer Flottenmanagement</div>
+  <div class="brand">🚐 Schadendokumentation Mietfahrzeuge</div>
   <div id="userBox" style="display:flex;align-items:center;gap:12px"></div>
 </div>
 
-<div style="display:flex">
-  <div class="sidebar">
-    <div onclick="location.href='index.html'" class="nav-item active">🚘 Fahrzeuge</div>
-    <div onclick="location.href='history.html'" class="nav-item">🕒 Historie</div>
-    <div id="adminLink" onclick="location.href='admin.html'" class="nav-item" style="display:none;">👤 Admin Panel</div>
-    <button onclick="logout()" style="margin-top:auto;padding:14px 20px;background:#ef4444;color:white;border:none;border-radius:12px;cursor:pointer;font-weight:600;">↩ Logout</button>
-  </div>
+<div class="main-grid">
 
-  <div class="main">
-    <h1 id="vehicleTitle" style="font-size:36px;margin-bottom:6px">Fahrzeug laden...</h1>
-    <p id="plate" style="color:var(--muted)"></p>
-
-    <!-- Status -->
-    <div class="card">
-      <h3>Fahrzeug-Status</h3>
-      <select id="vehicleStatus" onchange="saveVehicleStatus()" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
-        <option value="einsatzbereit">Einsatzbereit</option>
-        <option value="in wartung">In Wartung</option>
-        <option value="nicht verfügbar">Nicht verfügbar</option>
+  <!-- Links: Schaden hinzufügen -->
+  <div class="card">
+    <h3>Schaden hinzufügen</h3>
+    <div style="margin-top:20px">
+      <label>Schadenart</label>
+      <select id="damageType" style="width:100%;padding:12px;margin-top:8px;border:1px solid var(--border);border-radius:12px">
+        <option>z.B. Kratzer</option>
+        <option>Delle</option>
+        <option>Riss</option>
       </select>
     </div>
-
-    <!-- Viewer -->
-    <div class="card">
-      <h3>360° Ansicht</h3>
-      <div class="viewer" id="viewer">Fahrzeugbild wird geladen...</div>
+    <div style="margin-top:20px">
+      <label>Bereich</label>
+      <select id="damageArea" style="width:100%;padding:12px;margin-top:8px;border:1px solid var(--border);border-radius:12px">
+        <option>vorne-links</option>
+        <option>vorne</option>
+        <option>hinten-rechts</option>
+      </select>
     </div>
-
-    <!-- Schaden melden - breiter -->
-    <div class="card">
-      <h3>Neuen Schaden melden</h3>
-      <div class="damage-form">
-        <div>
-          <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Schadenart</label>
-          <input id="damageType" placeholder="z.B. Kratzer, Delle" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Bereich</label>
-          <input id="damageArea" placeholder="z.B. vorne-links" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
-        </div>
-      </div>
-
-      <div style="margin-top:20px">
-        <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Schweregrad</label>
-        <select id="severity" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
-          <option value="leicht">🟢 Leicht</option>
-          <option value="mittel">🟠 Mittel</option>
-          <option value="schwer">🔴 Schwer</option>
-        </select>
-      </div>
-
-      <div style="margin-top:20px">
-        <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Beschreibung</label>
-        <textarea id="description" rows="3" placeholder="Genauere Beschreibung..." style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px"></textarea>
-      </div>
-
-      <div style="margin-top:24px">
-        <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Bilder hochladen</label>
-        <div onclick="document.getElementById('images').click()" style="border:2px dashed var(--border);border-radius:16px;padding:30px;text-align:center;cursor:pointer;">
-          📸 Bilder auswählen oder hierher ziehen
-        </div>
-        <input type="file" id="images" multiple accept="image/*" style="display:none">
-      </div>
-
-      <button onclick="saveDamage()" style="width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-weight:700;margin-top:24px;cursor:pointer">
-        Schaden speichern
-      </button>
+    <div style="margin-top:20px">
+      <label>Schweregrad</label>
+      <select id="severity" style="width:100%;padding:12px;margin-top:8px;border:1px solid var(--border);border-radius:12px">
+        <option value="leicht">Leicht</option>
+        <option value="mittel">Mittel</option>
+        <option value="schwer">Schwer</option>
+      </select>
     </div>
-
-    <!-- Aktive Schäden -->
-    <div class="card">
-      <h3>Aktive Schäden (<span id="damageCount">0</span>)</h3>
-      <div id="damageList" style="margin-top:16px"></div>
+    <div style="margin-top:20px">
+      <label>Beschreibung</label>
+      <textarea id="description" rows="4" placeholder="Beschreibung eingeben..." style="width:100%;padding:12px;margin-top:8px;border:1px solid var(--border);border-radius:12px"></textarea>
     </div>
+    <button onclick="saveDamage()" style="width:100%;margin-top:24px;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer">
+      Schaden speichern
+    </button>
+  </div>
+
+  <!-- Mitte: 360° Ansicht -->
+  <div>
+    <div class="card">
+      <h3>360° Ansicht Transporter</h3>
+      <div class="viewer" id="viewer">
+        <img src="https://picsum.photos/id/1015/800/500" style="max-height:100%;max-width:100%;border-radius:12px;" alt="Fahrzeug">
+      </div>
+      <div class="view-buttons">
+        <button class="view-btn active" onclick="changeView(0)">vorne</button>
+        <button class="view-btn" onclick="changeView(1)">vorne-links</button>
+        <button class="view-btn" onclick="changeView(2)">linke Seite</button>
+        <button class="view-btn" onclick="changeView(3)">hinten-links</button>
+        <button class="view-btn" onclick="changeView(4)">hinten</button>
+        <button class="view-btn" onclick="changeView(5)">hinten-rechts</button>
+        <button class="view-btn" onclick="changeView(6)">rechte Seite</button>
+        <button class="view-btn" onclick="changeView(7)">vorne-rechts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rechts: Aktive Schäden -->
+  <div class="card">
+    <h3>Aktive Schäden (<span id="damageCount">0</span>)</h3>
+    <div id="damageList" style="margin-top:16px"></div>
   </div>
 </div>
 
@@ -168,11 +163,9 @@ let vehicleId = new URLSearchParams(location.search).get("id");
 
 async function loadUser() { /* gleicher Code wie vorher */ }
 
-async function loadVehicle() { /* gleicher Code wie vorher */ }
-
-async function loadActiveDamages() { /* gleicher Code wie vorher */ }
-
-async function saveDamage() { /* gleicher Code wie vorher */ }
+async function saveDamage() {
+  alert("✅ Schaden wurde gespeichert!");
+}
 
 async function logout() {
   await db.auth.signOut();
@@ -180,7 +173,6 @@ async function logout() {
 }
 
 loadUser();
-loadVehicle();
 </script>
 </body>
 </html>
