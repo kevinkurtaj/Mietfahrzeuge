@@ -8,22 +8,69 @@
 <link rel="icon" href="data:,">
 
 <style>
-:root {
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --primary: #1e40af;
-}
+:root{--bg:#f4f7fb;--surface:#fff;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;--shadow:0 10px 28px rgba(15,23,42,.08);}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.brand,.header-title{font-size:21px;font-weight:900;letter-spacing:-.3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+main{max-width:1220px;margin:auto;padding:30px}
+.hero{margin-bottom:22px}.hero h1{margin:0;font-size:36px;letter-spacing:-.7px}.hero p{margin:8px 0 0;color:var(--muted)}
+.btn{border:none;background:var(--dark);color:white;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#1f2937}.btn.secondary{background:#e5e7eb;color:var(--ink)}.btn.secondary:hover{background:#d1d5db}
+.btn.warning{background:#92400e}.btn.success{background:#166534}.btn.danger{background:#991b1b}.btn.small{padding:8px 10px;font-size:12px}
+.card,.stat,.auth-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.card{margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.stat .label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.stat strong{font-size:32px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid #cbd5e1;margin-bottom:10px;outline:none;background:white;font-size:14px}
+textarea{min-height:90px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.tag{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;margin-bottom:8px;background:#dbeafe;color:#1d4ed8}
+.tag.green{background:#dcfce7;color:#166534}.tag.red{background:#fee2e2;color:#991b1b}.tag.amber{background:#fef3c7;color:#92400e}.tag.gray{background:#e5e7eb;color:#374151}
+.table{display:grid;gap:10px;max-height:560px;overflow:auto}.row{border:1px solid var(--line);border-radius:16px;padding:13px;background:#f8fafc}.row.inactive{opacity:.55;background:#f1f5f9}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.small-text,.time{font-size:12px;color:var(--muted);margin-top:3px}
+.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:16px;padding:14px}.success-box{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:10px;display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal-box{width:100%;max-width:520px;background:white;border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.vehicle-card{cursor:pointer;transition:.18s}.vehicle-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(15,23,42,.12)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;background:#f1f5f9;color:#475569}
+.badge.einsatzbereit{background:#dcfce7;color:#166534}.badge.werkstatt,.badge.nicht_einsatzbereit{background:#fee2e2;color:#991b1b}.badge.abruf{background:#dbeafe;color:#1d4ed8}.badge.nicht_im_einsatz{background:#e5e7eb;color:#374151}
+.user-info{font-size:13px;color:#475569;background:#f1f5f9;padding:9px 12px;border-radius:999px;display:none}
+@media(max-width:850px){header{flex-direction:column;align-items:flex-start;gap:12px}main{padding:18px}.hero h1{font-size:30px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.card{padding:16px}}
 
-[data-theme="dark"] {
-  --bg: #0a0f1c;
-  --surface: #121a2e;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --border: #334155;
-  --primary: #60a5fa;
+#loginBox{width:100%;max-width:430px;margin:90px auto 0}.login-icon{width:58px;height:58px;border-radius:18px;background:#111827;color:white;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
+#loginBox h2{margin:0;font-size:31px}#loginMessage{margin-top:12px;color:#991b1b;font-size:14px}
+</style></head><body>
+<header><div class="brand">🚐 Schadendokumentation Mietfahrzeuge</div><div class="header-actions"><div id="userInfo" class="user-info"></div><a id="adminBtn" class="btn secondary" href="admin.html" style="display:none">Admin Panel</a><button id="logoutBtn" class="btn" onclick="logout()" style="display:none">Logout</button></div></header>
+<main>
+<section id="loginBox" class="card">
+<div class="login-icon">🔐</div><h2>Anmeldung</h2><p class="small-text" style="font-size:14px;margin:8px 0 24px">Bitte mit deinem Zugang anmelden. Enter funktioniert auch.</p>
+<input id="email" type="email" placeholder="E-Mail-Adresse" autocomplete="email">
+<input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
+<button class="btn" style="width:100%" onclick="login()">Einloggen</button><div id="loginMessage"></div>
+</section>
+<section id="app" style="display:none">
+<div class="hero"><h1>Fahrzeugübersicht</h1><p>Übersicht aller Mietfahrzeuge, Status und Schäden.</p></div>
+<div class="stats"><div class="stat"><div class="label">Fahrzeuge</div><strong id="vehicleCount">-</strong></div><div class="stat"><div class="label">Einsatzbereit</div><strong id="readyCount">-</strong></div><div class="stat"><div class="label">Werkstatt / gesperrt</div><strong id="blockedCount">-</strong></div></div>
+<div id="vehicleList" class="grid3">Fahrzeuge werden geladen ...</div>
+</section>
+</main>
+<script>
+const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function fmtDate(v){ return v ? new Date(v).toLocaleString("de-DE") : "-"; }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function statusLabel(s){
+  switch(s){
+    case "einsatzbereit": return "einsatzbereit";
+    case "schaeden_vorhanden": return "Schäden vorhanden";
+    case "werkstatt": return "Werkstatt";
+    case "nicht_einsatzbereit": return "nicht einsatzbereit";
+    case "nicht_im_einsatz": return "nicht im Einsatz";
+    case "abruf": return "Abruf / Reserve";
+    default: return s || "unbekannt";
+  }
 }
 
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
@@ -84,95 +131,14 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   cursor:pointer; 
   font-weight:600;
 }
-</style>
-</head>
-<body data-theme="light">
-
-<div class="topbar">
-  <div class="brand">🚐 Inhofer Flottenmanagement</div>
-  <div id="userBox" style="display:flex;align-items:center;gap:12px"></div>
-</div>
-
-<div style="display:flex">
-  <div class="sidebar">
-    <div class="nav-item active">🚘 Fahrzeuge</div>
-    <div onclick="location.href='history.html'" class="nav-item">🕒 Historie</div>
-    <div id="adminLink" onclick="location.href='admin.html'" class="nav-item" style="display:none;">👤 Admin Panel</div>
-    <button onclick="logout()" class="logout-btn">↩ Logout</button>
-  </div>
-
-  <div class="main">
-    <h1 style="font-size:37px;margin-bottom:8px">Fahrzeugübersicht</h1>
-    <p style="color:var(--muted);font-size:18px">Alle Mietfahrzeuge im Überblick</p>
-
-    <div class="stats">
-      <div class="stat-card">
-        <div style="color:var(--muted)">Gesamt Fahrzeuge</div>
-        <strong id="total" style="font-size:56px;font-weight:800">0</strong>
-      </div>
-      <div class="stat-card">
-        <div style="color:var(--muted)">Einsatzbereit</div>
-        <strong id="ready" style="font-size:56px;font-weight:800;color:#16a34a">0</strong>
-      </div>
-      <div class="stat-card">
-        <div style="color:var(--muted)">Nicht verfügbar</div>
-        <strong id="blocked" style="font-size:56px;font-weight:800;color:#f59e0b">0</strong>
-      </div>
-    </div>
-
-    <div id="vehicleList" class="vehicle-grid"></div>
-  </div>
-</div>
-
-<script>
-const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
-
-async function loadUser() {
-  const {data} = await db.auth.getSession();
-  if (!data.session) return location.href = "login.html";
-
-  const user = data.session.user;
-  const {data: emp} = await db.from("employees").select("name,role").eq("email", user.email).maybeSingle();
-
-  const name = emp?.name || user.email.split('@')[0];
-  const role = emp?.role || "mitarbeiter";
-
-  const roleHTML = role === "admin" 
-    ? `<span style="background:#fee2e2;color:#991b1b;padding:6px 18px;border-radius:999px;font-size:13px">Admin</span>` 
-    : `<span style="background:#dcfce7;color:#166534;padding:6px 18px;border-radius:999px;font-size:13px">Mitarbeiter</span>`;
-
-  document.getElementById("userBox").innerHTML = `<strong>${name}</strong> ${roleHTML}`;
-
-  if (role === "admin") document.getElementById("adminLink").style.display = "block";
+async function loadVehicles(){
+  const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
+  if(error){document.getElementById("vehicleList").innerHTML=`<div class="error">${esc(error.message)}</div>`;return;}
+  const list=data||[];
+  document.getElementById("vehicleCount").textContent=list.length;
+  document.getElementById("readyCount").textContent=list.filter(v=>v.status==="einsatzbereit").length;
+  document.getElementById("blockedCount").textContent=list.filter(v=>["werkstatt","nicht_einsatzbereit"].includes(v.status)).length;
+  document.getElementById("vehicleList").innerHTML=list.map(v=>`<div class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'"><div class="tag">Fahrzeug</div><h2 style="margin:0 0 6px">${esc(v.name||"Fahrzeug")}</h2><div class="small-text" style="font-size:15px;margin-bottom:12px">${esc(v.kennzeichen||"-")}</div><div class="badge ${esc(v.status||"")}">${statusLabel(v.status)}</div>${v.is_reserve?'<div class="small-text" style="margin-top:10px">Reservefahrzeug</div>':''}<div style="margin-top:16px;color:#2563eb;font-weight:900">Öffnen →</div></div>`).join("") || '<div class="error">Keine Fahrzeuge gefunden.</div>';
 }
-
-async function loadVehicles() {
-  const {data} = await db.from("vehicles").select("*");
-  
-  document.getElementById("total").textContent = data.length;
-  document.getElementById("ready").textContent = data.filter(v => v.status === "einsatzbereit").length;
-  document.getElementById("blocked").textContent = data.filter(v => v.status !== "einsatzbereit").length;
-
-  const html = data.map(v => `
-    <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
-      <strong style="font-size:23px">${v.name || 'Fahrzeug'}</strong>
-      <p style="color:var(--muted);margin:14px 0">${v.kennzeichen || '-'}</p>
-      <span style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}; padding:8px 22px; border-radius:999px;">
-        ${v.status}
-      </span>
-    </div>
-  `).join("");
-
-  document.getElementById("vehicleList").innerHTML = html || "<p>Keine Fahrzeuge gefunden.</p>";
-}
-
-async function logout() {
-  await db.auth.signOut();
-  location.href = "login.html";
-}
-
-loadUser();
-loadVehicles();
-</script>
-</body>
-</html>
+checkUser();
+</script></body></html>
