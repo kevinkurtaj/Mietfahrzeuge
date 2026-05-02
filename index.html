@@ -8,10 +8,7 @@
 <link rel="icon" href="data:,">
 
 <style>
-:root{
-  --blue:#2563eb;
-  --radius:24px;
-}
+:root{--blue:#2563eb;--radius:24px}
 *{box-sizing:border-box;font-family:Inter,Arial,sans-serif}
 body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8fafc,#eef2f7)}
 .app-shell{max-width:1600px;margin:20px auto;background:white;border-radius:28px;box-shadow:0 20px 60px rgba(15,23,42,.1);overflow:hidden}
@@ -20,7 +17,7 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8fafc,#eef2f7
 .vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:40px}
 .vehicle-card{padding:24px;border:1px solid #e2e8f0;border-radius:20px;cursor:pointer;transition:.2s}
 .vehicle-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(37,99,235,.15)}
-.toast{position:fixed;right:20px;bottom:20px;padding:14px 20px;border-radius:14px;color:white;display:none;z-index:100}
+.logout-btn{padding:8px 18px;background:#ef4444;color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -31,25 +28,29 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8fafc,#eef2f7
       <span>🚐</span>
       <div>Schadendokumentation Mietfahrzeuge</div>
     </div>
-    <div>
-      <div id="topUserName" style="font-weight:900"></div>
-      <div id="topUserRole" style="font-size:13px;color:#64748b"></div>
+    
+    <div style="display:flex;align-items:center;gap:20px">
+      <div>
+        <div id="topUserName" style="font-weight:900"></div>
+        <div id="topUserRole" style="font-size:13px;color:#64748b"></div>
+      </div>
+      <button onclick="logout()" class="logout-btn">↩ Logout</button>
     </div>
   </header>
 
   <div style="padding:40px">
     <h1>Fahrzeugübersicht</h1>
     
-    <div class="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:30px 0">
-      <div class="card" style="padding:20px;background:#f8fafc;border-radius:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:30px 0">
+      <div style="padding:20px;background:#f8fafc;border-radius:20px">
         <div>Fahrzeuge</div>
         <strong id="vehicleCount" style="font-size:32px">0</strong>
       </div>
-      <div class="card" style="padding:20px;background:#f8fafc;border-radius:20px">
+      <div style="padding:20px;background:#f8fafc;border-radius:20px">
         <div>Einsatzbereit</div>
         <strong id="readyCount" style="font-size:32px">0</strong>
       </div>
-      <div class="card" style="padding:20px;background:#f8fafc;border-radius:20px">
+      <div style="padding:20px;background:#f8fafc;border-radius:20px">
         <div>Aktive Schäden</div>
         <strong id="damageCount" style="font-size:32px">0</strong>
       </div>
@@ -62,59 +63,40 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8fafc,#eef2f7
 <div class="toast" id="toast"></div>
 
 <script>
-const db = window.supabase.createClient(
-  "https://iufkwovepjljycdulnwa.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY"
-);
-
-let currentUser = null;
+const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
 async function init(){
   const {data} = await db.auth.getSession();
-  currentUser = data.session?.user;
-  if(!currentUser) return location.href = "login.html";
+  if(!data.session?.user) return location.href = "login.html";
 
-  const emp = await getEmployee(currentUser.email);
-  document.getElementById("topUserName").textContent = emp?.name || currentUser.email;
+  const user = data.session.user;
+  const {data: emp} = await db.from("employees").select("*").eq("email", user.email).maybeSingle();
+
+  document.getElementById("topUserName").textContent = emp?.name || user.email;
   document.getElementById("topUserRole").textContent = emp?.role === "admin" ? "Admin" : "Mitarbeiter";
 
   await loadVehicles();
 }
 
-async function getEmployee(email){
-  const {data} = await db.from("employees").select("*").eq("email", email).maybeSingle();
-  return data;
-}
-
 async function loadVehicles(){
-  const {data: vehicles} = await db.from("vehicles").select("*").order("id");
-  const {count: damageCount} = await db.from("damages").select("id", {count:"exact", head:true}).not("status","in","(repariert,irrtuemlich)");
+  const {data: vehicles} = await db.from("vehicles").select("*");
+  const {count} = await db.from("damages").select("id",{count:"exact",head:true}).not("status","in","(repariert,irrtuemlich)");
 
   document.getElementById("vehicleCount").textContent = vehicles?.length || 0;
   document.getElementById("readyCount").textContent = vehicles?.filter(v => v.status === "einsatzbereit").length || 0;
-  document.getElementById("damageCount").textContent = damageCount || 0;
+  document.getElementById("damageCount").textContent = count || 0;
 
-  const html = vehicles.map(v => `
+  document.getElementById("vehicleList").innerHTML = (vehicles||[]).map(v => `
     <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
       <strong>${v.name || 'Fahrzeug'}</strong><br>
       <span style="color:#64748b">${v.kennzeichen || '-'}</span>
-      <div style="margin-top:12px">
-        <span class="badge" style="background:#dcfce7;color:#166534;padding:4px 10px;border-radius:999px;font-size:13px">
-          ${v.status === 'einsatzbereit' ? 'Einsatzbereit' : v.status}
-        </span>
-      </div>
     </div>
   `).join("");
-
-  document.getElementById("vehicleList").innerHTML = html || "<p>Keine Fahrzeuge gefunden.</p>";
 }
 
-function showToast(msg, type="success"){
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.style.background = type === "success" ? "#166534" : "#991b1b";
-  t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 3500);
+async function logout(){
+  await db.auth.signOut();
+  location.href = "login.html";
 }
 
 init();
