@@ -3,227 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeugdetails</title>
+<title>Fahrzeug | Inhofer Flotte</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
+:root {
+  --bg: #f8fafc;
+  --card: white;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #2563eb;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #1e2937;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #3b82f6;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
 body {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
+  transition: background 0.3s;
 }
 
 .topbar {
-  background: #1e2937;
-  height: 80px;
-  padding: 0 30px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 78px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #334155;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .brand {
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 900;
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #60a5fa;
+  color: var(--primary);
 }
 
 .main {
   display: grid;
-  grid-template-columns: 340px 1fr 400px;
-  gap: 24px;
-  padding: 30px;
-  max-width: 1700px;
+  grid-template-columns: 360px 1fr 420px;
+  gap: 28px;
+  padding: 32px;
+  max-width: 1750px;
   margin: 0 auto;
 }
 
 .card {
-  background: #1e2937;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 24px;
-  border: 1px solid #334155;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
 }
 
 .viewer {
-  height: 460px;
-  background: #334155;
+  height: 480px;
+  background: #1e2937;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
+  color: #64748b;
   font-size: 18px;
-  color: #94a3b8;
+  position: relative;
 }
 
-.form-group { margin-bottom: 20px; }
-label { 
-  display: block; 
-  margin-bottom: 8px; 
-  font-weight: 600; 
-  color: #cbd5e1; 
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 14px 16px;
-  background: #334155;
-  border: 1px solid #475569;
+.btn {
+  padding: 14px 24px;
+  border: none;
   border-radius: 12px;
-  color: #e2e8f0;
+  font-weight: 700;
+  cursor: pointer;
   font-size: 15px;
 }
 
-button {
+.primary-btn {
+  background: var(--primary);
+  color: white;
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
+}
+
+.switch {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 999px;
   cursor: pointer;
-}
-
-button:hover {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-}
-
-.toast {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  padding: 16px 24px;
-  border-radius: 12px;
-  background: #22c55e;
-  color: white;
-  font-weight: 600;
-  display: none;
-  z-index: 1000;
 }
 </style>
 </head>
-<body>
+<body data-theme="light">
 
 <div class="topbar">
-  <div class="brand">
-    <span>🚐</span>
-    <div>Inhofer Flottenmanagement</div>
-  </div>
-  <div style="display:flex; align-items:center; gap:20px">
-    <div id="userInfo" style="text-align:right"></div>
-    <button onclick="logout()" style="background:#ef4444; padding:10px 20px; border:none; border-radius:10px; color:white; font-weight:600;">Logout</button>
+  <div class="brand">🚐 Inhofer Flottenmanagement</div>
+  <div style="display:flex; gap:16px; align-items:center">
+    <span id="userInfo"></span>
+    <button onclick="toggleTheme()" class="switch">🌙 / ☀️</button>
+    <button onclick="logout()" style="background:#ef4444;color:white" class="btn">Logout</button>
   </div>
 </div>
 
 <div class="main">
 
-  <!-- Links: Fahrzeug Info -->
+  <!-- Fahrzeug Info -->
   <div>
     <div class="card">
-      <h2 id="vehicleTitle">Fahrzeug laden...</h2>
-      <p id="plate" style="color:#94a3b8; margin:8px 0 20px 0;"></p>
-      
-      <div class="form-group">
-        <label>Aktueller Status</label>
-        <select id="status" onchange="saveStatus()">
-          <option value="einsatzbereit">Einsatzbereit</option>
-          <option value="werkstatt">In der Werkstatt</option>
-          <option value="nicht_einsatzbereit">Nicht einsatzbereit</option>
-        </select>
-      </div>
+      <h2 id="vehicleTitle">Fahrzeug</h2>
+      <p id="plate" style="color:var(--muted);margin:6px 0 20px 0"></p>
+      <label>Status</label>
+      <select id="status" class="btn" style="width:100%;background:var(--card);color:var(--text)" onchange="saveStatus()"></select>
     </div>
   </div>
 
-  <!-- Mitte: Großer Viewer + Schaden melden -->
+  <!-- Großer Viewer -->
   <div>
     <div class="card viewer" id="viewer">
-      Fahrzeugansicht
+      <div>Fahrzeugansicht (Vorne / Seite / Hinten)</div>
     </div>
 
     <div class="card" style="margin-top:24px">
-      <h3>Neuen Schaden melden</h3>
+      <h3>Schaden melden</h3>
+      <input id="damageType" placeholder="Schadenart (z.B. Kratzer)" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px">
+      <input id="damageArea" placeholder="Bereich" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px">
+      <textarea id="description" placeholder="Beschreibung..." rows="4" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px"></textarea>
       
-      <div class="form-group">
-        <label>Schadenart</label>
-        <input id="damageType" placeholder="z.B. Delle, Kratzer, Riss">
-      </div>
-
-      <div class="form-group">
-        <label>Bereich</label>
-        <input id="damageArea" placeholder="z.B. Vordere Stoßstange links">
-      </div>
-
-      <div class="form-group">
-        <label>Schweregrad</label>
-        <select id="severity">
-          <option value="leicht">Leicht</option>
-          <option value="mittel">Mittel</option>
-          <option value="schwer">Schwer</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Beschreibung</label>
-        <textarea id="description" rows="4" placeholder="Genauere Beschreibung..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Bilder hochladen</label>
-        <input type="file" id="images" multiple accept="image/*">
-      </div>
-
-      <button onclick="saveDamage()">Schaden + Bilder speichern</button>
+      <input type="file" id="images" multiple style="margin:12px 0">
+      <button onclick="saveDamage()" class="primary-btn btn">Schaden speichern</button>
     </div>
   </div>
 
-  <!-- Rechts: Aktive Schäden -->
+  <!-- Rechte Spalte -->
   <div class="card">
-    <h3>Aktive Schäden (<span id="damageCount">0</span>)</h3>
-    <div id="damageList" style="margin-top:16px; min-height:300px;"></div>
+    <h3>Aktive Schäden</h3>
+    <div id="damageList"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
-
-let vehicleId = new URLSearchParams(location.search).get("id");
 
 async function logout() {
   await db.auth.signOut();
   location.href = "login.html";
 }
 
+function toggleTheme() {
+  const theme = document.body.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.body.setAttribute("data-theme", theme);
+}
+
 async function init() {
   const {data} = await db.auth.getSession();
   if (!data.session) return location.href = "login.html";
 
-  const user = data.session.user;
-  const {data: emp} = await db.from("employees").select("*").eq("email", user.email).maybeSingle();
-
-  document.getElementById("userInfo").innerHTML = `
-    ${emp?.name || user.email}<br>
-    <small style="color:#94a3b8">${emp?.role === "admin" ? "Administrator" : "Mitarbeiter"}</small>
-  `;
-
-  // Fahrzeugdaten später laden
-}
-
-async function saveDamage() {
-  const toast = document.getElementById("toast");
-  toast.textContent = "✅ Schaden gespeichert";
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
+  const emp = (await db.from("employees").select("*").eq("email", data.session.user.email).maybeSingle()).data;
+  document.getElementById("userInfo").innerHTML = `${emp?.name || 'Mitarbeiter'} <small>(${emp?.role})</small>`;
 }
 
 init();
