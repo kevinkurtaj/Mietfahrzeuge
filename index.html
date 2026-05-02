@@ -36,7 +36,7 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 .brand { font-size:28px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
 
 .sidebar {
-  width: 280px; background:var(--surface); height:calc(100vh - 86px); border-right:1px solid var(--border); padding:32px 24px; position:fixed;
+  width: 280px; background:var(--surface); height:calc(100vh - 86px); border-right:1px solid var(--border); padding:32px 24px; position:fixed; display:flex; flex-direction:column;
 }
 
 .nav-item {
@@ -59,10 +59,9 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .vehicle-card:hover { transform:translateY(-12px); box-shadow:0 30px 60px rgba(30,64,175,0.2); }
 
-/* Bottom Taskbar */
-.bottom-bar {
-  position:fixed; bottom:0; left:280px; right:0; height:70px; background:var(--surface); border-top:1px solid var(--border);
-  display:flex; align-items:center; padding:0 40px; box-shadow:0 -4px 12px rgba(0,0,0,0.1);
+/* Logout unten in Sidebar */
+.logout-btn {
+  margin-top:auto; padding:14px 20px; background:#ef4444; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:600;
 }
 </style>
 </head>
@@ -79,6 +78,9 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
     <div class="nav-item active">🚘 Fahrzeuge</div>
     <div onclick="location.href='history.html'" class="nav-item">🕒 Historie</div>
     <div id="adminLink" onclick="location.href='admin.html'" class="nav-item" style="display:none;">👤 Admin Panel</div>
+    
+    <!-- Logout Button unten -->
+    <button onclick="logout()" class="logout-btn">↩ Logout</button>
   </div>
 
   <!-- Hauptinhalt -->
@@ -105,13 +107,6 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   </div>
 </div>
 
-<!-- Bottom Taskbar -->
-<div class="bottom-bar">
-  <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:12px 28px;border-radius:12px;cursor:pointer;font-weight:600;margin-left:auto;">
-    ↩ Logout
-  </button>
-</div>
-
 <script>
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
@@ -131,10 +126,7 @@ async function loadUser() {
 
   document.getElementById("userBox").innerHTML = `<strong>${name}</strong> ${roleHTML}`;
 
-  // Admin-Link nur für Admins anzeigen
-  if (role === "admin") {
-    document.getElementById("adminLink").style.display = "block";
-  }
+  if (role === "admin") document.getElementById("adminLink").style.display = "block";
 }
 
 async function loadVehicles() {
