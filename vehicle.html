@@ -58,13 +58,13 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   align-items:center;
   justify-content:center;
   position:relative;
-  overflow:hidden;
 }
 
 .viewer img {
   max-height:100%;
   max-width:100%;
   object-fit:contain;
+  border-radius:12px;
 }
 
 .view-buttons {
@@ -102,17 +102,16 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   <!-- Links: Schaden hinzufügen -->
   <div class="card">
     <h3>Schaden hinzufügen</h3>
-    <!-- Dein Schadensformular (kannst du später erweitern) -->
     <button onclick="saveDamage()" style="width:100%;margin-top:24px;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer">
       Schaden speichern
     </button>
   </div>
 
-  <!-- Mitte: 360° Ansicht + Buttons -->
+  <!-- Mitte: 360° Viewer -->
   <div class="card">
     <h3>360° Ansicht</h3>
     <div class="viewer" id="viewer">
-      <img id="vehicleImage" src="" alt="Fahrzeug">
+      <img id="vehicleImage" src="https://picsum.photos/id/1015/800/500" style="max-height:100%;max-width:100%;border-radius:12px;" alt="Fahrzeug">
     </div>
     <div class="view-buttons" id="viewButtons"></div>
   </div>
@@ -130,7 +129,7 @@ const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.c
 let vehicleId = new URLSearchParams(location.search).get("id");
 let currentView = 0;
 
-// === DEINE BILDER HIER (Pfad zu deinem GitHub-Ordner) ===
+// Fahrzeug-Ansichten (hier deine Bilder aus dem GitHub-Ordner eintragen)
 const vehicleViews = [
   { name: "vorne", url: "assets/sprinter/front.jpg" },
   { name: "vorne-links", url: "assets/sprinter/front-left.jpg" },
@@ -158,7 +157,7 @@ function setView(index) {
 async function loadUser() { /* gleicher Code wie vorher */ }
 
 async function saveDamage() {
-  alert("✅ Schaden wurde gespeichert!");
+  alert("✅ Schaden gespeichert!");
 }
 
 async function logout() {
