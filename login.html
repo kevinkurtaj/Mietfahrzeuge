@@ -37,11 +37,10 @@
 
   <script>
     const SUPABASE_URL = 'https://ziupzlcazlkqsyhsqkpa.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppdXB6bGNhemxrcXN5aHNxa3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzI4MzYsImV4cCI6MjA5MzMwODgzNn0.xUuvdBn9BDZEdnoNOGpOXH3QGx17o8LGDf6CuQ97BlQ';   // ← hier deinen anon-Key eintragen
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppdXB6bGNhemxrcXN5aHNxa3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzI4MzYsImV4cCI6MjA5MzMwODgzNn0.xUuvdBn9BDZEdnoNOGpOXH3QGx17o8LGDf6CuQ97BlQ';
 
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Passwort-Auge
     document.getElementById('toggle-password').addEventListener('click', function () {
       const pw = document.getElementById('password');
       const icon = this.querySelector('i');
@@ -54,7 +53,6 @@
       }
     });
 
-    // Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
