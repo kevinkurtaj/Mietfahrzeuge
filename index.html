@@ -28,7 +28,6 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen">
 
-  <!-- DASHBOARD -->
   <div id="dashboard-screen" class="p-6">
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold">Deine Fahrzeuge</h1>
@@ -39,7 +38,6 @@
     <div id="vehicle-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
-  <!-- FAHRZEUG-ANSICHT -->
   <div id="vehicle-screen" class="hidden p-6">
     <button onclick="backToDashboard()" class="mb-6 flex items-center gap-2 text-emerald-400 hover:text-emerald-300">
       <i class="fa-solid fa-arrow-left"></i> Zurück zur Übersicht
@@ -57,7 +55,6 @@
   </div>
 
   <script>
-    // === HIER DEINE SUPABASE KEYS EINFÜGEN ===
     const SUPABASE_URL = 'https://ziupzlcazlkqsyhsqkpa.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppdXB6bGNhemxrcXN5aHNxa3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzI4MzYsImV4cCI6MjA5MzMwODgzNn0.xUuvdBn9BDZEdnoNOGpOXH3QGx17o8LGDf6CuQ97BlQ';
 
@@ -67,7 +64,6 @@
     let currentVehicle = null;
     let currentViewId = null;
 
-    // 5 Fahrzeuge
     const vehicles = [
       { id: "v1", name: "Transporter 1", plate: "M-AB 1234", status: "permanent" },
       { id: "v2", name: "Transporter 2", plate: "M-CD 5678", status: "permanent" },
@@ -76,4 +72,140 @@
       { id: "v5", name: "Transporter 5", plate: "M-IJ 7890", status: "on-demand" }
     ];
 
-    //
+    const views = {
+      "v1": {
+        front: { url: "https://picsum.photos/id/1015/1200/800", angle: "Front" },
+        left:  { url: "https://picsum.photos/id/201/1200/800", angle: "Linke Seite" },
+        right: { url: "https://picsum.photos/id/251/1200/800", angle: "Rechte Seite" },
+        rear:  { url: "https://picsum.photos/id/301/1200/800", angle: "Heck" }
+      }
+    };
+
+    function renderVehicles() {
+      const container = document.getElementById('vehicle-list');
+      container.innerHTML = '';
+      vehicles.forEach(v => {
+        const card = document.createElement('div');
+        card.className = "bg-zinc-900 p-6 rounded-3xl cursor-pointer hover:scale-105 transition";
+        card.innerHTML = `
+          <div class="flex justify-between">
+            <div>
+              <h3 class="font-semibold text-xl">${v.name}</h3>
+              <p class="text-zinc-400">${v.plate}</p>
+            </div>
+            <span class="px-3 py-1 text-xs rounded-full ${v.status === 'permanent' ? 'bg-emerald-600' : 'bg-amber-600'}">
+              ${v.status === 'permanent' ? 'Dauerhaft' : 'Abruf'}
+            </span>
+          </div>
+        `;
+        card.onclick = () => showVehicle(v);
+        container.appendChild(card);
+      });
+    }
+
+    async function showVehicle(vehicle) {
+      currentVehicle = vehicle;
+      document.getElementById('dashboard-screen').classList.add('hidden');
+      document.getElementById('vehicle-screen').classList.remove('hidden');
+      document.getElementById('vehicle-name').textContent = vehicle.name;
+
+      const statusEl = document.getElementById('vehicle-status');
+      statusEl.innerHTML = vehicle.status === 'permanent' 
+        ? `<span class="bg-emerald-600 px-4 py-1 rounded-full text-sm">Dauerhaft im Einsatz</span>`
+        : `<span class="bg-amber-600 px-4 py-1 rounded-full text-sm">Auf Abruf</span>`;
+
+      renderViewTabs();
+    }
+
+    function renderViewTabs() { /* ... bleibt gleich ... */ 
+      const tabsContainer = document.getElementById('view-tabs');
+      tabsContainer.innerHTML = '';
+      const vehicleViews = views[currentVehicle.id] || views["v1"];
+
+      Object.keys(vehicleViews).forEach(key => {
+        const view = vehicleViews[key];
+        const tab = document.createElement('button');
+        tab.className = `px-6 py-3 rounded-2xl whitespace-nowrap ${key === 'front' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700'}`;
+        tab.textContent = view.angle;
+        tab.onclick = () => loadView(key, view.url, view.angle);
+        tabsContainer.appendChild(tab);
+      });
+
+      const firstKey = Object.keys(vehicleViews)[0];
+      const firstView = vehicleViews[firstKey];
+      loadView(firstKey, firstView.url, firstView.angle);
+    }
+
+    async function loadView(viewId, imageUrl, angle) {
+      currentViewId = viewId;
+      const img = document.getElementById('vehicle-image');
+      img.src = imageUrl;
+      document.getElementById('markers').innerHTML = '';
+
+      img.onclick = async (e) => {
+        const rect = img.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const beschreibung = prompt(`Schaden an ${angle} beschreiben:`);
+        if (!beschreibung) return;
+
+        const { error } = await supabase.from('damages').insert({
+          vehicle_id: currentVehicle.id,
+          view_id: currentViewId,
+          x_percent: x,
+          y_percent: y,
+          description: beschreibung,
+          damage_type: 'Sonstiges',
+          created_by: currentUser?.id
+        });
+
+        if (error) alert('Fehler: ' + error.message);
+        else { 
+          alert('✅ Schaden gespeichert!');
+          loadExistingDamages();
+        }
+      };
+
+      loadExistingDamages();
+    }
+
+    async function loadExistingDamages() {
+      const container = document.getElementById('markers');
+      container.innerHTML = '';
+
+      const { data } = await supabase
+        .from('damages')
+        .select('*')
+        .eq('vehicle_id', currentVehicle.id)
+        .eq('view_id', currentViewId);
+
+      if (data) {
+        data.forEach(m => {
+          const marker = document.createElement('div');
+          marker.className = 'marker';
+          marker.style.left = m.x_percent + '%';
+          marker.style.top = m.y_percent + '%';
+          marker.innerHTML = '!';
+          marker.title = m.description;
+          marker.onclick = () => alert(m.description);
+          container.appendChild(marker);
+        });
+      }
+    }
+
+    function backToDashboard() {
+      document.getElementById('vehicle-screen').classList.add('hidden');
+      document.getElementById('dashboard-screen').classList.remove('hidden');
+    }
+
+    function logout() {
+      supabase.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    renderVehicles();
+    tailwind.config = { content: ["./**/*.{html,js}"] };
+  </script>
+</body>
+</html>
