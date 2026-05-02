@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeug | Inhofer Flotte</title>
+<title>Fahrzeugdetails</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
 
 <style>
 :root {
   --bg: #f8fafc;
-  --card: white;
+  --card: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
   --border: #e2e8f0;
   --primary: #2563eb;
+  --sidebar: #f1f5f9;
 }
 
 [data-theme="dark"] {
@@ -24,155 +25,135 @@
   --muted: #94a3b8;
   --border: #334155;
   --primary: #3b82f6;
+  --sidebar: #1e2937;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  transition: background 0.3s;
-}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .topbar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  height: 78px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  background:var(--card); padding:0 30px; height:70px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
 }
 
-.brand {
-  font-size: 23px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--primary);
+.sidebar {
+  width: 240px; background:var(--sidebar); height:calc(100vh - 70px); padding:20px 0; border-right:1px solid var(--border); position:fixed;
 }
 
-.main {
-  display: grid;
-  grid-template-columns: 360px 1fr 420px;
-  gap: 28px;
-  padding: 32px;
-  max-width: 1750px;
-  margin: 0 auto;
+.main-content {
+  margin-left: 240px; padding:30px; max-width: 1400px;
+}
+
+.header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;
 }
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+  background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px;
 }
 
 .viewer {
-  height: 480px;
-  background: #1e2937;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  font-size: 18px;
-  position: relative;
+  height:420px; background:#1e2937; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#94a3b8; position:relative;
 }
 
-.btn {
-  padding: 14px 24px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 15px;
+.btn-primary {
+  background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:10px; font-weight:600; cursor:pointer; width:100%;
 }
 
-.primary-btn {
-  background: var(--primary);
-  color: white;
-  width: 100%;
-}
-
-.switch {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-}
+.flex-wrap { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
 </style>
 </head>
 <body data-theme="light">
 
+<!-- Topbar -->
 <div class="topbar">
-  <div class="brand">🚐 Inhofer Flottenmanagement</div>
-  <div style="display:flex; gap:16px; align-items:center">
+  <div style="display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px;">
+    🚐 Schadendokumentation
+  </div>
+  <div style="display:flex; align-items:center; gap:20px;">
     <span id="userInfo"></span>
-    <button onclick="toggleTheme()" class="switch">🌙 / ☀️</button>
-    <button onclick="logout()" style="background:#ef4444;color:white" class="btn">Logout</button>
+    <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer;">🌗</button>
+    <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;">Logout</button>
   </div>
 </div>
 
-<div class="main">
+<div style="display:flex">
 
-  <!-- Fahrzeug Info -->
-  <div>
-    <div class="card">
-      <h2 id="vehicleTitle">Fahrzeug</h2>
-      <p id="plate" style="color:var(--muted);margin:6px 0 20px 0"></p>
-      <label>Status</label>
-      <select id="status" class="btn" style="width:100%;background:var(--card);color:var(--text)" onchange="saveStatus()"></select>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div style="padding:0 20px">
+      <div onclick="location.href='index.html'" style="padding:12px 16px;border-radius:10px;cursor:pointer;background:#2563eb;color:white;margin-bottom:8px;">🚘 Fahrzeuge</div>
+      <div onclick="location.href='history.html'" style="padding:12px 16px;border-radius:10px;cursor:pointer;margin-bottom:8px;">🕒 Historie</div>
+      <div onclick="location.href='admin.html'" style="padding:12px 16px;border-radius:10px;cursor:pointer;margin-bottom:8px;">👤 Admin Panel</div>
     </div>
   </div>
 
-  <!-- Großer Viewer -->
-  <div>
-    <div class="card viewer" id="viewer">
-      <div>Fahrzeugansicht (Vorne / Seite / Hinten)</div>
+  <!-- Hauptinhalt -->
+  <div class="main-content">
+    <div class="header">
+      <div>
+        <h1 id="vehicleTitle">Inhofer-Sprinter</h1>
+        <p id="plate" style="color:var(--muted)">Kennzeichen: NU-IN 52</p>
+      </div>
+      <div style="text-align:right">
+        <button onclick="goBack()" style="background:none;border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;">← Zurück</button>
+      </div>
     </div>
 
-    <div class="card" style="margin-top:24px">
-      <h3>Schaden melden</h3>
-      <input id="damageType" placeholder="Schadenart (z.B. Kratzer)" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px">
-      <input id="damageArea" placeholder="Bereich" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px">
-      <textarea id="description" placeholder="Beschreibung..." rows="4" style="width:100%;padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:12px"></textarea>
-      
-      <input type="file" id="images" multiple style="margin:12px 0">
-      <button onclick="saveDamage()" class="primary-btn btn">Schaden speichern</button>
-    </div>
-  </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
 
-  <!-- Rechte Spalte -->
-  <div class="card">
-    <h3>Aktive Schäden</h3>
-    <div id="damageList"></div>
+      <!-- Schaden hinzufügen -->
+      <div class="card">
+        <h3>Schaden hinzufügen</h3>
+        <div style="margin:16px 0">
+          <label>Schadenart</label>
+          <select style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)">
+            <option>z.B. Kratzer</option>
+          </select>
+        </div>
+        <div style="margin:16px 0">
+          <label>Bereich</label>
+          <select style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)">
+            <option>vorne-links</option>
+          </select>
+        </div>
+        <div style="margin:16px 0">
+          <label>Beschreibung</label>
+          <textarea rows="4" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)"></textarea>
+        </div>
+        <button class="btn-primary" onclick="saveDamage()">Schaden speichern</button>
+      </div>
+
+      <!-- 360° Ansicht -->
+      <div class="card">
+        <h3>360° Ansicht Transporter</h3>
+        <div class="viewer" id="viewer">
+          Fahrzeugbild hier (Platzhalter)
+        </div>
+        <div class="flex-wrap" style="margin-top:12px">
+          <button style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card)">vorne</button>
+          <button style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card)">vorne-links</button>
+          <!-- weitere Buttons -->
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
+function toggleTheme() {
+  const current = document.body.getAttribute("data-theme");
+  document.body.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+}
+
 async function logout() {
   await db.auth.signOut();
   location.href = "login.html";
 }
 
-function toggleTheme() {
-  const theme = document.body.getAttribute("data-theme") === "dark" ? "light" : "dark";
-  document.body.setAttribute("data-theme", theme);
-}
-
-async function init() {
-  const {data} = await db.auth.getSession();
-  if (!data.session) return location.href = "login.html";
-
-  const emp = (await db.from("employees").select("*").eq("email", data.session.user.email).maybeSingle()).data;
-  document.getElementById("userInfo").innerHTML = `${emp?.name || 'Mitarbeiter'} <small>(${emp?.role})</small>`;
+function saveDamage() {
+  alert("Schaden gespeichert! (Demo)");
 }
 
 init();
