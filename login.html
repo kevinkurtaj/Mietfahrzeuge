@@ -3,48 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login – Schadendokumentation Mietfahrzeuge</title>
-
+<title>Login – Schadendokumentation</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: Inter, Arial, sans-serif;
-}
-
+* { box-sizing: border-box; font-family: Inter, Arial, sans-serif; }
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(37,99,235,.16), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(59,130,246,.10), transparent 35%),
-    linear-gradient(135deg, #f8fafc, #eef2ff);
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #0f172a;
-  padding: 24px;
+  padding: 20px;
 }
 
 .login-page {
   width: 100%;
   max-width: 1180px;
-  min-height: 680px;
-  background: rgba(255,255,255,.86);
-  border: 1px solid #e2e8f0;
+  background: white;
   border-radius: 32px;
   box-shadow: 0 30px 90px rgba(15,23,42,.12);
+  overflow: hidden;
   display: grid;
   grid-template-columns: 1.1fr .9fr;
-  overflow: hidden;
 }
 
 .brand-side {
   padding: 56px;
-  background:
-    linear-gradient(135deg, rgba(37,99,235,.97), rgba(30,64,175,.94));
+  background: linear-gradient(135deg, #2563eb, #1e40af);
   color: white;
   display: flex;
   flex-direction: column;
@@ -59,59 +48,6 @@ body {
   font-weight: 900;
 }
 
-.logo-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.16);
-  display: grid;
-  place-items: center;
-  font-size: 26px;
-}
-
-.brand-text h1 {
-  font-size: 46px;
-  line-height: 1.05;
-  margin: 0 0 18px;
-  letter-spacing: -1.4px;
-}
-
-.brand-text p {
-  font-size: 17px;
-  opacity: .88;
-  max-width: 470px;
-  line-height: 1.6;
-}
-
-.brand-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 34px;
-}
-
-.brand-stat {
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255,255,255,.13);
-  border: 1px solid rgba(255,255,255,.18);
-}
-
-.brand-stat strong {
-  display: block;
-  font-size: 24px;
-}
-
-.brand-stat span {
-  font-size: 12px;
-  opacity: .82;
-}
-
-.brand-footer {
-  font-size: 13px;
-  opacity: .8;
-}
-
 .form-side {
   padding: 56px;
   display: flex;
@@ -124,28 +60,8 @@ body {
   max-width: 390px;
 }
 
-.badge {
-  display: inline-flex;
-  padding: 8px 12px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 800;
-  margin-bottom: 18px;
-}
-
-h2 {
-  margin: 0;
-  font-size: 32px;
-  letter-spacing: -0.8px;
-}
-
-.sub {
-  color: #64748b;
-  margin: 10px 0 26px;
-  line-height: 1.5;
-}
+h2 { font-size: 32px; margin: 0 0 8px 0; }
+.sub { color: #64748b; margin-bottom: 26px; }
 
 label {
   display: block;
@@ -156,175 +72,89 @@ label {
 
 input {
   width: 100%;
-  padding: 14px 15px;
-  border-radius: 14px;
+  padding: 14px 16px;
   border: 1px solid #cbd5e1;
-  outline: none;
+  border-radius: 14px;
   font-size: 15px;
-  background: white;
 }
 
 input:focus {
+  outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 4px rgba(37,99,235,.12);
 }
 
 button {
   width: 100%;
-  margin-top: 22px;
-  padding: 14px 16px;
-  border: none;
-  border-radius: 14px;
+  margin-top: 24px;
+  padding: 15px;
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
+  border: none;
+  border-radius: 14px;
   font-weight: 900;
+  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 14px 28px rgba(37,99,235,.25);
 }
 
 button:hover {
   transform: translateY(-1px);
 }
 
-.helper {
-  margin-top: 16px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.helper a {
-  color: #2563eb;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .msg {
-  margin-top: 14px;
+  margin-top: 16px;
   padding: 12px;
   border-radius: 12px;
-  display: none;
   font-size: 14px;
+  display: none;
 }
 
-.msg.error {
-  display: block;
-  background: #fee2e2;
-  color: #991b1b;
-}
+.msg.error { display: block; background: #fee2e2; color: #991b1b; }
+.msg.success { display: block; background: #dcfce7; color: #166534; }
 
-.msg.success {
-  display: block;
-  background: #dcfce7;
-  color: #166534;
-}
-
-.role-info {
-  margin-top: 18px;
-  padding: 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  color: #475569;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-@media(max-width: 850px) {
-  body { padding: 0; }
-  .login-page {
-    min-height: 100vh;
-    border-radius: 0;
-    grid-template-columns: 1fr;
-  }
-
-  .brand-side {
-    padding: 34px;
-    min-height: 330px;
-  }
-
-  .brand-text h1 {
-    font-size: 34px;
-  }
-
-  .brand-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .form-side {
-    padding: 34px;
-  }
+@media (max-width: 850px) {
+  .login-page { grid-template-columns: 1fr; }
+  .brand-side { padding: 40px; }
+  .form-side { padding: 40px; }
 }
 </style>
 </head>
-
 <body>
 
 <div class="login-page">
 
+  <!-- Linke Seite -->
   <section class="brand-side">
     <div class="logo">
-      <div class="logo-icon">🚐</div>
-      <div>Schadendokumentation Mietfahrzeuge</div>
+      <div style="font-size:32px">🚐</div>
+      <div>Schadendokumentation</div>
     </div>
-
-    <div class="brand-text">
-      <h1>Mietfahrzeuge sauber dokumentieren.</h1>
-      <p>
-        Schäden erfassen, Fahrzeugstatus prüfen und Mitarbeiter-Aktivitäten zentral nachvollziehen.
-      </p>
-
-      <div class="brand-stats">
-        <div class="brand-stat">
-          <strong>360°</strong>
-          <span>Fahrzeugansicht</span>
-        </div>
-        <div class="brand-stat">
-          <strong>Live</strong>
-          <span>Schadenslog</span>
-        </div>
-        <div class="brand-stat">
-          <strong>Admin</strong>
-          <span>Benutzerverwaltung</span>
-        </div>
-      </div>
+    <div>
+      <h1 style="font-size:42px;line-height:1.1;margin:0 0 16px 0">Mietfahrzeuge sauber dokumentieren.</h1>
+      <p style="opacity:0.9">Schäden erfassen, Fahrzeugstatus prüfen und Aktivitäten nachvollziehen.</p>
     </div>
-
-    <div class="brand-footer">
-      Möbel Inhofer GmbH & Co. KG · Interne Anwendung
-    </div>
+    <div style="font-size:13px;opacity:0.75">Möbel Inhofer GmbH & Co. KG</div>
   </section>
 
+  <!-- Rechte Seite -->
   <section class="form-side">
     <div class="login-card">
-      <div class="badge">Interner Zugang</div>
-
       <h2>Anmelden</h2>
-      <p class="sub">
-        Bitte melde dich mit deinem Mitarbeiter-Zugang an.
-      </p>
+      <p class="sub">Mitarbeiter-Zugang</p>
 
       <label>E-Mail</label>
       <input id="email" type="email" placeholder="name@moebel-inhofer.de" autocomplete="email">
 
       <label>Passwort</label>
-      <input id="password" type="password" placeholder="Passwort eingeben" autocomplete="current-password">
+      <input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
 
       <button onclick="login()">Einloggen</button>
 
-      <div class="helper">
-        <a onclick="sendReset()">Passwort vergessen?</a>
-        <span>Rolle wird automatisch erkannt</span>
+      <div style="margin-top:16px;font-size:13px">
+        <a href="#" onclick="sendReset()" style="color:#2563eb;text-decoration:none">Passwort vergessen?</a>
       </div>
 
       <div id="msg" class="msg"></div>
-
-      <div class="role-info">
-        Admins werden nach dem Login automatisch ins Admin Panel weitergeleitet.
-        Mitarbeiter gelangen zur Fahrzeugübersicht.
-      </div>
     </div>
   </section>
 
@@ -340,43 +170,14 @@ const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const msg = document.getElementById("msg");
 
-emailInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") passwordInput.focus();
-});
-
-passwordInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") login();
-});
-
 function showMsg(text, type = "error") {
-  msg.className = "msg " + type;
+  msg.className = `msg ${type}`;
   msg.textContent = text;
 }
 
-async function getEmployeeByEmail(email) {
-  const { data } = await db
-    .from("employees")
-    .select("*")
-    .eq("email", email)
-    .maybeSingle();
-
-  return data || null;
-}
-
-async function autoLoginCheck() {
-  const { data } = await db.auth.getSession();
-
-  if (!data.session?.user) return;
-
-  const user = data.session.user;
-  const employee = await getEmployeeByEmail(user.email);
-
-  if (employee?.role === "admin") {
-    window.location.href = "admin.html";
-  } else {
-    window.location.href = "index.html";
-  }
-}
+// Enter-Taste Support
+emailInput.addEventListener("keydown", e => { if(e.key === "Enter") passwordInput.focus(); });
+passwordInput.addEventListener("keydown", e => { if(e.key === "Enter") login(); });
 
 async function login() {
   const email = emailInput.value.trim();
@@ -387,25 +188,28 @@ async function login() {
     return;
   }
 
-  const { data, error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
+  showMsg("Anmeldung läuft...", "success");
+
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
 
   if (error) {
-    showMsg("Login fehlgeschlagen. Bitte Zugangsdaten prüfen.");
+    showMsg("Login fehlgeschlagen. Zugangsdaten prüfen.");
     return;
   }
 
-  const user = data.user;
-  const employee = await getEmployeeByEmail(user.email);
+  // Mitarbeiter-Daten holen
+  const { data: employee } = await db
+    .from("employees")
+    .select("role")
+    .eq("email", email)
+    .maybeSingle();
 
   if (!employee) {
-    showMsg("Login erfolgreich, aber kein Mitarbeiterprofil gefunden. employees.email prüfen.");
+    showMsg("Kein Mitarbeiterprofil gefunden.");
     return;
   }
 
-  showMsg("Login erfolgreich. Weiterleitung...", "success");
+  showMsg("Login erfolgreich – Weiterleitung...", "success");
 
   setTimeout(() => {
     if (employee.role === "admin") {
@@ -413,37 +217,38 @@ async function login() {
     } else {
       window.location.href = "index.html";
     }
-  }, 700);
+  }, 800);
 }
 
 async function sendReset() {
   const email = emailInput.value.trim();
-
   if (!email) {
-    showMsg("Bitte zuerst deine E-Mail-Adresse eingeben.");
+    showMsg("Bitte zuerst E-Mail eingeben.");
     return;
   }
 
   const { error } = await db.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://kevinkurtaj.github.io/Mietfahrzeuge/reset-password.html"
+    redirectTo: window.location.origin + "/reset-password.html"
   });
 
   if (error) {
     showMsg(error.message);
-    return;
+  } else {
+    showMsg("Reset-Link wurde gesendet.", "success");
   }
-
-  await db.from("password_reset_activity").insert({
-    email,
-    status: "reset_mail_sent",
-    details: "Reset-Link über Login-Seite angefordert"
-  });
-
-  showMsg("Reset-Link wurde gesendet.", "success");
 }
 
-autoLoginCheck();
-</script>
+// Auto-Login Check
+async function checkSession() {
+  const { data } = await db.auth.getSession();
+  if (data.session?.user) {
+    const { data: emp } = await db.from("employees").select("role").eq("email", data.session.user.email).maybeSingle();
+    if (emp?.role === "admin") location.href = "admin.html";
+    else location.href = "index.html";
+  }
+}
 
+checkSession();
+</script>
 </body>
 </html>
