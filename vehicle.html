@@ -17,6 +17,15 @@
   --primary: #1e40af;
 }
 
+[data-theme="dark"] {
+  --bg: #0a0f1c;
+  --surface: #121a2e;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #60a5fa;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
 body { background:var(--bg); color:var(--text); min-height:100vh; }
 
@@ -55,7 +64,6 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   max-height:100%;
   max-width:100%;
   object-fit:contain;
-  border-radius:12px;
 }
 
 .view-buttons {
@@ -109,7 +117,7 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   <div class="card">
     <h3>360° Ansicht</h3>
     <div class="viewer" id="viewer">
-      <img id="vehicleImage" src="https://picsum.photos/id/1015/800/500" style="max-height:100%;max-width:100%;border-radius:12px;" alt="Fahrzeug">
+      <img id="vehicleImage" src="" style="max-height:100%;max-width:100%;border-radius:12px;" alt="Fahrzeug">
     </div>
     <div class="view-buttons" id="viewButtons"></div>
   </div>
@@ -127,6 +135,7 @@ const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.c
 let vehicleId = new URLSearchParams(location.search).get("id");
 let currentView = 0;
 
+// Hier deine Bilder eintragen (Pfad zu deinem GitHub-Ordner)
 const vehicleViews = [
   { name: "vorne", url: "assets/sprinter/front.jpg" },
   { name: "vorne-links", url: "assets/sprinter/front-left.jpg" },
