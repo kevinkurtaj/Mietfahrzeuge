@@ -13,7 +13,8 @@
   --surface: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
-  --accent: #1e40af;
+  --border: #e2e8f0;
+  --primary: #1e40af;
 }
 
 [data-theme="dark"] {
@@ -21,75 +22,74 @@
   --surface: #121a2e;
   --text: #e2e8f0;
   --muted: #94a3b8;
-  --accent: #60a5fa;
+  --border: #334155;
+  --primary: #60a5fa;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', system-ui, sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
 body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .topbar {
-  background:var(--surface); height:88px; padding:0 48px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(148,163,184,0.2);
-  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  background:var(--surface); height:86px; padding:0 48px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
 }
 
-.brand {
-  font-size: 28px; font-weight: 900; letter-spacing:-0.5px; color:var(--accent);
+.brand { font-size:28px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
+
+.user-info {
+  display:flex; align-items:center; gap:12px;
 }
 
-.main {
-  padding:48px 60px;
+.role {
+  padding:4px 14px; border-radius:999px; font-size:13px; font-weight:600;
 }
 
-.stats {
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; margin-bottom:52px;
-}
+.main { margin-left:280px; padding:48px 60px; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; margin-bottom:52px; }
 
 .stat-card {
-  background:var(--surface); border-radius:24px; padding:32px; border:1px solid rgba(148,163,184,0.15);
-  box-shadow:0 10px 40px rgba(0,0,0,0.08);
+  background:var(--surface); border-radius:24px; padding:32px; border:1px solid var(--border);
 }
 
 .vehicle-grid {
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(420px,1fr)); gap:32px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(400px,1fr)); gap:32px;
 }
 
 .vehicle-card {
-  background:var(--surface); border-radius:24px; padding:36px; cursor:pointer; transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
-  border:1px solid rgba(148,163,184,0.15);
-  box-shadow:0 10px 40px rgba(0,0,0,0.08);
+  background:var(--surface); border-radius:24px; padding:36px; cursor:pointer; transition:0.3s; border:1px solid var(--border);
 }
 
 .vehicle-card:hover {
-  transform:translateY(-16px); box-shadow:0 30px 70px rgba(30,64,175,0.25);
+  transform:translateY(-12px); box-shadow:0 30px 60px rgba(30,64,175,0.2);
 }
 </style>
 </head>
 <body data-theme="light">
 
 <div class="topbar">
-  <div class="brand">Inhofer Flottenmanagement</div>
-  <div style="display:flex;gap:20px;align-items:center">
-    <button onclick="toggleTheme()" style="font-size:22px;background:none;border:none;cursor:pointer">🌗</button>
-    <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:12px 28px;border-radius:12px;cursor:pointer;font-weight:600">Logout</button>
+  <div class="brand">🚐 Inhofer Flottenmanagement</div>
+  
+  <div class="user-info" id="userInfo">
+    <!-- Wird per JS gefüllt -->
   </div>
 </div>
 
 <div class="main">
-  <h1 style="font-size:38px;margin-bottom:8px">Fahrzeugübersicht</h1>
-  <p style="color:var(--muted);font-size:18px">Willkommen zurück • Heute sind 4 Fahrzeuge einsatzbereit</p>
+  <h1 style="font-size:36px;margin-bottom:8px">Fahrzeugübersicht</h1>
+  <p style="color:var(--muted);font-size:18px">Alle Mietfahrzeuge im Überblick</p>
 
   <div class="stats">
     <div class="stat-card">
       <div style="color:var(--muted)">Gesamt Fahrzeuge</div>
-      <strong id="total" style="font-size:56px;font-weight:800">0</strong>
+      <strong id="total" style="font-size:54px;font-weight:800">0</strong>
     </div>
     <div class="stat-card">
       <div style="color:var(--muted)">Einsatzbereit</div>
-      <strong id="ready" style="font-size:56px;font-weight:800;color:#16a34a">0</strong>
+      <strong id="ready" style="font-size:54px;font-weight:800;color:#16a34a">0</strong>
     </div>
     <div class="stat-card">
-      <div style="color:var(--muted)">In Wartung</div>
-      <strong id="blocked" style="font-size:56px;font-weight:800;color:#f59e0b">0</strong>
+      <div style="color:var(--muted)">In Wartung / Nicht verfügbar</div>
+      <strong id="blocked" style="font-size:54px;font-weight:800;color:#f59e0b">0</strong>
     </div>
   </div>
 
@@ -99,40 +99,54 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 <script>
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
-function toggleTheme() {
-  const isDark = document.body.getAttribute("data-theme") === "dark";
-  document.body.setAttribute("data-theme", isDark ? "light" : "dark");
-  localStorage.setItem("theme", isDark ? "light" : "dark");
-}
+async function loadUser() {
+  const {data} = await db.auth.getSession();
+  if (!data.session) return location.href = "login.html";
 
-async function logout() {
-  await db.auth.signOut();
-  location.href = "login.html";
+  const user = data.session.user;
+  const {data: emp} = await db.from("employees").select("name,role").eq("email", user.email).maybeSingle();
+
+  const name = emp?.name || user.email.split('@')[0];
+  const role = emp?.role || "mitarbeiter";
+
+  const roleHTML = role === "admin" 
+    ? `<span class="role" style="background:#fee2e2;color:#991b1b">Admin</span>` 
+    : `<span class="role" style="background:#dcfce7;color:#166534">Mitarbeiter</span>`;
+
+  document.getElementById("userInfo").innerHTML = `
+    <div style="text-align:right">
+      <strong>${name}</strong><br>
+      ${roleHTML}
+    </div>
+  `;
 }
 
 async function loadVehicles() {
-  const {data} = await db.from("vehicles").select("*");
+  const {data: vehicles} = await db.from("vehicles").select("*");
   
-  document.getElementById("total").textContent = data.length;
-  document.getElementById("ready").textContent = data.filter(v => v.status === "einsatzbereit").length;
-  document.getElementById("blocked").textContent = data.filter(v => v.status !== "einsatzbereit").length;
+  document.getElementById("total").textContent = vehicles.length;
+  document.getElementById("ready").textContent = vehicles.filter(v => v.status === "einsatzbereit").length;
+  document.getElementById("blocked").textContent = vehicles.filter(v => v.status !== "einsatzbereit").length;
 
-  const html = data.map(v => `
-    <div class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
-      <strong style="font-size:23px">${v.name}</strong>
-      <p style="margin:12px 0;color:var(--muted)">${v.kennzeichen}</p>
-      <span style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}; padding:8px 22px; border-radius:999px;">
-        ${v.status === 'einsatzbereit' ? 'Einsatzbereit' : 'In Wartung'}
+  const html = vehicles.map(v => `
+    <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
+      <strong style="font-size:23px">${v.name || 'Fahrzeug'}</strong>
+      <p style="color:var(--muted);margin:14px 0">${v.kennzeichen || '-'}</p>
+      <span class="status" style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}">
+        ${v.status}
       </span>
     </div>
   `).join("");
 
-  document.getElementById("vehicleList").innerHTML = html;
+  document.getElementById("vehicleList").innerHTML = html || "<p>Keine Fahrzeuge gefunden.</p>";
 }
 
-if (localStorage.getItem("theme") === "dark") document.body.setAttribute("data-theme", "dark");
+async function init() {
+  await loadUser();
+  await loadVehicles();
+}
 
-loadVehicles();
+init();
 </script>
 </body>
 </html>
