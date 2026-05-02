@@ -8,93 +8,104 @@
 <link rel="icon" href="data:,">
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', Arial, sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
 body {
-  background: #f8fafc;
+  background: #0f172a;
+  color: #e2e8f0;
   min-height: 100vh;
-  color: #0f172a;
 }
 
 .topbar {
-  background: white;
+  background: #1e2937;
+  height: 80px;
   padding: 0 30px;
-  height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-bottom: 1px solid #334155;
 }
 
-.brand { font-size: 21px; font-weight: 900; display:flex; align-items:center; gap:10px; }
+.brand {
+  font-size: 24px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #60a5fa;
+}
 
 .main {
   display: grid;
-  grid-template-columns: 320px 1fr 380px;
+  grid-template-columns: 340px 1fr 400px;
   gap: 24px;
   padding: 30px;
-  max-width: 1600px;
+  max-width: 1700px;
   margin: 0 auto;
 }
 
 .card {
-  background: white;
+  background: #1e2937;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.08);
   padding: 24px;
+  border: 1px solid #334155;
 }
 
 .viewer {
-  height: 420px;
-  background: #f1f5f9;
+  height: 460px;
+  background: #334155;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  font-size: 18px;
+  color: #94a3b8;
 }
 
-.viewer img {
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
+.form-group { margin-bottom: 20px; }
+label { 
+  display: block; 
+  margin-bottom: 8px; 
+  font-weight: 600; 
+  color: #cbd5e1; 
 }
-
-.form-group { margin-bottom: 18px; }
-label { display:block; font-size:14px; font-weight:600; margin-bottom:6px; color:#475569; }
 
 input, select, textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #cbd5e1;
+  padding: 14px 16px;
+  background: #334155;
+  border: 1px solid #475569;
   border-radius: 12px;
+  color: #e2e8f0;
   font-size: 15px;
 }
 
 button {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  padding: 16px;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
   color: white;
   border: none;
   border-radius: 12px;
-  font-weight: 700;
   font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  margin-top: 8px;
 }
 
-button:hover { transform: translateY(-2px); }
+button:hover {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
 
 .toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 14px 20px;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
   border-radius: 12px;
+  background: #22c55e;
   color: white;
-  font-weight: 500;
+  font-weight: 600;
   display: none;
   z-index: 1000;
 }
@@ -103,45 +114,52 @@ button:hover { transform: translateY(-2px); }
 <body>
 
 <div class="topbar">
-  <div class="brand">🚐 Schadendokumentation</div>
-  <div style="display:flex; align-items:center; gap:16px">
-    <div id="userInfo"></div>
-    <button onclick="logout()" style="background:#ef4444;padding:8px 16px;border:none;border-radius:10px;color:white;font-weight:600;cursor:pointer">Logout</button>
+  <div class="brand">
+    <span>🚐</span>
+    <div>Inhofer Flottenmanagement</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:20px">
+    <div id="userInfo" style="text-align:right"></div>
+    <button onclick="logout()" style="background:#ef4444; padding:10px 20px; border:none; border-radius:10px; color:white; font-weight:600;">Logout</button>
   </div>
 </div>
 
 <div class="main">
 
-  <!-- Linke Spalte -->
+  <!-- Links: Fahrzeug Info -->
   <div>
     <div class="card">
-      <h2 id="vehicleTitle">Fahrzeug</h2>
-      <p id="plate" style="color:#64748b;margin:8px 0"></p>
+      <h2 id="vehicleTitle">Fahrzeug laden...</h2>
+      <p id="plate" style="color:#94a3b8; margin:8px 0 20px 0;"></p>
       
       <div class="form-group">
-        <label>Status</label>
-        <select id="status" onchange="saveStatus()"></select>
+        <label>Aktueller Status</label>
+        <select id="status" onchange="saveStatus()">
+          <option value="einsatzbereit">Einsatzbereit</option>
+          <option value="werkstatt">In der Werkstatt</option>
+          <option value="nicht_einsatzbereit">Nicht einsatzbereit</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <!-- Mittlere Spalte - Viewer + Form -->
+  <!-- Mitte: Großer Viewer + Schaden melden -->
   <div>
     <div class="card viewer" id="viewer">
-      <p style="color:#64748b">Fahrzeugansicht wird geladen...</p>
+      Fahrzeugansicht
     </div>
 
-    <div class="card" style="margin-top:20px">
+    <div class="card" style="margin-top:24px">
       <h3>Neuen Schaden melden</h3>
       
       <div class="form-group">
         <label>Schadenart</label>
-        <input id="damageType" placeholder="z.B. Kratzer, Delle">
+        <input id="damageType" placeholder="z.B. Delle, Kratzer, Riss">
       </div>
 
       <div class="form-group">
         <label>Bereich</label>
-        <input id="damageArea" placeholder="z.B. hintere Stoßstange">
+        <input id="damageArea" placeholder="z.B. Vordere Stoßstange links">
       </div>
 
       <div class="form-group">
@@ -155,35 +173,32 @@ button:hover { transform: translateY(-2px); }
 
       <div class="form-group">
         <label>Beschreibung</label>
-        <textarea id="description" rows="3" placeholder="Genauere Beschreibung..."></textarea>
+        <textarea id="description" rows="4" placeholder="Genauere Beschreibung..."></textarea>
       </div>
 
       <div class="form-group">
-        <label>Bilder (optional)</label>
+        <label>Bilder hochladen</label>
         <input type="file" id="images" multiple accept="image/*">
       </div>
 
-      <button onclick="saveDamage()">Schaden speichern</button>
+      <button onclick="saveDamage()">Schaden + Bilder speichern</button>
     </div>
   </div>
 
-  <!-- Rechte Spalte -->
+  <!-- Rechts: Aktive Schäden -->
   <div class="card">
     <h3>Aktive Schäden (<span id="damageCount">0</span>)</h3>
-    <div id="damageList" style="margin-top:16px"></div>
+    <div id="damageList" style="margin-top:16px; min-height:300px;"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// Supabase
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
 let vehicleId = new URLSearchParams(location.search).get("id");
-let currentUser, currentEmployee;
 
-// Logout
 async function logout() {
   await db.auth.signOut();
   location.href = "login.html";
@@ -193,32 +208,22 @@ async function init() {
   const {data} = await db.auth.getSession();
   if (!data.session) return location.href = "login.html";
 
-  currentUser = data.session.user;
-  const {data: emp} = await db.from("employees").select("*").eq("email", currentUser.email).single();
-  currentEmployee = emp;
+  const user = data.session.user;
+  const {data: emp} = await db.from("employees").select("*").eq("email", user.email).maybeSingle();
 
-  document.getElementById("userInfo").innerHTML = `<strong>${emp.name || currentUser.email}</strong><br><small>${emp.role}</small>`;
+  document.getElementById("userInfo").innerHTML = `
+    ${emp?.name || user.email}<br>
+    <small style="color:#94a3b8">${emp?.role === "admin" ? "Administrator" : "Mitarbeiter"}</small>
+  `;
 
-  // Hier später Fahrzeugdaten laden...
-  loadVehicle();
+  // Fahrzeugdaten später laden
 }
 
-async function loadVehicle() {
-  // Dummy für jetzt
-  document.getElementById("vehicleTitle").textContent = "Sprinter - AB-CD 123";
-  document.getElementById("plate").textContent = "Kennzeichen: AB-CD 123";
-}
-
-// Speichern Funktion
 async function saveDamage() {
   const toast = document.getElementById("toast");
-  toast.textContent = "Schaden wird gespeichert...";
-  toast.style.background = "#2563eb";
+  toast.textContent = "✅ Schaden gespeichert";
   toast.style.display = "block";
-
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2500);
+  setTimeout(() => toast.style.display = "none", 3000);
 }
 
 init();
