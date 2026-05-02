@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Fleet Damage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    body { font-family: system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md bg-zinc-900 rounded-3xl p-10 shadow-2xl">
+    <div class="text-center mb-8">
+      <i class="fa-solid fa-truck text-7xl text-emerald-500 mb-4"></i>
+      <h1 class="text-4xl font-bold">Fleet Damage</h1>
+      <p class="text-zinc-400 mt-2">Schadensansicht – 5 Mietfahrzeuge</p>
+    </div>
+
+    <form id="login-form" class="space-y-6">
+      <input id="email" type="email" placeholder="E-Mail" required class="w-full bg-zinc-800 px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+      
+      <div class="relative">
+        <input id="password" type="password" placeholder="Passwort" required class="w-full bg-zinc-800 px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <button type="button" id="toggle-password" class="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-eye"></i>
+        </button>
+      </div>
+
+      <div id="error-msg" class="hidden text-red-500 text-sm text-center"></div>
+
+      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 py-4 rounded-2xl font-semibold text-lg">Anmelden</button>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ziupzlcazlkqsyhsqkpa.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppdXB6bGNhemxrcXN5aHNxa3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzI4MzYsImV4cCI6MjA5MzMwODgzNn0.xUuvdBn9BDZEdnoNOGpOXH3QGx17o8LGDf6CuQ97BlQ';   // ← hier deinen anon-Key eintragen
+
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Passwort-Auge
+    document.getElementById('toggle-password').addEventListener('click', function () {
+      const pw = document.getElementById('password');
+      const icon = this.querySelector('i');
+      if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pw.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    });
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-msg');
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.classList.remove('hidden');
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
