@@ -30,13 +30,13 @@
 body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .topbar {
-  background:var(--surface); height:88px; padding:0 50px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
+  background:var(--surface); height:86px; padding:0 48px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
 }
 
-.brand { font-size:29px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
+.brand { font-size:28px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
 
 .sidebar {
-  width: 280px; background:var(--surface); height:calc(100vh - 88px); border-right:1px solid var(--border); padding:32px 24px; position:fixed; display:flex; flex-direction:column;
+  width: 280px; background:var(--surface); height:calc(100vh - 86px); border-right:1px solid var(--border); padding:32px 24px; position:fixed; display:flex; flex-direction:column;
 }
 
 .nav-item {
@@ -45,36 +45,36 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .nav-item.active { background:var(--primary); color:white; }
 
-.main { margin-left:280px; padding:50px 60px; max-width:1600px; }
+.main { margin-left:280px; padding:40px 50px; }
 
-.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; margin-bottom:60px; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:24px; margin-bottom:50px; }
 
-.stat-card { background:var(--surface); border-radius:24px; padding:32px; border:1px solid var(--border); }
+.stat-card { background:var(--surface); border-radius:24px; padding:28px; border:1px solid var(--border); }
 
 .vehicle-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));   /* Mehr Spalten auf großem Bildschirm */
-  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 24px;           /* Weniger Abstand */
 }
 
 .vehicle-card {
   background:var(--surface); 
-  border-radius:24px; 
-  padding:40px 36px; 
+  border-radius:20px; 
+  padding:32px; 
   cursor:pointer; 
   transition:0.3s; 
   border:1px solid var(--border);
-  box-shadow:0 10px 35px rgba(0,0,0,0.07);
+  box-shadow:0 8px 25px rgba(0,0,0,0.06);
 }
 
 .vehicle-card:hover {
-  transform:translateY(-14px); 
-  box-shadow:0 35px 70px rgba(30,64,175,0.25);
+  transform:translateY(-8px); 
+  box-shadow:0 25px 50px rgba(30,64,175,0.18);
 }
 
 .logout-btn {
   margin-top:auto; 
-  padding:14px 24px; 
+  padding:14px 20px; 
   background:#ef4444; 
   color:white; 
   border:none; 
@@ -100,21 +100,21 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   </div>
 
   <div class="main">
-    <h1 style="font-size:37px;margin-bottom:8px">Fahrzeugübersicht</h1>
+    <h1 style="font-size:36px;margin-bottom:8px">Fahrzeugübersicht</h1>
     <p style="color:var(--muted);font-size:18px">Alle Mietfahrzeuge im Überblick</p>
 
     <div class="stats">
       <div class="stat-card">
         <div style="color:var(--muted)">Gesamt Fahrzeuge</div>
-        <strong id="total" style="font-size:56px;font-weight:800">0</strong>
+        <strong id="total" style="font-size:54px;font-weight:800">0</strong>
       </div>
       <div class="stat-card">
         <div style="color:var(--muted)">Einsatzbereit</div>
-        <strong id="ready" style="font-size:56px;font-weight:800;color:#16a34a">0</strong>
+        <strong id="ready" style="font-size:54px;font-weight:800;color:#16a34a">0</strong>
       </div>
       <div class="stat-card">
         <div style="color:var(--muted)">Nicht verfügbar</div>
-        <strong id="blocked" style="font-size:56px;font-weight:800;color:#f59e0b">0</strong>
+        <strong id="blocked" style="font-size:54px;font-weight:800;color:#f59e0b">0</strong>
       </div>
     </div>
 
