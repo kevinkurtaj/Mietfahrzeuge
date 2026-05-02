@@ -47,21 +47,40 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .main { margin-left:280px; padding:48px 60px; }
 
-.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:28px; margin-bottom:52px; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:24px; margin-bottom:60px; }
 
 .stat-card { background:var(--surface); border-radius:24px; padding:32px; border:1px solid var(--border); }
 
-.vehicle-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(400px,1fr)); gap:32px; }
-
-.vehicle-card {
-  background:var(--surface); border-radius:24px; padding:36px; cursor:pointer; transition:0.3s; border:1px solid var(--border);
+.vehicle-grid {
+  display:grid; 
+  grid-template-columns:repeat(auto-fill, minmax(380px,1fr)); 
+  gap:32px;
 }
 
-.vehicle-card:hover { transform:translateY(-12px); box-shadow:0 30px 60px rgba(30,64,175,0.2); }
+.vehicle-card {
+  background:var(--surface); 
+  border-radius:24px; 
+  padding:32px; 
+  cursor:pointer; 
+  transition:0.3s; 
+  border:1px solid var(--border);
+  box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
 
-/* Logout unten in Sidebar */
+.vehicle-card:hover {
+  transform:translateY(-8px); 
+  box-shadow:0 25px 50px rgba(30,64,175,0.15);
+}
+
 .logout-btn {
-  margin-top:auto; padding:14px 20px; background:#ef4444; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:600;
+  margin-top:auto; 
+  padding:14px 20px; 
+  background:#ef4444; 
+  color:white; 
+  border:none; 
+  border-radius:12px; 
+  cursor:pointer; 
+  font-weight:600;
 }
 </style>
 </head>
@@ -73,17 +92,13 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 </div>
 
 <div style="display:flex">
-  <!-- Sidebar -->
   <div class="sidebar">
     <div class="nav-item active">🚘 Fahrzeuge</div>
     <div onclick="location.href='history.html'" class="nav-item">🕒 Historie</div>
     <div id="adminLink" onclick="location.href='admin.html'" class="nav-item" style="display:none;">👤 Admin Panel</div>
-    
-    <!-- Logout Button unten -->
     <button onclick="logout()" class="logout-btn">↩ Logout</button>
   </div>
 
-  <!-- Hauptinhalt -->
   <div class="main">
     <h1 style="font-size:36px;margin-bottom:8px">Fahrzeugübersicht</h1>
     <p style="color:var(--muted);font-size:18px">Alle Mietfahrzeuge im Überblick</p>
@@ -121,8 +136,8 @@ async function loadUser() {
   const role = emp?.role || "mitarbeiter";
 
   const roleHTML = role === "admin" 
-    ? `<span style="background:#fee2e2;color:#991b1b;padding:6px 16px;border-radius:999px;font-size:13px">Admin</span>` 
-    : `<span style="background:#dcfce7;color:#166534;padding:6px 16px;border-radius:999px;font-size:13px">Mitarbeiter</span>`;
+    ? `<span style="background:#fee2e2;color:#991b1b;padding:6px 18px;border-radius:999px;font-size:13px">Admin</span>` 
+    : `<span style="background:#dcfce7;color:#166534;padding:6px 18px;border-radius:999px;font-size:13px">Mitarbeiter</span>`;
 
   document.getElementById("userBox").innerHTML = `<strong>${name}</strong> ${roleHTML}`;
 
@@ -140,7 +155,7 @@ async function loadVehicles() {
     <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
       <strong style="font-size:23px">${v.name || 'Fahrzeug'}</strong>
       <p style="color:var(--muted);margin:14px 0">${v.kennzeichen || '-'}</p>
-      <span style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}; padding:8px 20px; border-radius:999px;">
+      <span style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}; padding:8px 22px; border-radius:999px;">
         ${v.status}
       </span>
     </div>
