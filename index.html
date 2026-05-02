@@ -3,103 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahrzeuge</title>
+<title>Fahrzeugübersicht</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:,">
 
 <style>
-:root{--blue:#2563eb;--radius:24px}
-*{box-sizing:border-box;font-family:Inter,Arial,sans-serif}
-body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8fafc,#eef2f7)}
-.app-shell{max-width:1600px;margin:20px auto;background:white;border-radius:28px;box-shadow:0 20px 60px rgba(15,23,42,.1);overflow:hidden}
-.topbar{height:84px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0}
-.brand{font-size:22px;font-weight:900;display:flex;align-items:center;gap:12px}
-.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:40px}
-.vehicle-card{padding:24px;border:1px solid #e2e8f0;border-radius:20px;cursor:pointer;transition:.2s}
-.vehicle-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(37,99,235,.15)}
-.logout-btn{padding:8px 18px;background:#ef4444;color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer}
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #2563eb;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #1e2937;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #3b82f6;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+body { background:var(--bg); color:var(--text); min-height:100vh; }
+
+.topbar {
+  background:var(--card); padding:0 32px; height:76px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
+}
+
+.sidebar {
+  width:260px; background:var(--card); height:calc(100vh - 76px); border-right:1px solid var(--border); padding:24px 0;
+}
+
+.card {
+  background:var(--card); border:1px solid var(--border); border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
+
+.vehicle-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:24px;
+}
+
+.vehicle-card {
+  border:1px solid var(--border); border-radius:20px; padding:24px; cursor:pointer; transition:0.2s;
+}
+
+.vehicle-card:hover {
+  transform:translateY(-8px); box-shadow:0 20px 40px rgba(37,99,235,0.15);
+}
 </style>
 </head>
-<body>
+<body data-theme="light">
 
-<div class="app-shell">
-  <header class="topbar">
-    <div class="brand">
-      <span>🚐</span>
-      <div>Schadendokumentation Mietfahrzeuge</div>
-    </div>
-    
-    <div style="display:flex;align-items:center;gap:20px">
-      <div>
-        <div id="topUserName" style="font-weight:900"></div>
-        <div id="topUserRole" style="font-size:13px;color:#64748b"></div>
-      </div>
-      <button onclick="logout()" class="logout-btn">↩ Logout</button>
-    </div>
-  </header>
+<div class="topbar">
+  <div style="font-size:22px;font-weight:900;display:flex;align-items:center;gap:10px;color:var(--primary)">
+    🚐 Inhofer Flottenmanagement
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border);padding:8px 14px;border-radius:10px;cursor:pointer">🌗</button>
+    <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:10px 20px;border-radius:10px;cursor:pointer">Logout</button>
+  </div>
+</div>
 
-  <div style="padding:40px">
+<div style="display:flex">
+  <div class="sidebar">
+    <div style="padding:0 20px">
+      <div class="nav-item active">🚘 Fahrzeuge</div>
+      <div class="nav-item">🕒 Historie</div>
+      <div class="nav-item">👤 Admin</div>
+    </div>
+  </div>
+
+  <div style="flex:1; padding:32px">
     <h1>Fahrzeugübersicht</h1>
-    
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:30px 0">
-      <div style="padding:20px;background:#f8fafc;border-radius:20px">
-        <div>Fahrzeuge</div>
-        <strong id="vehicleCount" style="font-size:32px">0</strong>
-      </div>
-      <div style="padding:20px;background:#f8fafc;border-radius:20px">
-        <div>Einsatzbereit</div>
-        <strong id="readyCount" style="font-size:32px">0</strong>
-      </div>
-      <div style="padding:20px;background:#f8fafc;border-radius:20px">
-        <div>Aktive Schäden</div>
-        <strong id="damageCount" style="font-size:32px">0</strong>
-      </div>
-    </div>
-
     <div id="vehicleList" class="vehicle-grid"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
 const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
-async function init(){
-  const {data} = await db.auth.getSession();
-  if(!data.session?.user) return location.href = "login.html";
-
-  const user = data.session.user;
-  const {data: emp} = await db.from("employees").select("*").eq("email", user.email).maybeSingle();
-
-  document.getElementById("topUserName").textContent = emp?.name || user.email;
-  document.getElementById("topUserRole").textContent = emp?.role === "admin" ? "Admin" : "Mitarbeiter";
-
-  await loadVehicles();
+function toggleTheme() {
+  const isDark = document.body.getAttribute("data-theme") === "dark";
+  document.body.setAttribute("data-theme", isDark ? "light" : "dark");
+  localStorage.setItem("theme", isDark ? "light" : "dark");
 }
 
-async function loadVehicles(){
-  const {data: vehicles} = await db.from("vehicles").select("*");
-  const {count} = await db.from("damages").select("id",{count:"exact",head:true}).not("status","in","(repariert,irrtuemlich)");
-
-  document.getElementById("vehicleCount").textContent = vehicles?.length || 0;
-  document.getElementById("readyCount").textContent = vehicles?.filter(v => v.status === "einsatzbereit").length || 0;
-  document.getElementById("damageCount").textContent = count || 0;
-
-  document.getElementById("vehicleList").innerHTML = (vehicles||[]).map(v => `
-    <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
-      <strong>${v.name || 'Fahrzeug'}</strong><br>
-      <span style="color:#64748b">${v.kennzeichen || '-'}</span>
-    </div>
-  `).join("");
-}
-
-async function logout(){
+async function logout() {
   await db.auth.signOut();
   location.href = "login.html";
 }
 
-init();
+// Theme beim Laden wiederherstellen
+if (localStorage.getItem("theme") === "dark") {
+  document.body.setAttribute("data-theme", "dark");
+}
+
+// Rest der Funktionen (Fahrzeuge laden etc.) kommen später
 </script>
 </body>
 </html>
