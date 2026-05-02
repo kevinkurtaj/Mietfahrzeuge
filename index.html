@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schadendokumentation Mietfahrzeuge</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="icon" href="data:,">
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inhofer Flottenmanagement</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" href="data:,">
+
 <style>
 :root{--bg:#f4f7fb;--surface:#fff;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--dark:#111827;--blue:#2563eb;--green:#166534;--red:#991b1b;--amber:#92400e;--shadow:0 10px 28px rgba(15,23,42,.08);}
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
@@ -66,35 +72,48 @@ function statusLabel(s){
     default: return s || "unbekannt";
   }
 }
-function actionLabel(a){
-  switch(a){
-    case "angelegt": return "Schaden angelegt";
-    case "bilder_hochgeladen": return "Bilder hochgeladen";
-    case "repariert": return "Schaden repariert";
-    case "irrtuemlich": return "Schaden irrtümlich";
-    case "bearbeitet": return "Schaden bearbeitet";
-    case "fahrzeugstatus_geaendert": return "Fahrzeugstatus geändert";
-    case "status_geaendert": return "Fahrzeugstatus geändert";
-    default: return a || "-";
-  }
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+body { background:var(--bg); color:var(--text); min-height:100vh; }
+
+.topbar {
+  background:var(--surface); height:88px; padding:0 50px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
 }
-async function getSessionUser(){
-  const { data } = await db.auth.getSession();
-  return data.session?.user || null;
+
+.brand { font-size:29px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
+
+.sidebar {
+  width: 280px; background:var(--surface); height:calc(100vh - 88px); border-right:1px solid var(--border); padding:32px 24px; position:fixed; display:flex; flex-direction:column;
 }
-async function getEmployeeByEmail(email){
-  if(!email) return null;
-  const { data } = await db.from("employees").select("*").eq("email", email).maybeSingle();
-  return data || null;
+
+.nav-item {
+  padding:16px 20px; border-radius:16px; margin-bottom:8px; cursor:pointer; font-weight:500;
 }
-async function requireLogin(){
-  const user = await getSessionUser();
-  if(!user) window.location.href = "index.html";
-  return user;
+
+.nav-item.active { background:var(--primary); color:white; }
+
+.main { margin-left:280px; padding:50px 60px; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:28px; margin-bottom:60px; }
+
+.stat-card { background:var(--surface); border-radius:24px; padding:32px; border:1px solid var(--border); }
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 28px;
+  justify-content: center;   /* Zentriert die Karten */
+  max-width: 1600px;
 }
-async function logout(){
-  await db.auth.signOut();
-  window.location.href = "index.html";
+
+.vehicle-card {
+  background:var(--surface); 
+  border-radius:24px; 
+  padding:40px 36px; 
+  cursor:pointer; 
+  transition:0.3s; 
+  border:1px solid var(--border);
+  box-shadow:0 10px 35px rgba(0,0,0,0.07);
 }
 
 const loginBox=document.getElementById("loginBox"), app=document.getElementById("app"), loginMessage=document.getElementById("loginMessage");
@@ -126,15 +145,16 @@ async function login(){
     btn.textContent = "Einloggen";
   }
 }
-async function checkUser(){ const user=await getSessionUser(); if(user) startApp(); }
-async function startApp(){
-  const user=await getSessionUser(); if(!user) return;
-  loginBox.style.display="none"; app.style.display="block";
-  document.getElementById("logoutBtn").style.display="inline-block";
-  document.getElementById("userInfo").style.display="block"; document.getElementById("userInfo").textContent=user.email;
-  const emp=await getEmployeeByEmail(user.email);
-  document.getElementById("adminBtn").style.display = emp?.role==="admin" ? "inline-block" : "none";
-  loadVehicles();
+
+.logout-btn {
+  margin-top:auto; 
+  padding:14px 24px; 
+  background:#ef4444; 
+  color:white; 
+  border:none; 
+  border-radius:12px; 
+  cursor:pointer; 
+  font-weight:600;
 }
 async function loadVehicles(){
   const {data,error}=await db.from("vehicles").select("*").order("id",{ascending:true});
