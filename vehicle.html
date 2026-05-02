@@ -17,15 +17,6 @@
   --primary: #1e40af;
 }
 
-[data-theme="dark"] {
-  --bg: #0a0f1c;
-  --surface: #121a2e;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --border: #334155;
-  --primary: #60a5fa;
-}
-
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
 body { background:var(--bg); color:var(--text); min-height:100vh; }
 
@@ -86,7 +77,6 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 .view-btn.active {
   background:var(--primary);
   color:white;
-  border-color:var(--primary);
 }
 </style>
 </head>
@@ -102,12 +92,20 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   <!-- Links: Schaden hinzufügen -->
   <div class="card">
     <h3>Schaden hinzufügen</h3>
-    <button onclick="saveDamage()" style="width:100%;margin-top:24px;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer">
+    <div style="margin-top:20px">
+      <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Schadenart</label>
+      <input id="damageType" placeholder="z.B. Kratzer" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
+    </div>
+    <div style="margin-top:20px">
+      <label style="display:block;margin-bottom:8px;font-weight:600;color:var(--muted)">Bereich</label>
+      <input id="damageArea" placeholder="z.B. vorne-links" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px">
+    </div>
+    <button onclick="saveDamage()" style="width:100%;margin-top:30px;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer">
       Schaden speichern
     </button>
   </div>
 
-  <!-- Mitte: 360° Viewer -->
+  <!-- Mitte: 360° Ansicht -->
   <div class="card">
     <h3>360° Ansicht</h3>
     <div class="viewer" id="viewer">
@@ -129,7 +127,6 @@ const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.c
 let vehicleId = new URLSearchParams(location.search).get("id");
 let currentView = 0;
 
-// Fahrzeug-Ansichten (hier deine Bilder aus dem GitHub-Ordner eintragen)
 const vehicleViews = [
   { name: "vorne", url: "assets/sprinter/front.jpg" },
   { name: "vorne-links", url: "assets/sprinter/front-left.jpg" },
@@ -154,7 +151,7 @@ function setView(index) {
   renderViewButtons();
 }
 
-async function loadUser() { /* gleicher Code wie vorher */ }
+async function loadUser() { /* ... */ }
 
 async function saveDamage() {
   alert("✅ Schaden gespeichert!");
