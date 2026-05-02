@@ -267,7 +267,6 @@ async function createEmployee() {
     setMsg(el('createMsg'), 'Bitte Name und E-Mail ausfüllen.', false);
     return;
   }
-}
 
   const payload = { name, email, role };
   if (hasIsActiveColumn) payload.is_active = true;
@@ -277,7 +276,6 @@ async function createEmployee() {
     setMsg(el('createMsg'), `Fehler beim Anlegen: ${error.message}`, false);
     return;
   }
-}
 
   setMsg(el('createMsg'), '✅ Mitarbeiter angelegt.');
   el('newName').value = '';
@@ -401,12 +399,10 @@ function renderDamageLogs() {
   const selectedEmployee = el('employeeFilter').value;
   const search = el('damageSearch').value.toLowerCase();
 
-.vehicle-card:hover,
-.list-card:hover,
-.timeline-card:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 24px 70px rgba(15,23,42,.10) !important;
-}
+  const filtered = damageLogs.filter(log => {
+    const damage = damagesMap[log.damage_id] || {};
+    const reportedEmployeeId = damage.employee_id;
+    const actionEmployeeId = log.user_id;
 
     const matchesEmployee = selectedEmployee === 'all' || String(reportedEmployeeId) === selectedEmployee || String(actionEmployeeId) === selectedEmployee;
     const text = [log.action, log.details, damage.damage_type, damage.area, employeeName(reportedEmployeeId), employeeName(actionEmployeeId)].join(' ').toLowerCase();

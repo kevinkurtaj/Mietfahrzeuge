@@ -116,9 +116,34 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
   box-shadow:0 10px 35px rgba(0,0,0,0.07);
 }
 
-.vehicle-card:hover {
-  transform:translateY(-12px); 
-  box-shadow:0 35px 70px rgba(30,64,175,0.22);
+const loginBox=document.getElementById("loginBox"), app=document.getElementById("app"), loginMessage=document.getElementById("loginMessage");
+document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
+document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter") login();});
+async function login(){
+  loginMessage.textContent="";
+  const btn = document.querySelector("#loginBox button");
+  const email=String(document.getElementById("email").value||"").trim().toLowerCase();
+  const password=document.getElementById("password").value;
+  if(!email||!password){loginMessage.textContent="Bitte E-Mail und Passwort eingeben.";return;}
+
+  btn.disabled = true;
+  btn.textContent = "Prüfe Anmeldung ...";
+  try {
+    const {error}=await db.auth.signInWithPassword({email,password});
+    if(error){
+      const msg = String(error.message || "").toLowerCase();
+      if(msg.includes("invalid login credentials")) loginMessage.textContent="Login fehlgeschlagen: E-Mail oder Passwort falsch.";
+      else if(msg.includes("email not confirmed")) loginMessage.textContent="E-Mail noch nicht bestätigt. Bitte Postfach prüfen.";
+      else loginMessage.textContent=`Login fehlgeschlagen: ${error.message}`;
+      return;
+    }
+    await startApp();
+  } catch (err) {
+    loginMessage.textContent = `Netzwerk/Server-Fehler: ${err?.message || err}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Einloggen";
+  }
 }
 
 .logout-btn {
