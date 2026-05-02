@@ -35,9 +35,15 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 
 .brand { font-size:28px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:12px; }
 
-.user-box {
-  display:flex; align-items:center; gap:12px; padding:8px 20px; background:var(--bg); border-radius:999px;
+.sidebar {
+  width: 280px; background:var(--surface); height:calc(100vh - 86px); border-right:1px solid var(--border); padding:32px 24px; position:fixed;
 }
+
+.nav-item {
+  padding:16px 20px; border-radius:16px; margin-bottom:8px; cursor:pointer; font-weight:500;
+}
+
+.nav-item.active { background:var(--primary); color:white; }
 
 .main { margin-left:280px; padding:48px 60px; }
 
@@ -52,35 +58,58 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 }
 
 .vehicle-card:hover { transform:translateY(-12px); box-shadow:0 30px 60px rgba(30,64,175,0.2); }
+
+/* Bottom Taskbar */
+.bottom-bar {
+  position:fixed; bottom:0; left:280px; right:0; height:70px; background:var(--surface); border-top:1px solid var(--border);
+  display:flex; align-items:center; padding:0 40px; box-shadow:0 -4px 12px rgba(0,0,0,0.1);
+}
 </style>
 </head>
 <body data-theme="light">
 
 <div class="topbar">
   <div class="brand">🚐 Inhofer Flottenmanagement</div>
-  <div class="user-box" id="userBox"></div>
+  <div id="userBox" style="display:flex;align-items:center;gap:12px"></div>
 </div>
 
-<div class="main">
-  <h1 style="font-size:36px;margin-bottom:8px">Fahrzeugübersicht</h1>
-  <p style="color:var(--muted)">Alle Mietfahrzeuge im Überblick</p>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div style="color:var(--muted)">Gesamt Fahrzeuge</div>
-      <strong id="total" style="font-size:54px;font-weight:800">0</strong>
-    </div>
-    <div class="stat-card">
-      <div style="color:var(--muted)">Einsatzbereit</div>
-      <strong id="ready" style="font-size:54px;font-weight:800;color:#16a34a">0</strong>
-    </div>
-    <div class="stat-card">
-      <div style="color:var(--muted)">Nicht verfügbar</div>
-      <strong id="blocked" style="font-size:54px;font-weight:800;color:#f59e0b">0</strong>
-    </div>
+<div style="display:flex">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-item active">🚘 Fahrzeuge</div>
+    <div onclick="location.href='history.html'" class="nav-item">🕒 Historie</div>
+    <div id="adminLink" onclick="location.href='admin.html'" class="nav-item" style="display:none;">👤 Admin Panel</div>
   </div>
 
-  <div id="vehicleList" class="vehicle-grid"></div>
+  <!-- Hauptinhalt -->
+  <div class="main">
+    <h1 style="font-size:36px;margin-bottom:8px">Fahrzeugübersicht</h1>
+    <p style="color:var(--muted);font-size:18px">Alle Mietfahrzeuge im Überblick</p>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div style="color:var(--muted)">Gesamt Fahrzeuge</div>
+        <strong id="total" style="font-size:54px;font-weight:800">0</strong>
+      </div>
+      <div class="stat-card">
+        <div style="color:var(--muted)">Einsatzbereit</div>
+        <strong id="ready" style="font-size:54px;font-weight:800;color:#16a34a">0</strong>
+      </div>
+      <div class="stat-card">
+        <div style="color:var(--muted)">Nicht verfügbar</div>
+        <strong id="blocked" style="font-size:54px;font-weight:800;color:#f59e0b">0</strong>
+      </div>
+    </div>
+
+    <div id="vehicleList" class="vehicle-grid"></div>
+  </div>
+</div>
+
+<!-- Bottom Taskbar -->
+<div class="bottom-bar">
+  <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:12px 28px;border-radius:12px;cursor:pointer;font-weight:600;margin-left:auto;">
+    ↩ Logout
+  </button>
 </div>
 
 <script>
@@ -93,14 +122,19 @@ async function loadUser() {
   const user = data.session.user;
   const {data: emp} = await db.from("employees").select("name,role").eq("email", user.email).maybeSingle();
 
-  const name = emp?.name || "Mitarbeiter";
+  const name = emp?.name || user.email.split('@')[0];
   const role = emp?.role || "mitarbeiter";
 
   const roleHTML = role === "admin" 
-    ? `<span style="background:#fee2e2;color:#991b1b;padding:4px 14px;border-radius:999px;font-size:13px">Admin</span>` 
-    : `<span style="background:#dcfce7;color:#166534;padding:4px 14px;border-radius:999px;font-size:13px">Mitarbeiter</span>`;
+    ? `<span style="background:#fee2e2;color:#991b1b;padding:6px 16px;border-radius:999px;font-size:13px">Admin</span>` 
+    : `<span style="background:#dcfce7;color:#166534;padding:6px 16px;border-radius:999px;font-size:13px">Mitarbeiter</span>`;
 
   document.getElementById("userBox").innerHTML = `<strong>${name}</strong> ${roleHTML}`;
+
+  // Admin-Link nur für Admins anzeigen
+  if (role === "admin") {
+    document.getElementById("adminLink").style.display = "block";
+  }
 }
 
 async function loadVehicles() {
@@ -113,14 +147,19 @@ async function loadVehicles() {
   const html = data.map(v => `
     <div class="vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
       <strong style="font-size:23px">${v.name || 'Fahrzeug'}</strong>
-      <p style="color:var(--muted);margin:12px 0">${v.kennzeichen || '-'}</p>
+      <p style="color:var(--muted);margin:14px 0">${v.kennzeichen || '-'}</p>
       <span style="background:${v.status === 'einsatzbereit' ? '#dcfce7' : '#fef3c7'}; color:${v.status === 'einsatzbereit' ? '#166534' : '#92400e'}; padding:8px 20px; border-radius:999px;">
         ${v.status}
       </span>
     </div>
   `).join("");
 
-  document.getElementById("vehicleList").innerHTML = html || "<p style='color:#64748b'>Keine Fahrzeuge gefunden. Bitte Daten in Supabase eintragen.</p>";
+  document.getElementById("vehicleList").innerHTML = html || "<p>Keine Fahrzeuge gefunden.</p>";
+}
+
+async function logout() {
+  await db.auth.signOut();
+  location.href = "login.html";
 }
 
 loadUser();
