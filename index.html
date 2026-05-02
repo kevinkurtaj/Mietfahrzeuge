@@ -34,7 +34,11 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 }
 
 .sidebar {
-  width:260px; background:var(--card); height:calc(100vh - 76px); border-right:1px solid var(--border); padding:24px 0;
+  width:260px; background:var(--card); height:calc(100vh - 76px); border-right:1px solid var(--border); padding:24px 0; position:fixed;
+}
+
+.main {
+  margin-left:260px; padding:32px;
 }
 
 .card {
@@ -42,7 +46,7 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 }
 
 .vehicle-grid {
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:24px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:24px; margin-top:24px;
 }
 
 .vehicle-card {
@@ -57,25 +61,27 @@ body { background:var(--bg); color:var(--text); min-height:100vh; }
 <body data-theme="light">
 
 <div class="topbar">
-  <div style="font-size:22px;font-weight:900;display:flex;align-items:center;gap:10px;color:var(--primary)">
+  <div style="font-size:23px;font-weight:900;display:flex;align-items:center;gap:12px;color:var(--primary)">
     🚐 Inhofer Flottenmanagement
   </div>
-  <div style="display:flex;align-items:center;gap:16px">
+  <div style="display:flex;gap:16px;align-items:center">
     <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border);padding:8px 14px;border-radius:10px;cursor:pointer">🌗</button>
     <button onclick="logout()" style="background:#ef4444;color:white;border:none;padding:10px 20px;border-radius:10px;cursor:pointer">Logout</button>
   </div>
 </div>
 
 <div style="display:flex">
+  <!-- Sidebar -->
   <div class="sidebar">
     <div style="padding:0 20px">
-      <div class="nav-item active">🚘 Fahrzeuge</div>
-      <div class="nav-item">🕒 Historie</div>
-      <div class="nav-item">👤 Admin</div>
+      <div style="padding:12px 16px;background:var(--primary);color:white;border-radius:12px;margin-bottom:8px;">🚘 Fahrzeuge</div>
+      <div onclick="location.href='history.html'" style="padding:12px 16px;border-radius:12px;cursor:pointer;margin-bottom:8px;">🕒 Historie</div>
+      <div onclick="location.href='admin.html'" style="padding:12px 16px;border-radius:12px;cursor:pointer;">👤 Admin Panel</div>
     </div>
   </div>
 
-  <div style="flex:1; padding:32px">
+  <!-- Inhalt -->
+  <div class="main">
     <h1>Fahrzeugübersicht</h1>
     <div id="vehicleList" class="vehicle-grid"></div>
   </div>
@@ -86,8 +92,9 @@ const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.c
 
 function toggleTheme() {
   const isDark = document.body.getAttribute("data-theme") === "dark";
-  document.body.setAttribute("data-theme", isDark ? "light" : "dark");
-  localStorage.setItem("theme", isDark ? "light" : "dark");
+  const newTheme = isDark ? "light" : "dark";
+  document.body.setAttribute("data-theme", newTheme);
+  localStorage.setItem("theme", newTheme);
 }
 
 async function logout() {
@@ -95,12 +102,30 @@ async function logout() {
   location.href = "login.html";
 }
 
-// Theme beim Laden wiederherstellen
-if (localStorage.getItem("theme") === "dark") {
-  document.body.setAttribute("data-theme", "dark");
+async function loadVehicles() {
+  const {data: vehicles, error} = await db.from("vehicles").select("*").order("id");
+  
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const container = document.getElementById("vehicleList");
+  container.innerHTML = vehicles.map(v => `
+    <div class="card vehicle-card" onclick="location.href='vehicle.html?id=${v.id}'">
+      <strong style="font-size:18px">${v.name || 'Unbekanntes Fahrzeug'}</strong>
+      <p style="color:var(--muted);margin:8px 0">${v.kennzeichen || 'Kein Kennzeichen'}</p>
+      <span style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:999px;font-size:13px">
+        ${v.status === 'einsatzbereit' ? 'Einsatzbereit' : v.status}
+      </span>
+    </div>
+  `).join("");
 }
 
-// Rest der Funktionen (Fahrzeuge laden etc.) kommen später
+// Theme laden
+if (localStorage.getItem("theme") === "dark") document.body.setAttribute("data-theme", "dark");
+
+loadVehicles();
 </script>
 </body>
 </html>
