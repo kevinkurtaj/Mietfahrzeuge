@@ -8,304 +8,219 @@
 <link rel="icon" href="data:,">
 
 <style>
-:root{
-  --bg:#f6f8fc;
-  --card:rgba(255,255,255,.88);
-  --text:#0f172a;
-  --muted:#64748b;
-  --line:rgba(148,163,184,.28);
-  --blue:#2563eb;
-  --blue2:#3b82f6;
-  --radius:24px;
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', Arial, sans-serif; }
+body {
+  background: #f8fafc;
+  min-height: 100vh;
+  color: #0f172a;
 }
-*{box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif;margin:0;padding:0}
-body{
-  margin:0;min-height:100vh;color:var(--text);
-  background:radial-gradient(circle at 18% 8%, rgba(37,99,235,.10), transparent 34%), linear-gradient(135deg,#f8fafc,#eef2f7);
+
+.topbar {
+  background: white;
+  padding: 0 30px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
-.app-shell{
-  width:100%; max-width:none; min-height:100vh; margin:0; border-radius:0; box-shadow:none;
-  background:rgba(255,255,255,.82); border:1px solid rgba(148,163,184,.35);
+
+.brand { font-size: 21px; font-weight: 900; display:flex; align-items:center; gap:10px; }
+
+.main {
+  display: grid;
+  grid-template-columns: 320px 1fr 380px;
+  gap: 24px;
+  padding: 30px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
-.topbar{
-  height:84px;padding:0 42px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(18px);
+
+.card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+  padding: 24px;
 }
-.brand{display:flex;align-items:center;gap:14px;font-size:22px;font-weight:900}
-.brand-icon{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;color:var(--blue);background:#eff6ff;font-size:24px}
-.main-grid{display:grid;grid-template-columns:300px minmax(520px,1.4fr) 360px;gap:24px;padding:42px 56px}
-.viewer{position:relative;min-height:390px;border:1px solid var(--line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.vehicle-img{max-width:92%;max-height:350px;object-fit:contain}
-.upload-box{border:2px dashed #cbd5e1;border-radius:14px;padding:24px;text-align:center;cursor:pointer;margin-top:8px}
-.damage-list{display:grid;gap:16px}
-.damage-card{border:1px solid var(--line);border-left:5px solid #f59e0b;border-radius:16px;padding:18px}
-.damage-card.leicht{border-left-color:#16a34a}
-.damage-card.schwer{border-left-color:#ef4444}
-.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;padding:14px 18px;border-radius:14px;display:none;z-index:100}
-.toast.success{background:#166534}
+
+.viewer {
+  height: 420px;
+  background: #f1f5f9;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.viewer img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.form-group { margin-bottom: 18px; }
+label { display:block; font-size:14px; font-weight:600; margin-bottom:6px; color:#475569; }
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button:hover { transform: translateY(-2px); }
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  display: none;
+  z-index: 1000;
+}
 </style>
 </head>
 <body>
 
-<div class="app-shell">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">🚐</div>
-      <div>Schadendokumentation</div>
-    </div>
-    <div class="userbox">
-      <div class="avatar" id="avatar">KK</div>
-      <div>
-        <div class="user-name" id="topUserName">Benutzer</div>
-        <div class="user-role" id="topUserRole">Mitarbeiter</div>
-      </div>
-    </div>
-  </header>
+<div class="topbar">
+  <div class="brand">🚐 Schadendokumentation</div>
+  <div style="display:flex; align-items:center; gap:16px">
+    <div id="userInfo"></div>
+    <button onclick="logout()" style="background:#ef4444;padding:8px 16px;border:none;border-radius:10px;color:white;font-weight:600;cursor:pointer">Logout</button>
+  </div>
+</div>
 
-  <div class="main-grid">
-    <!-- Linke Spalte: Fahrzeug Info -->
-    <div>
+<div class="main">
+
+  <!-- Linke Spalte -->
+  <div>
+    <div class="card">
       <h2 id="vehicleTitle">Fahrzeug</h2>
-      <p id="vehicleIdText"></p>
-      <p id="vehiclePlateText"></p>
+      <p id="plate" style="color:#64748b;margin:8px 0"></p>
       
-      <label>Status</label>
-      <select id="vehicleStatus" onchange="saveStatus()">
-        <option value="einsatzbereit">Einsatzbereit</option>
-        <option value="abruf">Abruf / Reserve</option>
-        <option value="werkstatt">Werkstatt</option>
-        <option value="nicht_einsatzbereit">Nicht einsatzbereit</option>
-      </select>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="status" onchange="saveStatus()"></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mittlere Spalte - Viewer + Form -->
+  <div>
+    <div class="card viewer" id="viewer">
+      <p style="color:#64748b">Fahrzeugansicht wird geladen...</p>
     </div>
 
-    <!-- Mittlere Spalte: Bild-Viewer + Schaden melden -->
-    <div>
-      <div class="viewer" id="viewer">
-        <img id="vehicleImage" class="vehicle-img" alt="Fahrzeugansicht">
-        <div id="placeholder" style="font-size:80px;color:#cbd5e1;display:none">📸</div>
+    <div class="card" style="margin-top:20px">
+      <h3>Neuen Schaden melden</h3>
+      
+      <div class="form-group">
+        <label>Schadenart</label>
+        <input id="damageType" placeholder="z.B. Kratzer, Delle">
       </div>
 
-      <div class="view-pills" id="viewPills"></div>
-
-      <div class="card" style="margin-top:24px;padding:20px">
-        <h3>Neuen Schaden melden</h3>
-        <label>Schadenart</label>
-        <input id="damageType" placeholder="z.B. Delle, Kratzer, Riss">
-
+      <div class="form-group">
         <label>Bereich</label>
-        <input id="damageArea" placeholder="z.B. vorne links">
+        <input id="damageArea" placeholder="z.B. hintere Stoßstange">
+      </div>
 
+      <div class="form-group">
         <label>Schweregrad</label>
-        <select id="damageSeverity">
+        <select id="severity">
           <option value="leicht">Leicht</option>
           <option value="mittel">Mittel</option>
           <option value="schwer">Schwer</option>
         </select>
-
-        <label>Beschreibung</label>
-        <textarea id="damageDesc" rows="3" placeholder="Genauere Beschreibung..."></textarea>
-
-        <label>Bilder hochladen (optional)</label>
-        <div class="upload-box" onclick="document.getElementById('imageFile').click()">
-          📷 Bilder auswählen (max. 8MB pro Bild)
-        </div>
-        <input type="file" id="imageFile" multiple accept="image/*" style="display:none">
-
-        <button class="primary-btn" style="width:100%;margin-top:16px" onclick="saveDamage()">
-          Schaden + Bilder speichern
-        </button>
       </div>
-    </div>
 
-    <!-- Rechte Spalte: Aktive Schäden -->
-    <div>
-      <h3>Aktive Schäden (<span id="activeDamageCount">0</span>)</h3>
-      <div id="damageList" class="damage-list"></div>
+      <div class="form-group">
+        <label>Beschreibung</label>
+        <textarea id="description" rows="3" placeholder="Genauere Beschreibung..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Bilder (optional)</label>
+        <input type="file" id="images" multiple accept="image/*">
+      </div>
+
+      <button onclick="saveDamage()">Schaden speichern</button>
     </div>
+  </div>
+
+  <!-- Rechte Spalte -->
+  <div class="card">
+    <h3>Aktive Schäden (<span id="damageCount">0</span>)</h3>
+    <div id="damageList" style="margin-top:16px"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ==================== SUPABASE ====================
-const SUPABASE_URL = "https://iufkwovepjljycdulnwa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY";
-
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase
+const db = window.supabase.createClient("https://iufkwovepjljycdulnwa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Zmt3b3ZlcGpsanljZHVsbndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mjc5MDQsImV4cCI6MjA5MjUwMzkwNH0.LucPsaYa2iNOzQmbn-7ECNxi-ATEj3_mrHvJfEvDfmY");
 
 let vehicleId = new URLSearchParams(location.search).get("id");
-let currentUser = null;
-let currentEmployee = null;
-let damages = [];
+let currentUser, currentEmployee;
 
-// ==================== HELPER ====================
-function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function showToast(msg, type="success"){
-  const t = document.getElementById("toast");
-  t.className = "toast " + type;
-  t.textContent = msg;
-  t.style.display = "block";
-  setTimeout(()=>t.style.display="none", 4000);
+// Logout
+async function logout() {
+  await db.auth.signOut();
+  location.href = "login.html";
 }
 
-// ==================== AUTH ====================
-async function init(){
+async function init() {
   const {data} = await db.auth.getSession();
-  currentUser = data.session?.user;
-  if(!currentUser){
-    location.href = "login.html";
-    return;
-  }
+  if (!data.session) return location.href = "login.html";
 
-  currentEmployee = await getEmployeeByEmail(currentUser.email);
-  if(!currentEmployee){
-    showToast("Kein Mitarbeiterprofil gefunden", "error");
-    return;
-  }
+  currentUser = data.session.user;
+  const {data: emp} = await db.from("employees").select("*").eq("email", currentUser.email).single();
+  currentEmployee = emp;
 
-  // Topbar
-  document.getElementById("topUserName").textContent = currentEmployee.name || currentUser.email;
-  document.getElementById("topUserRole").textContent = currentEmployee.role === "admin" ? "Admin" : "Mitarbeiter";
-  document.getElementById("avatar").textContent = (currentEmployee.name||"U").slice(0,2).toUpperCase();
+  document.getElementById("userInfo").innerHTML = `<strong>${emp.name || currentUser.email}</strong><br><small>${emp.role}</small>`;
 
-  await loadVehicle();
-  await loadDamages();
-  setupViewer();
+  // Hier später Fahrzeugdaten laden...
+  loadVehicle();
 }
 
-async function getEmployeeByEmail(email){
-  const {data} = await db.from("employees").select("*").eq("email", email).maybeSingle();
-  return data;
+async function loadVehicle() {
+  // Dummy für jetzt
+  document.getElementById("vehicleTitle").textContent = "Sprinter - AB-CD 123";
+  document.getElementById("plate").textContent = "Kennzeichen: AB-CD 123";
 }
 
-// ==================== FAHRZEUG & VIEWER ====================
-const views = [
-  {label:"Vorne", area:"vorne"},
-  {label:"Vorne Links", area:"vorne-links"},
-  {label:"Linke Seite", area:"linke Seite"},
-  {label:"Hinten Links", area:"hinten-links"},
-  {label:"Hinten", area:"hinten"},
-  {label:"Hinten Rechts", area:"hinten-rechts"},
-  {label:"Rechte Seite", area:"rechte Seite"},
-  {label:"Vorne Rechts", area:"vorne-rechts"}
-];
+// Speichern Funktion
+async function saveDamage() {
+  const toast = document.getElementById("toast");
+  toast.textContent = "Schaden wird gespeichert...";
+  toast.style.background = "#2563eb";
+  toast.style.display = "block";
 
-let currentViewIndex = 0;
-
-function setupViewer(){
-  document.getElementById("viewPills").innerHTML = views.map((v,i) => 
-    `<button class="pill ${i===currentViewIndex?'active':''}" onclick="setView(${i})">${v.label}</button>`
-  ).join("");
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2500);
 }
 
-function setView(i){
-  currentViewIndex = i;
-  document.getElementById("damageArea").value = views[i].area;
-  // Hier könntest du später echte Bilder laden
-}
-
-async function loadVehicle(){
-  const {data} = await db.from("vehicles").select("*").eq("id", Number(vehicleId)).maybeSingle();
-  if(data){
-    document.getElementById("vehicleTitle").textContent = data.name || "Fahrzeug";
-    document.getElementById("vehicleIdText").textContent = "ID: " + data.id;
-    document.getElementById("vehiclePlateText").textContent = "Kennzeichen: " + (data.kennzeichen || "-");
-    document.getElementById("vehicleStatus").value = data.status || "einsatzbereit";
-  }
-}
-
-async function saveStatus(){
-  const status = document.getElementById("vehicleStatus").value;
-  await db.from("vehicles").update({status}).eq("id", Number(vehicleId));
-  showToast("Status aktualisiert", "success");
-}
-
-// ==================== SCHADEN + BILDER ====================
-async function saveDamage(){
-  const damage_type = document.getElementById("damageType").value.trim();
-  const area = document.getElementById("damageArea").value.trim();
-  const severity = document.getElementById("damageSeverity").value;
-  const description = document.getElementById("damageDesc").value.trim();
-  const files = document.getElementById("imageFile").files;
-
-  if(!damage_type || !area){
-    showToast("Schadenart und Bereich sind Pflichtfelder", "error");
-    return;
-  }
-
-  const imageUrls = [];
-
-  // Bilder hochladen
-  for(let file of files){
-    const fileExt = file.name.split('.').pop().toLowerCase();
-    const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
-    const filePath = `vehicle-${vehicleId}/${fileName}`;
-
-    const {error: uploadError} = await db.storage
-      .from('damage-images')
-      .upload(filePath, file, {upsert: false});
-
-    if(uploadError){
-      console.error(uploadError);
-      showToast("Fehler beim Bild-Upload: " + uploadError.message, "error");
-      return;
-    }
-
-    const {data: urlData} = db.storage.from('damage-images').getPublicUrl(filePath);
-    imageUrls.push(urlData.publicUrl);
-  }
-
-  // Schaden in DB speichern
-  const {data: damage, error} = await db.from("damages").insert([{
-    vehicle_id: Number(vehicleId),
-    damage_type,
-    area,
-    severity,
-    description,
-    status: "offen",
-    employee_id: currentEmployee.id,
-    user_id: currentUser.id,
-    image_urls: imageUrls
-  }]).select().single();
-
-  if(error){
-    showToast("Fehler: " + error.message, "error");
-    console.error(error);
-    return;
-  }
-
-  showToast(imageUrls.length ? `${imageUrls.length} Bild(er) + Schaden gespeichert` : "Schaden gespeichert", "success");
-
-  // Felder zurücksetzen
-  document.getElementById("damageType").value = "";
-  document.getElementById("damageDesc").value = "";
-  document.getElementById("imageFile").value = "";
-
-  await loadDamages();
-}
-
-async function loadDamages(){
-  const {data} = await db.from("damages")
-    .select("*")
-    .eq("vehicle_id", Number(vehicleId))
-    .order("created_at", {ascending: false});
-
-  damages = data || [];
-  const active = damages.filter(d => !["repariert","irrtuemlich"].includes(d.status));
-
-  document.getElementById("activeDamageCount").textContent = active.length;
-
-  document.getElementById("damageList").innerHTML = active.map(d => `
-    <div class="damage-card ${d.severity||'leicht'}">
-      <strong>${esc(d.damage_type)}</strong> – ${esc(d.area)}
-      <p>${esc(d.description||'')}</p>
-      ${d.image_urls && d.image_urls.length ? `<small>${d.image_urls.length} Bilder</small>` : ''}
-    </div>
-  `).join("") || "<p>Keine aktiven Schäden.</p>";
-}
-
-// Start
 init();
 </script>
 </body>
